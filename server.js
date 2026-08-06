@@ -997,15 +997,26 @@ ebayApp.post('/api/user-settings', (req, res) => {
     res.json({ success: ok, settings: loadUserSettings() });
 });
 
-ebayApp.listen(EBAY_PORT, '0.0.0.0', () => {
-    console.log(`⚡ eBay Title & Description Generator サーバー起動完了!`);
-    console.log(`👉 eBayツール URL: http://localhost:${EBAY_PORT}`);
+process.on('uncaughtException', (err) => {
+    console.error('[Uncaught Exception Guard]:', err);
 });
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('[Unhandled Rejection Guard]:', reason);
+});
+
+if (!process.env.RENDER) {
+    ebayApp.listen(EBAY_PORT, '0.0.0.0', () => {
+        console.log(`⚡ eBay Title & Description Generator サーバー起動完了!`);
+        console.log(`👉 eBayツール URL: http://localhost:${EBAY_PORT}`);
+    });
+}
 
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`=================================================`);
     console.log(`🚀 商管どん UI ダッシュボード サーバー起動完了!`);
-    console.log(`👉 ダッシュボード URL: http://localhost:3000`);
-    console.log(`👉 eBayツール URL: http://localhost:${EBAY_PORT}`);
+    console.log(`👉 ダッシュボード URL: http://localhost:${PORT}`);
+    if (!process.env.RENDER) {
+        console.log(`👉 eBayツール URL: http://localhost:${EBAY_PORT}`);
+    }
     console.log(`=================================================`);
 });
