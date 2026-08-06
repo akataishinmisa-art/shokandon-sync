@@ -21,10 +21,12 @@ const CUSTOM_MPN_PRICES_PATH = path.join(__dirname, 'custom_mpn_prices.json');
 
 process.on('uncaughtException', (err) => {
     console.error('[Uncaught Exception Guard]:', err ? (err.stack || err.message || err) : err);
+    // Do NOT exit - keep the server running so Render health check can pass
 });
 process.on('unhandledRejection', (reason) => {
     console.error('[Unhandled Rejection Guard]:', reason ? (reason.stack || reason.message || reason) : reason);
 });
+console.log(`[Startup] PORT=${process.env.PORT}, NODE_ENV=${process.env.NODE_ENV}, RENDER=${process.env.RENDER}`);
 
 app.use(cors());
 app.use(express.json());
@@ -1011,12 +1013,18 @@ if (!process.env.RENDER) {
     });
 }
 
-app.listen(PORT, '0.0.0.0', () => {
+const server = app.listen(PORT, '0.0.0.0', () => {
     console.log(`=================================================`);
     console.log(`🚀 商管どん UI ダッシュボード サーバー起動完了!`);
-    console.log(`👉 ダッシュボード URL: http://localhost:${PORT}`);
+    console.log(`👉 ポート: ${PORT}`);
     if (!process.env.RENDER) {
         console.log(`👉 eBayツール URL: http://localhost:${EBAY_PORT}`);
     }
     console.log(`=================================================`);
+});
+server.on('error', (err) => {
+    console.error('[Server Error]:', err.message);
+    if (err.code === 'EADDRINUSE') {
+        console.error(`ポート ${PORT} は既に使用中です。`);
+    }
 });
