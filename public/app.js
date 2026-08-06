@@ -1,4 +1,19 @@
 document.addEventListener('DOMContentLoaded', () => {
+    const CLOUD_BASE_URL = 'https://shokandon-sync.onrender.com';
+
+    // Helper to safely fetch from either local or cloud
+    function apiFetch(url, options = {}) {
+        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        const requestUrl = (isLocal && !url.startsWith('http')) ? `${CLOUD_BASE_URL}${url}` : url;
+
+        return fetch(requestUrl, options).catch(err => {
+            if (isLocal && !url.startsWith('http')) {
+                return fetch(`${CLOUD_BASE_URL}${url}`, options);
+            }
+            throw err;
+        });
+    }
+
     const runSyncBtn = document.getElementById('runSyncBtn');
     const btnLabelText = document.getElementById('btnLabelText');
     const terminalLog = document.getElementById('terminalLog');
@@ -16,7 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let pollInterval = null;
 
     // Load saved LINE config from server
-    fetch('/api/config')
+    apiFetch('/api/config')
         .then(res => res.json())
         .then(cfg => {
             if (cfg.lineChannelAccessToken) tokenInput.value = cfg.lineChannelAccessToken;
@@ -28,7 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const scheduleText = document.getElementById('scheduleText');
 
     function updateScheduleUI() {
-        fetch('/api/schedule-status')
+        apiFetch('/api/schedule-status')
             .then(res => res.json())
             .then(data => {
                 if (scheduleText && scheduleBadge) {
@@ -50,7 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (scheduleBadge) {
         scheduleBadge.addEventListener('click', () => {
-            fetch('/api/schedule-toggle', { method: 'POST' })
+            apiFetch('/api/schedule-toggle', { method: 'POST' })
                 .then(res => res.json())
                 .then(() => updateScheduleUI());
         });
@@ -96,7 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const token = tokenInput.value.trim();
         const userId = userIdInput.value.trim();
 
-        fetch('/api/config', {
+        apiFetch('/api/config', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ lineChannelAccessToken: token, lineUserId: userId })
@@ -119,7 +134,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         showAlert('⏳ LINE送信テスト中...', 'success');
 
-        fetch('/api/test-line', {
+        apiFetch('/api/test-line', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ token, userId })
@@ -149,7 +164,7 @@ document.addEventListener('DOMContentLoaded', () => {
         serverStatusPill.classList.add('running');
         statusText.textContent = '同期処理＆全画像ダウンロード中...';
 
-        fetch('/api/run-sync', {
+        apiFetch('/api/run-sync', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ mode: selectedMode })
@@ -173,7 +188,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (pollInterval) clearInterval(pollInterval);
 
         pollInterval = setInterval(() => {
-            fetch('/api/status')
+            apiFetch('/api/status')
                 .then(res => res.json())
                 .then(data => {
                     if (data.logs) {
@@ -203,7 +218,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Initial status check
-    fetch('/api/status')
+    apiFetch('/api/status')
         .then(res => res.json())
         .then(data => {
             if (data.isRunning) {
