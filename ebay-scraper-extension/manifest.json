@@ -1,0 +1,24 @@
+{
+  "manifest_version": 3,
+  "name": "eBay Sold Price Scraper (Local)",
+  "version": "1.0",
+  "description": "Scrapes eBay sold prices dynamically for the local web app.",
+  "permissions": [
+    "tabs",
+    "scripting"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": ["content.js"]
+    }
+  ]
+}

@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>商管どん | 自動在庫・価格同期ダッシュボード</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="background-glob"></div>
+    <div class="background-glob glob-2"></div>
+
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo-area">
+                <span class="badge">PRO</span>
+                <h1>商管どん <span class="subtitle">自動在庫・価格同期ダッシュボード</span></h1>
+            </div>
+            <div class="header-right-actions">
+                <button type="button" id="openTokenUsageBtn" class="btn-token-header">
+                    🎯 トークン使用量確認 ↗
+                </button>
+                <button type="button" id="openImagesFolderBtn" class="btn-folder-header">
+                    📁 画像保存フォルダを開く ↗
+                </button>
+                <a href="/ebay/" target="_blank" class="btn-title-helper-header">
+                    ⚡ eBayタイトル＆商品説明作成 ↗
+                </a>
+                <a href="https://docs.google.com/spreadsheets/d/15skxiK9eL6JDzq76JX3_3uS5-puJIqGGZngv3bJ4iv4/edit#gid=0" target="_blank" class="btn-sheet-header">
+                    📊 スプレッドシートを開く (商管どん) ↗
+                </a>
+                <div class="status-pill" id="serverStatusPill">
+                    <span class="status-dot"></span>
+                    <span id="statusText">システム正常待機中</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- FULL WIDTH SUPER WIDE HERO: Sync Control Panel -->
+        <section class="card hero-control-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.5rem;">
+                <h2>⚡ 実行コントロールパネル</h2>
+                <div id="scheduleBadge" class="schedule-pill" style="background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; color: #34d399; font-weight: 700; font-size: 0.85rem; padding: 0.35rem 0.85rem; border-radius: 20px; display: flex; align-items: center; gap: 0.4rem; cursor: pointer;" title="クリックでON/OFF切り替え">
+                    <span class="status-dot" style="background: #10b981; display: inline-block; width: 8px; height: 8px; border-radius: 50%;"></span>
+                    <span id="scheduleText">⏰ 自動スケジュール: 朝6時〜夜12時 毎時LINE通知モード (稼働中)</span>
+                </div>
+            </div>
+            <p class="desc">モードを選択して「実行ボタン」を押すと手動同期が即座に実行されます。また、**朝6:00〜夜24:00は毎時00分にLINE通知モードで自動同期**が稼働します。</p>
+
+            <div class="horizontal-mode-selector">
+                <label class="radio-card active" id="modeStandardLabel">
+                    <input type="radio" name="syncMode" value="standard" checked>
+                    <div class="radio-content">
+                        <span class="mode-title">標準モード</span>
+                        <span class="mode-desc">価格更新・旧価格退避・欠品判定・赤色ハイライト</span>
+                    </div>
+                </label>
+
+                <label class="radio-card" id="modeSoldoutGLabel">
+                    <input type="radio" name="syncMode" value="soldout_g">
+                    <div class="radio-content">
+                        <span class="mode-title">G列出品取り消しモード</span>
+                        <span class="mode-desc">欠品時にG列へ「出品取り消し」を記載</span>
+                    </div>
+                </label>
+
+                <label class="radio-card" id="modeLineLabel">
+                    <input type="radio" name="syncMode" value="line_transfer">
+                    <div class="radio-content">
+                        <span class="mode-title">📱 LINE通知モード</span>
+                        <span class="mode-desc">欠品時にLINEへ自動で一括通知メッセージを送信</span>
+                    </div>
+                </label>
+            </div>
+
+            <button type="button" class="btn-primary-mega" id="runSyncBtn">
+                <span class="btn-icon">🚀</span>
+                <span id="btnLabelText">スプレッドシート自動同期を実行する</span>
+            </button>
+        </section>
+
+        <!-- Bottom Grid: Markets & Terminal Output -->
+        <div class="bottom-grid">
+            <!-- Left: Major Markets & EC Quick Links (8 Markets) -->
+            <section class="card market-links-card">
+                <h2>🌐 主要モール＆ECサイト</h2>
+                <p class="desc">ワンクリックで対象サイトへジャンプ</p>
+
+                <div class="market-row-grid">
+                    <a href="https://www.ebay.com/" target="_blank" class="market-btn ebay-btn">
+                        <span class="market-icon">🌐</span>
+                        <div class="market-info">
+                            <span class="market-name">eBay</span>
+                            <span class="market-url">ebay.com</span>
+                        </div>
+                        <span class="external-icon">↗</span>
+                    </a>
+
+                    <a href="https://www.amazon.co.jp/" target="_blank" class="market-btn amazon-btn">
+                        <span class="market-icon">📦</span>
+                        <div class="market-info">
+                            <span class="market-name">Amazon</span>
+                            <span class="market-url">amazon.co.jp</span>
+                        </div>
+                        <span class="external-icon">↗</span>
+                    </a>
+
+                    <a href="https://shopping.yahoo.co.jp/" target="_blank" class="market-btn yahooshop-btn">
+                        <span class="market-icon">🛒</span>
+                        <div class="market-info">
+                            <span class="market-name">ヤフーショッピング</span>
+                            <span class="market-url">shopping.yahoo.co.jp</span>
+                        </div>
+                        <span class="external-icon">↗</span>
+                    </a>
+
+                    <a href="https://auctions.yahoo.co.jp/" target="_blank" class="market-btn yahooauc-btn">
+                        <span class="market-icon">🔨</span>
+                        <div class="market-info">
+                            <span class="market-name">ヤフオク!</span>
+                            <span class="market-url">auctions.yahoo.co.jp</span>
+                        </div>
+                        <span class="external-icon">↗</span>
+                    </a>
+
+                    <a href="https://paypayfleamarket.yahoo.co.jp/" target="_blank" class="market-btn yahooflea-btn">
+                        <span class="market-icon">🟡</span>
+                        <div class="market-info">
+                            <span class="market-name">ヤフーフリマ</span>
+                            <span class="market-url">paypayfleamarket.yahoo.co.jp</span>
+                        </div>
+                        <span class="external-icon">↗</span>
+                    </a>
+
+                    <a href="https://jp.mercari.com/" target="_blank" class="market-btn mercari-btn">
+                        <span class="market-icon">🔴</span>
+                        <div class="market-info">
+                            <span class="market-name">メルカリ</span>
+                            <span class="market-url">jp.mercari.com</span>
+                        </div>
+                        <span class="external-icon">↗</span>
+                    </a>
+
+                    <a href="https://fril.jp/" target="_blank" class="market-btn rakuma-btn">
+                        <span class="market-icon">🔴</span>
+                        <div class="market-info">
+                            <span class="market-name">ラクマ</span>
+                            <span class="market-url">fril.jp</span>
+                        </div>
+                        <span class="external-icon">↗</span>
+                    </a>
+
+                    <a href="https://www.rakuten.co.jp/" target="_blank" class="market-btn rakuten-btn">
+                        <span class="market-icon">🛍️</span>
+                        <div class="market-info">
+                            <span class="market-name">楽天市場</span>
+                            <span class="market-url">rakuten.co.jp</span>
+                        </div>
+                        <span class="external-icon">↗</span>
+                    </a>
+                </div>
+            </section>
+
+            <!-- Right: Terminal Output & Compact LINE API Settings -->
+            <div class="right-terminal-group">
+                <!-- Terminal Output Card -->
+                <section class="card log-card">
+                    <div class="terminal-header">
+                        <div class="terminal-dots">
+                            <span class="dot red"></span>
+                            <span class="dot yellow"></span>
+                            <span class="dot green"></span>
+                        </div>
+                        <span class="terminal-title">リアルタイム実行ログ (Terminal Output)</span>
+                    </div>
+                    <pre class="terminal-body" id="terminalLog">実行ログがここに表示されます...</pre>
+                </section>
+
+                <!-- Compact LINE API Settings Card -->
+                <section class="card compact-settings-card">
+                    <details class="settings-details">
+                        <summary class="settings-summary">
+                            <span>⚙️ 📱 LINE Messaging API 設定 (キー変更時のみ展開)</span>
+                            <span class="summary-arrow">▼</span>
+                        </summary>
+                        <div class="settings-content">
+                            <div class="form-group">
+                                <label for="tokenInput">チャネルアクセストークン (Channel Access Token)</label>
+                                <input type="password" id="tokenInput" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6..." autocomplete="off">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="userIdInput">ユーザーID (LINE User ID)</label>
+                                <input type="text" id="userIdInput" placeholder="U1234567890abcdef1234567890abcdef" autocomplete="off">
+                            </div>
+
+                            <div class="settings-btn-group">
+                                <button type="button" class="btn-secondary" id="saveConfigBtn">💾 設定を保存</button>
+                                <button type="button" class="btn-outline" id="testLineBtn">📲 LINE送信テスト</button>
+                            </div>
+                            <div class="alert-msg" id="settingsAlert"></div>
+                        </div>
+                    </details>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <!-- Token Usage Modal -->
+    <div class="modal-overlay" id="tokenUsageModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h2>⚡ トークン・モデル利用状況 (Models & Usage)</h2>
+                <button type="button" class="modal-close-btn" id="closeTokenModalBtn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="quota-plan-badge">
+                    <span class="plan-title">💳 現在のプラン: <strong>Google AI Pro</strong></span>
+                    <span class="plan-status">有効</span>
+                </div>
+
+                <div class="quota-group">
+                    <h3>🟢 Gemini Models (メインAI)</h3>
+                    <div class="quota-item">
+                        <div class="quota-info">
+                            <span class="quota-label">Weekly Limit (週間使用枠)</span>
+                            <span class="quota-desc">6日 10時間後に全リセット</span>
+                        </div>
+                        <div class="quota-badge green">残り 100%</div>
+                    </div>
+                    <div class="quota-item">
+                        <div class="quota-info">
+                            <span class="quota-label">Five Hour Limit (5時間使用枠)</span>
+                            <span class="quota-desc">3時間 22分後に全リセット</span>
+                        </div>
+                        <div class="quota-badge green">残り 97%</div>
+                    </div>
+                </div>
+
+                <div class="quota-group">
+                    <h3>🟣 Claude & GPT Models (サブAI)</h3>
+                    <div class="quota-item">
+                        <div class="quota-info">
+                            <span class="quota-label">Weekly Limit (週間使用枠)</span>
+                            <span class="quota-desc">全枠利用可能</span>
+                        </div>
+                        <div class="quota-badge green">残り 100%</div>
+                    </div>
+                    <div class="quota-item">
+                        <div class="quota-info">
+                            <span class="quota-label">Five Hour Limit (5時間使用枠)</span>
+                            <span class="quota-desc">全枠利用可能</span>
+                        </div>
+                        <div class="quota-badge green">残り 100%</div>
+                    </div>
+                </div>
+
+                <div class="shortcut-tip-box">
+                    💡 <strong>Antigravityアプリで最新リアルタイム画面を開く方法:</strong><br>
+                    キーボードで <kbd>Ctrl</kbd> + <kbd>/</kbd> を押し、メニューから <code>Models & Usage</code> を開くか、左下 ⚙️ アイコン ➔ <strong>Models</strong> を参照してください。
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-primary-sm" id="closeTokenModalFooterBtn">閉じる</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

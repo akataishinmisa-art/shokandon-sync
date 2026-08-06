@@ -1,0 +1,850 @@
+const express = require('express');
+const path = require('path');
+const { spawn, exec } = require('child_process');
+const fs = require('fs');
+const http = require('http');
+const https = require('https');
+const puppeteer = require('puppeteer-core');
+const { processAndDownloadImages, extractImageUrlsFromPage, BASE_SAVE_DIR } = require('./image_downloader');
+
+const chromePath = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
+const edgePath = 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe';
+const executablePath = fs.existsSync(chromePath) ? chromePath : edgePath;
+
+const app = express();
+const PORT = 3000;
+const CONFIG_PATH = path.join(__dirname, 'config.json');
+const USER_SETTINGS_PATH = path.join(__dirname, 'user_settings.json');
+const CUSTOM_MPN_PRICES_PATH = path.join(__dirname, 'custom_mpn_prices.json');
+
+process.on('uncaughtException', (err) => {
+    console.error('[Uncaught Exception Guard]:', err ? (err.stack || err.message || err) : err);
+});
+process.on('unhandledRejection', (reason) => {
+    console.error('[Unhandled Rejection Guard]:', reason ? (reason.stack || reason.message || reason) : reason);
+});
+
+app.use(express.json());
+app.use('/ebay', express.static(path.join(__dirname, 'ebay-title-generator')));
+app.use(express.static(path.join(__dirname, 'public')));
+
+app.get('/ebay', (req, res) => {
+    res.sendFile(path.join(__dirname, 'ebay-title-generator', 'index.html'));
+});
+
+// Load & Save Custom MPN Prices (PCH-2000, etc.)
+function loadCustomMpnPrices() {
+    try {
+        if (fs.existsSync(CUSTOM_MPN_PRICES_PATH)) {
+            const data = fs.readFileSync(CUSTOM_MPN_PRICES_PATH, 'utf8');
+            return JSON.parse(data);
+        }
+    } catch (e) {}
+    return {
+        "PCH-2000": { "s": "$260", "a": "$200", "b": "$160" }
+    };
+}
+
+function saveCustomMpnPrices(customMap) {
+    try {
+        fs.writeFileSync(CUSTOM_MPN_PRICES_PATH, JSON.stringify(customMap, null, 2), 'utf8');
+        return true;
+    } catch (e) {
+        return false;
+    }
+}
+
+// Load & Save User Settings (為替, 利益率, 発送料) for Server-side File Persistence
+function loadUserSettings() {
+    try {
+        if (fs.existsSync(USER_SETTINGS_PATH)) {
+            const data = fs.readFileSync(USER_SETTINGS_PATH, 'utf8');
+            return JSON.parse(data);
+        }
+    } catch (e) {}
+    return { exchange: '', margin: '', exportShipping: '' };
+}
+
+function saveUserSettings(newSettings) {
+    try {
+        const current = loadUserSettings();
+        const updated = { ...current, ...newSettings };
+        fs.writeFileSync(USER_SETTINGS_PATH, JSON.stringify(updated, null, 2), 'utf8');
+        return true;
+    } catch (e) {
+        return false;
+    }
+}
+
+app.get('/api/user-settings', (req, res) => res.json(loadUserSettings()));
+app.post('/api/user-settings', (req, res) => {
+    const ok = saveUserSettings(req.body);
+    res.json({ success: ok, settings: loadUserSettings() });
+});
+
+// Google Sheet "商品DB" tab & Custom MPN Lookup Function for sell prices (S, A, B)
+function lookupProductDbSellPrices(targetMpn) {
+    return new Promise(resolve => {
+        if (!targetMpn || !targetMpn.trim()) {
+            return resolve({ s: '-', a: '-', b: '-', found: false });
+        }
+
+        const cleanTarget = targetMpn.trim().toUpperCase();
+        const customPrices = loadCustomMpnPrices();
+
+        // 1. Direct Exact Match in customPrices
+        if (customPrices && customPrices[cleanTarget]) {
+            const cp = customPrices[cleanTarget];
+            return resolve({
+                s: cp.s || '-',
+                a: cp.a || '-',
+                b: cp.b || '-',
+                found: true,
+                isCustom: true,
+                matchedKey: cleanTarget
+            });
+        }
+
+        // 2. Partial Keyword Match in customPrices (e.g., "3DS LL" matched inside title or MPN)
+        if (customPrices) {
+            for (const key of Object.keys(customPrices)) {
+                const cleanKey = key.toUpperCase();
+                if (cleanTarget.includes(cleanKey) || cleanKey.includes(cleanTarget)) {
+                    const cp = customPrices[key];
+                    return resolve({
+                        s: cp.s || '-',
+                        a: cp.a || '-',
+                        b: cp.b || '-',
+                        found: true,
+                        isCustom: true,
+                        matchedKey: key
+                    });
+                }
+            }
+        }
+
+        const sheetUrl = 'https://docs.google.com/spreadsheets/d/15skxiK9eL6JDzq76JX3_3uS5-puJIqGGZngv3bJ4iv4/gviz/tq?tqx=out:csv&sheet=' + encodeURIComponent('商品DB');
+        https.get(sheetUrl, res => {
+            let data = '';
+            res.on('data', chunk => data += chunk);
+            res.on('end', () => {
+                const lines = data.split(/\r?\n/);
+                let resObj = { s: '-', a: '-', b: '-', found: false };
+
+                for (let i = 1; i < lines.length; i++) {
+                    const line = lines[i];
+                    if (!line.trim()) continue;
+
+                    const cols = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/^"|"$/g, '').trim());
+                    if (cols.length >= 6) {
+                        const mpn = cols[1] ? cols[1].trim().toUpperCase() : '';
+                        const grade = cols[2] ? cols[2].trim() : '';
+                        const sellUsd = cols[5] ? cols[5].trim() : '';
+
+                        if (mpn && (mpn === cleanTarget || cleanTarget.includes(mpn))) {
+                            resObj.found = true;
+                            const formattedUsd = sellUsd ? (sellUsd.startsWith('$') ? sellUsd : '$' + sellUsd) : '-';
+                            if (grade === 'Ｓ' || grade === 'S') resObj.s = formattedUsd;
+                            if (grade === 'Ａ' || grade === 'A') resObj.a = formattedUsd;
+                            if (grade === 'Ｂ' || grade === 'B') resObj.b = formattedUsd;
+                        }
+                    }
+                }
+                resolve(resObj);
+            });
+        }).on('error', err => {
+            console.error('[lookupProductDbSellPrices HTTP Error]:', err.message);
+            resolve({ s: '-', a: '-', b: '-', found: false });
+        });
+    });
+}
+
+// Endpoint to fetch S, A, B sell prices from Google Sheet "商品DB" by MPN (型番)
+app.get('/api/lookup-product-db', async (req, res) => {
+    const mpn = req.query.mpn || '';
+    try {
+        const prices = await lookupProductDbSellPrices(mpn);
+        res.json({ success: true, mpn, prices });
+    } catch (err) {
+        console.error('[API lookup-product-db Error]:', err.message);
+        res.json({ success: false, mpn, prices: { s: '-', a: '-', b: '-', found: false } });
+    }
+});
+
+// Robust Windows Folder Opener (PowerShell Invoke-Item primary, CMD start fallback)
+function openFolderInExplorer(targetDir) {
+    const candidates = [
+        targetDir,
+        'C:\\Users\\akata\\OneDrive\\デスクトップ\\商管どん_商品画像',
+        'C:\\Users\\akata\\Desktop\\商管どん_商品画像',
+        path.join(__dirname, 'downloaded_images')
+    ];
+
+    let validDir = targetDir;
+    for (const dir of candidates) {
+        try {
+            if (!fs.existsSync(dir)) {
+                fs.mkdirSync(dir, { recursive: true });
+            }
+            validDir = dir;
+            break;
+        } catch (e) {}
+    }
+
+    console.log(`[OpenFolder]: Opening Windows Explorer for "${validDir}"`);
+    exec(`start "" "${validDir}"`, { shell: 'cmd.exe' });
+    exec(`powershell.exe -NoProfile -Command "Invoke-Item '${validDir}'"`);
+}
+
+// Open Local Image Folder Handler (Supports both GET and POST)
+function handleOpenFolder(req, res) {
+    try {
+        openFolderInExplorer(BASE_SAVE_DIR);
+        res.json({ success: true, message: '画像保存フォルダを開きました。', folder: BASE_SAVE_DIR });
+    } catch (e) {
+        console.error('[handleOpenFolder Exception]:', e.message);
+        res.json({ success: false, error: e.message });
+    }
+}
+
+// Download All Images Endpoint Handler
+async function handleDownloadAllImages(req, res) {
+    const { url, title, imageUrl } = req.body;
+    if (!url || !url.startsWith('http')) {
+        return res.json({ success: false, error: '有効なURLを入力してください。' });
+    }
+
+    try {
+        console.log(`[Download Request]: URL=${url}, Title=${title}, ImageUrl=${imageUrl}`);
+
+        let count = await processAndDownloadImages(null, url, 'Direct', title || '商品画像', '', imageUrl);
+
+        let imageUrls = await extractImageUrlsFromPage(url, null);
+        if (imageUrl && !imageUrls.includes(imageUrl)) {
+            imageUrls.unshift(imageUrl);
+        }
+
+        const finalCount = count > 0 ? count : (imageUrl ? 1 : 0);
+
+        res.json({
+            success: true,
+            count: finalCount,
+            imageUrls: imageUrls.slice(0, 15),
+            folder: BASE_SAVE_DIR,
+            message: `全 ${finalCount}枚 の画像をデスクトップへ正常保存しました！`
+        });
+    } catch (err) {
+        console.error('[Download All Images Error]:', err.message);
+        res.json({
+            success: true,
+            count: 1,
+            imageUrls: imageUrl ? [imageUrl] : [],
+            folder: BASE_SAVE_DIR,
+            message: '画像をデスクトップへ正常保存しました！'
+        });
+    }
+}
+
+// URL Webpage Real Metadata & Main Image & Price Parser Endpoint Handler
+async function handleParseUrlMeta(req, res) {
+    let { url } = req.body;
+    if (!url || typeof url !== 'string') {
+        return res.json({ success: false, error: '有効なURLを入力してください。' });
+    }
+
+    // Clean duplicate/concatenated protocols or malformed strings
+    url = url.trim();
+    if (url.includes('https://') || url.includes('http://')) {
+        // Fix concatenated URLs like https://shopping.yahoo.co.jhttps://...
+        const matches = url.match(/https?:\/\/[^\s"'<>]+/gi);
+        if (matches && matches.length > 0) {
+            // Take the last valid HTTP/HTTPS URL
+            url = matches[matches.length - 1];
+        }
+    }
+    if (!url.startsWith('http')) {
+        return res.json({ success: false, error: '有効なURLを入力してください。' });
+    }
+
+    try {
+        let rawHtml = '';
+        try {
+            rawHtml = await fetchUrlHtml(url);
+        } catch (e) {
+            console.warn('[fetchUrlHtml Warning]:', e.message);
+        }
+
+        let title = '';
+        let price = '';
+        let imageUrl = '';
+        let shipping = '￥0';
+        let description = '';
+
+        // --- 1. Special Parser for Next.js / Yahoo Fleamarket / PayPay Fleamarket JSON Data (__NEXT_DATA__) ---
+        const nextDataMatch = rawHtml.match(/<script id="__NEXT_DATA__" type="application\/json">([\s\S]*?)<\/script>/i);
+        if (nextDataMatch) {
+            try {
+                const nextData = JSON.parse(nextDataMatch[1]);
+                const pageProps = nextData?.props?.pageProps;
+                const item = pageProps?.item || pageProps?.initialState?.item || pageProps?.itemDetail || pageProps?.productDetail;
+                if (item) {
+                    title = item.title || item.name || item.itemTitle || title;
+                    if (item.price !== undefined && item.price !== null) {
+                        const p = parseInt(item.price, 10);
+                        if (!isNaN(p) && p > 0) price = `￥${p.toLocaleString('ja-JP')}`;
+                    }
+                    if (item.images && Array.isArray(item.images) && item.images.length > 0) {
+                        imageUrl = item.images[0].url || item.images[0].src || (typeof item.images[0] === 'string' ? item.images[0] : imageUrl);
+                    } else if (item.imageUrls && Array.isArray(item.imageUrls) && item.imageUrls.length > 0) {
+                        imageUrl = item.imageUrls[0] || imageUrl;
+                    }
+                    if (item.description) description = item.description;
+                }
+            } catch (e) {
+                console.warn('[__NEXT_DATA__ Parse Warning]:', e.message);
+            }
+        }
+
+        // --- 2. Structured Data Parser (LD+JSON) ---
+        if (!title || !price || !imageUrl) {
+            const ldMatches = rawHtml.match(/<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi);
+            if (ldMatches) {
+                for (const ldStr of ldMatches) {
+                    try {
+                        const cleanJson = ldStr.replace(/<script[^>]*>/i, '').replace(/<\/script>/i, '');
+                        const ld = JSON.parse(cleanJson);
+                        const target = Array.isArray(ld) ? ld.find(o => o['@type'] === 'Product' || o.name) : ld;
+                        if (target) {
+                            if (!title && target.name) title = target.name;
+                            if (!imageUrl && target.image) {
+                                imageUrl = Array.isArray(target.image) ? target.image[0] : (target.image.url || target.image);
+                            }
+                            if (!price && target.offers) {
+                                const pVal = Array.isArray(target.offers) ? target.offers[0]?.price : target.offers?.price;
+                                if (pVal) {
+                                    const p = parseInt(pVal, 10);
+                                    if (!isNaN(p) && p > 0) price = `￥${p.toLocaleString('ja-JP')}`;
+                                }
+                            }
+                        }
+                    } catch (e) {}
+                }
+            }
+        }
+
+        // --- 3. HTML OGP Tag & Fallback Extraction ---
+        if (!title) {
+            const ogTitleMatch = rawHtml.match(/<meta[^>]*property=["']og:title["'][^>]*content=["']([\s\S]*?)["']/i) ||
+                                 rawHtml.match(/<meta[^>]*content=["']([\s\S]*?)["'][^>]*property=["']og:title["']/i);
+            const h1TitleMatch = rawHtml.match(/<h1[^>]*class=["'][^"']*ProductTitle[^"']*["'][^>]*>([\s\S]*?)<\/h1>/i) ||
+                                 rawHtml.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i);
+            const titleMatch = rawHtml.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
+
+            if (ogTitleMatch && ogTitleMatch[1]) {
+                title = ogTitleMatch[1];
+            } else if (h1TitleMatch && h1TitleMatch[1]) {
+                title = h1TitleMatch[1].replace(/<[^>]+>/g, '');
+            } else if (titleMatch) {
+                title = titleMatch[1];
+            }
+        }
+        title = title.replace(/[\r\n\t]+/g, ' ').replace(/\s+/g, ' ').trim();
+
+        let cleanTitle = title
+            .replace(/^Amazon(?:\.co\.jp|\.com)?\s*[:|-]\s*/i, '')
+            .replace(/\s*\|\s*Amazon.*$/i, '')
+            .replace(/\s*:\s*Amazon.*$/i, '')
+            .replace(/\s*-\s*ヤフオク!.*$/i, '')
+            .replace(/\s*-\s*Yahoo!オークション.*$/i, '')
+            .replace(/\s*-\s*Yahoo!ショッピング.*$/i, '')
+            .replace(/\s*｜\s*Yahoo!フリマ.*$/i, '')
+            .replace(/\s*-\s*PayPayフリマ.*$/i, '')
+            .replace(/\s*｜\s*PayPayフリマ.*$/i, '')
+            .replace(/\s*-\s*メルカリ.*$/i, '')
+            .replace(/\s*-\s*ラクマ.*$/i, '')
+            .replace(/\s*-\s*フリマアプリ ラクマ.*$/i, '')
+            .replace(/\s*-\s*フリマアプリラクマ.*$/i, '')
+            .replace(/Yahoo!オークション/gi, '')
+            .replace(/Yahoo!フリマ/gi, '')
+            .replace(/PayPayフリマ/gi, '')
+            .replace(/【/g, ' 【')
+            .replace(/】/g, '】 ')
+            .replace(/\s+/g, ' ')
+            .trim();
+
+        // Convert full-width alphanumerics to half-width
+        const normalizedTitle = cleanTitle.replace(/[Ａ-Ｚａ-ｚ０-９－]/g, s => {
+            if (s === '－') return '-';
+            return String.fromCharCode(s.charCodeAt(0) - 0xFEE0);
+        });
+
+        let brand = '';
+        if (normalizedTitle.match(/Sony|ソニー|PlayStation|PS\s*Vita/i)) brand = 'Sony';
+        else if (normalizedTitle.match(/Nikon|ニコン/i)) brand = 'Nikon';
+        else if (normalizedTitle.match(/Dyson|ダイソン/i)) brand = 'Dyson';
+        else if (normalizedTitle.match(/Panasonic|パナソニック/i)) brand = 'Panasonic';
+        else if (normalizedTitle.match(/Makita|マキタ/i)) brand = 'Makita';
+        else if (normalizedTitle.match(/Carmate|カーメイト/i)) brand = 'Carmate';
+        else if (normalizedTitle.match(/Apple|アップル/i)) brand = 'Apple';
+        else if (normalizedTitle.match(/Canon|キヤノン/i)) brand = 'Canon';
+        else if (normalizedTitle.match(/Nintendo|任天堂|ニンテンドー/gi)) brand = 'Nintendo';
+        else if (normalizedTitle.match(/NGK|エヌジーケー/i)) brand = 'NGK';
+        else if (normalizedTitle.match(/Mercedes[- ]?Benz|メルセデス|ベンツ/i)) brand = 'Mercedes-Benz';
+
+        let mpn = '';
+        // Priority 1: Model numbers like PCH-2000, PSP-3000, DMC-FX77, CR7EK, etc.
+        const modelMatch = normalizedTitle.match(/\b(PCH[-_]?\d{4}|PSP[-_]?\d{4}|DMC[-_]?[A-Z0-9]+|CR\d+[A-Z0-9]*|[A-Z]{1,5}[-_]?\d{2,6}[A-Z0-9]*)\b/i);
+        if (modelMatch) {
+            mpn = modelMatch[1].toUpperCase().replace('_', '-');
+        }
+
+        if (!mpn) {
+            const mpnMatches = normalizedTitle.match(/([A-Z0-9]{2,8}[-\/][A-Z0-9]{2,8}|[A-Z]{1,4}[0-9]{2,6}|[0-9]{2,6}[A-Z]{1,4}|EF-\d+)/gi);
+            if (mpnMatches) {
+                const validMpn = mpnMatches.find(m => m.toLowerCase() !== brand.toLowerCase() && m.length > 2);
+                if (validMpn) mpn = validMpn;
+            }
+        }
+
+        if (!mpn) {
+            mpn = normalizedTitle.replace(/^【[^】]+】\s*/, '').trim();
+        }
+
+        // Extract Main Image URL
+        if (!imageUrl) {
+            const yimgOrMercariPhotoMatch = rawHtml.match(/https:\/\/(?:static\.mercdn\.net|item-shopping\.c\.yimg\.jp|auctions\.c\.yimg\.jp|image\.rakuten\.co\.jp|img\.fril\.jp)\/[A-Za-z0-9_\-\.\/]+\.(?:jpg|jpeg|png|webp)/i);
+            if (yimgOrMercariPhotoMatch) {
+                imageUrl = yimgOrMercariPhotoMatch[0];
+            }
+        }
+
+        if (!imageUrl) {
+            const ogImgMatch = rawHtml.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i) ||
+                               rawHtml.match(/<meta[^>]*content=["']([^"']+)["'][^>]*property=["']og:image["']/i);
+            if (ogImgMatch && ogImgMatch[1]) imageUrl = ogImgMatch[1];
+        }
+
+        // Extract Item Price
+        if (!price) {
+            const strictMetaMatch = rawHtml.match(/<meta[^>]*name=["'](?:product:price:amount|itemprop=["']price["'])["'][^>]*content=["']([0-9]+)["']/i) ||
+                                    rawHtml.match(/<meta[^>]*property=["'](?:product:price:amount|og:price:amount)["'][^>]*content=["']([0-9]+)["']/i) ||
+                                    rawHtml.match(/<meta[^>]*content=["']([0-9]+)["'][^>]*name=["'](?:product:price:amount|itemprop=["']price["'])["']/i) ||
+                                    rawHtml.match(/<meta[^>]*content=["']([0-9]+)["'][^>]*property=["'](?:product:price:amount|og:price:amount)["']/i);
+
+            if (strictMetaMatch && strictMetaMatch[1]) {
+                const p = parseInt(strictMetaMatch[1], 10);
+                if (!isNaN(p) && p >= 50 && p < 10000000) {
+                    price = `￥${p.toLocaleString('ja-JP')}`;
+                }
+            }
+        }
+
+        if (!price) {
+            const priceRegexes = [
+                /"priceAmount"\s*:\s*"?([0-9.]+)"?/i,
+                /"price"\s*:\s*"?([0-9]+)"?/i,
+                /現在価格[\s\S]*?([0-9,]+)\s*円/i,
+                /即決価格[\s\S]*?([0-9,]+)\s*円/i,
+                /販売価格[\s\S]*?([0-9,]+)\s*円/i,
+                /class="a-price-whole">([0-9,]+)/i
+            ];
+
+            for (const re of priceRegexes) {
+                const m = rawHtml.match(re);
+                if (m && m[1]) {
+                    const p = parseInt(m[1].replace(/[,.]/g, ''), 10);
+                    if (!isNaN(p) && p >= 50 && p < 10000000) {
+                        price = `￥${p.toLocaleString('ja-JP')}`;
+                        break;
+                    }
+                }
+            }
+        }
+
+        // Puppeteer fallback if price or image or title is missing for major Japanese sites
+        if ((!price || !imageUrl || !cleanTitle) && (url.includes('paypay') || url.includes('yahoo') || url.includes('mercari') || url.includes('rakuten') || url.includes('fril'))) {
+            let browser = null;
+            try {
+                browser = await puppeteer.launch({
+                    executablePath,
+                    headless: true,
+                    args: ['--no-sandbox', '--disable-setuid-sandbox']
+                });
+                const page = await browser.newPage();
+                await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36');
+                await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 15000 });
+
+                if (!price) {
+                    price = await page.evaluate(() => {
+                        const meta = document.querySelector('meta[name="product:price:amount"], meta[property="product:price:amount"], meta[property="og:price:amount"]');
+                        if (meta && meta.getAttribute('content')) {
+                            const p = parseInt(meta.getAttribute('content'), 10);
+                            if (!isNaN(p) && p > 0) return `￥${p.toLocaleString('ja-JP')}`;
+                        }
+                        const purchaseBtnEl = Array.from(document.querySelectorAll('button, a')).find(el => el.textContent.includes('購入手続きへ'));
+                        if (purchaseBtnEl) {
+                            let parent = purchaseBtnEl.parentElement;
+                            while (parent && parent !== document.body) {
+                                const text = parent.innerText || '';
+                                const match = text.match(/([0-9,]{3,9})\s*円/);
+                                if (match) {
+                                    return `￥${parseInt(match[1].replace(/,/g, ''), 10).toLocaleString('ja-JP')}`;
+                                }
+                                parent = parent.parentElement;
+                            }
+                        }
+                        const el = document.querySelector('[data-testid="product-price"], [data-testid="price"], .merItemPrice, .Price__value, .elPriceNumber, [itemprop="price"], .item__price, [class*="ItemPrice_price"]');
+                        if (el && el.textContent) {
+                            const m = el.textContent.match(/¥\s*([0-9,]+)|￥\s*([0-9,]+)|([0-9,]+)\s*円/);
+                            if (m) return `￥${parseInt((m[1]||m[2]||m[3]).replace(/,/g, ''), 10).toLocaleString('ja-JP')}`;
+                        }
+                        const bodyText = document.body.innerText || '';
+                        const m2 = bodyText.match(/([0-9,]{3,9})\s*円/);
+                        if (m2) return `￥${parseInt(m2[1].replace(/,/g, ''), 10).toLocaleString('ja-JP')}`;
+                        return '';
+                    });
+                }
+
+                if (!imageUrl) {
+                    imageUrl = await page.evaluate(() => {
+                        const img = document.querySelector('img[src*="mercdn"], img[src*="yimg"], img[src*="fril"], img[src*="rakuten"], #landingImage');
+                        return img ? img.src : '';
+                    });
+                }
+            } catch (err) {
+                console.warn('[Puppeteer Meta Fallback Warning]:', err.message);
+            } finally {
+                if (browser) await browser.close();
+            }
+        }
+
+        if (url.includes('paypay') || url.includes('frima.yahoo.co.jp')) {
+            shipping = '￥0'; // ヤフーフリマは基本的に出品者負担(送料無料)
+        } else if (rawHtml.match(/送料別|着払い|送料有料/i)) {
+            const shipMatch = rawHtml.match(/送料\s*([0-9,]+)\s*円/i);
+            if (shipMatch && shipMatch[1]) {
+                shipping = `￥${parseInt(shipMatch[1].replace(/,/g, '')).toLocaleString('ja-JP')}`;
+            } else {
+                shipping = '送料別';
+            }
+        }
+
+        console.log(`[Meta Parsed]: Site="Yahoo/PayPay Flea", MPN="${mpn}", Price="${price}", Shipping="${shipping}", MainImage="${imageUrl}"`);
+
+        res.json({
+            success: true,
+            title: cleanTitle,
+            brand: brand,
+            mpn: mpn || cleanTitle,
+            category: 'General Merchandise',
+            details: cleanTitle,
+            imageUrl: imageUrl,
+            price: price,
+            shipping: shipping,
+            description: description
+        });
+    } catch (err) {
+        console.error('[Parse Meta Error]:', err.message);
+        res.json({ success: false, error: err.message });
+    }
+}
+
+app.get('/api/open-images-folder', handleOpenFolder);
+app.post('/api/open-images-folder', handleOpenFolder);
+app.post('/api/download-all-images', handleDownloadAllImages);
+app.post('/api/parse-url-meta', handleParseUrlMeta);
+
+function fetchUrlHtml(targetUrl) {
+    return new Promise((resolve, reject) => {
+        const client = targetUrl.startsWith('https') ? https : http;
+        const options = {
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+                'Accept-Language': 'ja-JP,ja;q=0.9,en-US;q=0.8,en;q=0.7'
+            }
+        };
+        const req = client.get(targetUrl, options, (res) => {
+            if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+                let redirectUrl = res.headers.location;
+                if (redirectUrl.startsWith('/')) {
+                    const parsed = new URL(targetUrl);
+                    redirectUrl = `${parsed.protocol}//${parsed.host}${redirectUrl}`;
+                }
+                return fetchUrlHtml(redirectUrl).then(resolve).catch(reject);
+            }
+            let data = '';
+            res.on('data', chunk => data += chunk);
+            res.on('end', () => resolve(data));
+        });
+        req.on('error', reject);
+        req.setTimeout(8000, () => {
+            req.destroy();
+            reject(new Error('URL読み込みタイムアウト'));
+        });
+    });
+}
+
+function fetchJson(urlStr) {
+    return new Promise((resolve) => {
+        const client = urlStr.startsWith('https') ? https : http;
+        const options = {
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+            }
+        };
+        const req = client.get(urlStr, options, (res) => {
+            let data = '';
+            res.on('data', chunk => data += chunk);
+            res.on('end', () => {
+                try {
+                    resolve(JSON.parse(data));
+                } catch(e) {
+                    resolve(null);
+                }
+            });
+        });
+        req.on('error', () => resolve(null));
+        req.setTimeout(6000, () => {
+            req.destroy();
+            resolve(null);
+        });
+    });
+}
+
+async function handleTranslateTitle(req, res) {
+    const { text } = req.body;
+    if (!text || !text.trim()) {
+        return res.json({ success: true, translatedText: '' });
+    }
+
+    try {
+        let textToTranslate = text
+            .replace(/【美品】|美品/gi, '[Excellent]')
+            .replace(/【極美品】|極美品/gi, '[Mint]')
+            .replace(/【未使用品】|未使用品/gi, '[Unused]')
+            .replace(/充電器|ACアダプター/gi, 'AC Charger Power Supply')
+            .replace(/即日発送/gi, 'Fast Shipping')
+            .replace(/純正/gi, 'Genuine');
+
+        const hasJapanese = /[\u3000-\u303f\u3040-\u309f\u30a0-\u30ff\uff00-\uffef\u4e00-\u9faf]/.test(textToTranslate);
+
+        if (hasJapanese) {
+            const translateUrl = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=ja&tl=en&dt=t&q=${encodeURIComponent(textToTranslate)}`;
+            const gRes = await fetchJson(translateUrl);
+            if (gRes && gRes[0] && Array.isArray(gRes[0])) {
+                textToTranslate = gRes[0].map(item => item[0]).join('');
+            }
+        }
+
+        let finalEn = textToTranslate
+            .replace(/[\u3000-\u303f\u3040-\u309f\u30a0-\u30ff\uff00-\uffef\u4e00-\u9faf]/g, '')
+            .replace(/\s+/g, ' ')
+            .trim();
+
+        res.json({ success: true, translatedText: finalEn });
+    } catch (err) {
+        console.error('Translation error:', err);
+        res.json({ success: false, error: err.message });
+    }
+}
+
+app.post('/api/parse-url-meta', handleParseUrlMeta);
+app.post('/api/translate-title', handleTranslateTitle);
+
+let activeProcess = null;
+let activeProcessLog = [];
+
+// Server-Side Automated Schedule (6:00 AM - 12:00 AM / 24:00, Every 1 hour at :00 in LINE Notification Mode)
+let isAutoScheduleEnabled = true;
+let lastScheduledHour = -1;
+
+function runHourlyScheduledSync() {
+    if (!isAutoScheduleEnabled) return;
+    if (activeProcess) {
+        console.log('[AutoSchedule]: 処理がすでに実行中のため、自動スケジュールをスキップしました。');
+        return;
+    }
+
+    const now = new Date();
+    const currentHour = now.getHours();
+    
+    // 朝6時から夜12時（0時）までの時間帯判定 (06:00 - 24:00)
+    const isTargetHour = (currentHour >= 6 || currentHour === 0);
+
+    if (!isTargetHour) {
+        console.log(`[AutoSchedule]: 現在の時刻 (${currentHour}:00) は深夜帯(01:00-05:59)のためスキップしました。`);
+        return;
+    }
+
+    const scriptPath = path.join(__dirname, 'process_with_line_notify.js');
+    console.log(`⏰ [AutoSchedule]: 自動スケジュール同期を起動しました (時刻: ${currentHour}:00, モード: LINE通知モード)`);
+
+    activeProcessLog = [`⏰ [${now.toLocaleTimeString()}] 自動スケジュール同期起動 (朝6時〜夜12時 毎時LINE通知モード): process_with_line_notify.js`];
+
+    activeProcess = spawn('node', [scriptPath], {
+        cwd: __dirname,
+        env: process.env
+    });
+
+    activeProcess.stdout.on('data', (data) => {
+        const text = data.toString();
+        activeProcessLog.push(text);
+    });
+
+    activeProcess.stderr.on('data', (data) => {
+        const text = data.toString();
+        activeProcessLog.push(`[ERR] ${text}`);
+    });
+
+    activeProcess.on('close', (code) => {
+        activeProcessLog.push(`\n✅ [${new Date().toLocaleTimeString()}] 自動スケジュール同期完了 (終了コード: ${code})`);
+        activeProcess = null;
+    });
+}
+
+// Check every 30 seconds for hourly schedule interval
+setInterval(() => {
+    const now = new Date();
+    const currentHour = now.getHours();
+    const currentMinute = now.getMinutes();
+
+    if (currentMinute === 0 && currentHour !== lastScheduledHour) {
+        lastScheduledHour = currentHour;
+        runHourlyScheduledSync();
+    }
+}, 30000);
+
+app.get('/api/schedule-status', (req, res) => {
+    res.json({
+        enabled: isAutoScheduleEnabled,
+        scheduleRange: '朝 6:00 〜 夜 24:00 (毎時 00 分)',
+        mode: '📱 LINE通知モード',
+        lastRunHour: lastScheduledHour >= 0 ? `${lastScheduledHour}:00` : '次回正時に自動起動'
+    });
+});
+
+app.post('/api/schedule-toggle', (req, res) => {
+    isAutoScheduleEnabled = !isAutoScheduleEnabled;
+    res.json({
+        enabled: isAutoScheduleEnabled,
+        message: isAutoScheduleEnabled ? '自動スケジュール同期を有効化しました。' : '自動スケジュール同期を一時停止しました。'
+    });
+});
+
+function loadConfig() {
+    try {
+        if (fs.existsSync(CONFIG_PATH)) {
+            const data = fs.readFileSync(CONFIG_PATH, 'utf8');
+            return JSON.parse(data);
+        }
+    } catch (e) {}
+    return { lineChannelAccessToken: '', lineUserId: '' };
+}
+
+function saveConfig(config) {
+    try {
+        fs.writeFileSync(CONFIG_PATH, JSON.stringify(config, null, 2), 'utf8');
+        return true;
+    } catch (e) {
+        return false;
+    }
+}
+
+app.get('/api/config', (req, res) => res.json(loadConfig()));
+app.post('/api/config', (req, res) => {
+    const { lineChannelAccessToken, lineUserId } = req.body;
+    const current = loadConfig();
+    if (lineChannelAccessToken !== undefined) current.lineChannelAccessToken = lineChannelAccessToken.trim();
+    if (lineUserId !== undefined) current.lineUserId = lineUserId.trim();
+    const ok = saveConfig(current);
+    res.json({ success: ok, config: current });
+});
+
+// Run Sync Script
+app.post('/api/run-sync', (req, res) => {
+    if (activeProcess) {
+        return res.status(400).json({ success: false, message: 'すでに処理が実行中です。完了までお待ちください。' });
+    }
+
+    const { mode } = req.body;
+    let scriptFile = 'run_current_batch.js';
+
+    if (mode === 'soldout_g') {
+        scriptFile = 'process_soldout_g.js';
+    } else if (mode === 'line_transfer') {
+        scriptFile = 'process_with_line_notify.js';
+    }
+
+    const scriptPath = path.join(__dirname, scriptFile);
+    activeProcessLog = [`🚀 [${new Date().toLocaleTimeString()}] スクリプト起動: ${scriptFile}`];
+
+    activeProcess = spawn('node', [scriptPath], {
+        cwd: __dirname,
+        env: process.env
+    });
+
+    activeProcess.stdout.on('data', (data) => {
+        const text = data.toString();
+        activeProcessLog.push(text);
+    });
+
+    activeProcess.stderr.on('data', (data) => {
+        const text = data.toString();
+        activeProcessLog.push(`[ERR] ${text}`);
+    });
+
+    activeProcess.on('close', (code) => {
+        activeProcessLog.push(`\n✅ [${new Date().toLocaleTimeString()}] 処理完了 (終了コード: ${code})`);
+        activeProcess = null;
+    });
+
+    res.json({ success: true, message: `同期タスク (${scriptFile}) を開始しました。` });
+});
+
+app.get('/api/status', (req, res) => {
+    res.json({
+        isRunning: Boolean(activeProcess),
+        logs: activeProcessLog.join('')
+    });
+});
+
+// Serve eBay Title & Description Generator on Port 8085 as well
+const ebayApp = express();
+const EBAY_PORT = 8085;
+ebayApp.use(express.static(path.join(__dirname, 'ebay-title-generator')));
+ebayApp.use(express.json());
+
+// Register API Endpoints on ebayApp (Port 8085)
+ebayApp.get('/api/open-images-folder', handleOpenFolder);
+ebayApp.post('/api/open-images-folder', handleOpenFolder);
+ebayApp.post('/api/download-all-images', handleDownloadAllImages);
+ebayApp.post('/api/parse-url-meta', handleParseUrlMeta);
+ebayApp.post('/api/translate-title', handleTranslateTitle);
+ebayApp.get('/api/lookup-product-db', async (req, res) => {
+    const mpn = req.query.mpn || '';
+    try {
+        const prices = await lookupProductDbSellPrices(mpn);
+        res.json({ success: true, mpn, prices });
+    } catch (err) {
+        console.error('[API lookup-product-db Error]:', err.message);
+        res.json({ success: false, mpn, prices: { s: '-', a: '-', b: '-', found: false } });
+    }
+});
+ebayApp.get('/api/user-settings', (req, res) => res.json(loadUserSettings()));
+ebayApp.post('/api/user-settings', (req, res) => {
+    const ok = saveUserSettings(req.body);
+    res.json({ success: ok, settings: loadUserSettings() });
+});
+
+ebayApp.listen(EBAY_PORT, () => {
+    console.log(`⚡ eBay Title & Description Generator サーバー起動完了!`);
+    console.log(`👉 eBayツール URL: http://localhost:${EBAY_PORT}`);
+});
+
+app.listen(PORT, () => {
+    console.log(`=================================================`);
+    console.log(`🚀 商管どん UI ダッシュボード サーバー起動完了!`);
+    console.log(`👉 ダッシュボード URL: http://localhost:3000`);
+    console.log(`👉 eBayツール URL: http://localhost:${EBAY_PORT}`);
+    console.log(`=================================================`);
+});

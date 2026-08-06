@@ -1,0 +1,5 @@
+node_modules/
+chrome_temp_profile/
+*.png
+*.log
+scratch/
