@@ -6,7 +6,8 @@ const puppeteer = require('puppeteer-core');
 
 const chromePath = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
 const edgePath = 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe';
-const executablePath = fs.existsSync(chromePath) ? chromePath : edgePath;
+const linuxChromePath = '/usr/bin/google-chrome';
+const executablePath = fs.existsSync(linuxChromePath) ? linuxChromePath : (fs.existsSync(chromePath) ? chromePath : edgePath);
 
 function getPrimarySaveDir() {
     const candidates = [
