@@ -789,3 +789,33 @@ body {
 .btn-primary-sm:hover {
     background: linear-gradient(135deg, #60a5fa, #818cf8);
 }
+
+/* AI & Translation Tools Custom Button Styles */
+.ai-tools-grid .market-btn {
+    background: rgba(30, 41, 59, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.gemini-btn:hover {
+    background: linear-gradient(135deg, rgba(66, 133, 244, 0.25), rgba(138, 180, 248, 0.35)) !important;
+    border-color: #8ab4f8 !important;
+    box-shadow: 0 4px 16px rgba(66, 133, 244, 0.35) !important;
+}
+
+.chatgpt-btn:hover {
+    background: linear-gradient(135deg, rgba(16, 163, 127, 0.25), rgba(52, 211, 153, 0.35)) !important;
+    border-color: #34d399 !important;
+    box-shadow: 0 4px 16px rgba(16, 163, 127, 0.35) !important;
+}
+
+.agenti-btn:hover {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.25), rgba(129, 140, 248, 0.35)) !important;
+    border-color: #818cf8 !important;
+    box-shadow: 0 4px 16px rgba(99, 102, 241, 0.35) !important;
+}
+
+.translate-btn:hover {
+    background: linear-gradient(135deg, rgba(26, 115, 232, 0.25), rgba(52, 168, 83, 0.35)) !important;
+    border-color: #60a5fa !important;
+    box-shadow: 0 4px 16px rgba(26, 115, 232, 0.35) !important;
+}
