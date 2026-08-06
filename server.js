@@ -799,15 +799,22 @@ async function handleTranslateTitle(req, res) {
 app.post('/api/parse-url-meta', handleParseUrlMeta);
 app.post('/api/translate-title', handleTranslateTitle);
 
-let activeProcess = null;
-let activeProcessLog = [];
+app.get('/api/trigger-sync', (req, res) => {
+    console.log('[TriggerSync]: 外部からの定時アクセスを受信しました。同期処理を起動します。');
+    runHourlyScheduledSync(true);
+    res.json({ success: true, message: '自動同期処理を即座に起動しました' });
+});
+app.post('/api/trigger-sync', (req, res) => {
+    console.log('[TriggerSync]: 外部からの定時アクセスを受信しました。同期処理を起動します。');
+    runHourlyScheduledSync(true);
+    res.json({ success: true, message: '自動同期処理を即座に起動しました' });
+});
 
-// Server-Side Automated Schedule (6:00 AM - 12:00 AM / 24:00, Every 1 hour at :00 in LINE Notification Mode)
 let isAutoScheduleEnabled = true;
 let lastScheduledHour = -1;
 
-function runHourlyScheduledSync() {
-    if (!isAutoScheduleEnabled) return;
+function runHourlyScheduledSync(isForced = false) {
+    if (!isAutoScheduleEnabled && !isForced) return;
     if (activeProcess) {
         console.log('[AutoSchedule]: 処理がすでに実行中のため、自動スケジュールをスキップしました。');
         return;
@@ -816,8 +823,8 @@ function runHourlyScheduledSync() {
     const now = new Date();
     const currentHour = now.getHours();
     
-    // 朝6時から夜12時（0時）までの時間帯判定 (06:00 - 24:00)
-    const isTargetHour = (currentHour >= 6 || currentHour === 0);
+    // 朝6時から夜12時（0時）までの時間帯判定 (06:00 - 24:00) または強制実行
+    const isTargetHour = (currentHour >= 6 || currentHour === 0) || isForced;
 
     if (!isTargetHour) {
         console.log(`[AutoSchedule]: 現在の時刻 (${currentHour}:00) は深夜帯(01:00-05:59)のためスキップしました。`);
