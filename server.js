@@ -5,8 +5,27 @@ const { spawn, exec } = require('child_process');
 const fs = require('fs');
 const http = require('http');
 const https = require('https');
-const puppeteer = require('puppeteer-core');
-const { processAndDownloadImages, extractImageUrlsFromPage, BASE_SAVE_DIR } = require('./image_downloader');
+// puppeteer-core is optional - server starts even if it fails to load
+let puppeteer = null;
+try {
+    puppeteer = require('puppeteer-core');
+    console.log('[Startup] puppeteer-core loaded OK');
+} catch (e) {
+    console.warn('[Startup] puppeteer-core could not be loaded (OK on Render):', e.message);
+}
+
+// image_downloader is optional - server starts even if it fails to load
+let processAndDownloadImages = null, extractImageUrlsFromPage = null, BASE_SAVE_DIR = null;
+try {
+    const dl = require('./image_downloader');
+    processAndDownloadImages = dl.processAndDownloadImages;
+    extractImageUrlsFromPage = dl.extractImageUrlsFromPage;
+    BASE_SAVE_DIR = dl.BASE_SAVE_DIR;
+    console.log('[Startup] image_downloader loaded OK');
+} catch (e) {
+    console.warn('[Startup] image_downloader could not be loaded (OK on Render):', e.message);
+    BASE_SAVE_DIR = require('path').join(__dirname, 'downloaded_images');
+}
 
 const chromePath = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
 const edgePath = 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe';
