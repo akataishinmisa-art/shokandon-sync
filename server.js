@@ -1,4 +1,5 @@
 const express = require('express');
+const cors = require('cors');
 const path = require('path');
 const { spawn, exec } = require('child_process');
 const fs = require('fs');
@@ -25,6 +26,7 @@ process.on('unhandledRejection', (reason) => {
     console.error('[Unhandled Rejection Guard]:', reason ? (reason.stack || reason.message || reason) : reason);
 });
 
+app.use(cors());
 app.use(express.json());
 app.use('/ebay', express.static(path.join(__dirname, 'ebay-title-generator')));
 app.use(express.static(path.join(__dirname, 'public')));

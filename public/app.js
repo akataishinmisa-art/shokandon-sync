@@ -1,15 +1,13 @@
 document.addEventListener('DOMContentLoaded', () => {
     const CLOUD_BASE_URL = 'https://shokandon-sync.onrender.com';
 
-    // Helper to safely fetch from either local or cloud
     function apiFetch(url, options = {}) {
-        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-        const requestUrl = (isLocal && !url.startsWith('http')) ? `${CLOUD_BASE_URL}${url}` : url;
+        const hostname = window.location.hostname;
+        const isRender = hostname.includes('onrender.com');
+        const requestUrl = (!isRender && !url.startsWith('http')) ? `${CLOUD_BASE_URL}${url}` : url;
 
         return fetch(requestUrl, options).catch(err => {
-            if (isLocal && !url.startsWith('http')) {
-                return fetch(`${CLOUD_BASE_URL}${url}`, options);
-            }
+            console.error('Fetch failed:', err);
             throw err;
         });
     }
