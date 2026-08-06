@@ -802,6 +802,9 @@ async function handleTranslateTitle(req, res) {
 app.post('/api/parse-url-meta', handleParseUrlMeta);
 app.post('/api/translate-title', handleTranslateTitle);
 
+let activeProcess = null;
+let activeProcessLog = [];
+
 app.get('/api/trigger-sync', (req, res) => {
     console.log('[TriggerSync]: 外部からの定時アクセスを受信しました。同期処理を起動します。');
     runHourlyScheduledSync(true);
