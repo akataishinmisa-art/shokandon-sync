@@ -14,7 +14,7 @@ const linuxChromePath = '/usr/bin/google-chrome';
 const executablePath = fs.existsSync(linuxChromePath) ? linuxChromePath : (fs.existsSync(chromePath) ? chromePath : edgePath);
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 const CONFIG_PATH = path.join(__dirname, 'config.json');
 const USER_SETTINGS_PATH = path.join(__dirname, 'user_settings.json');
 const CUSTOM_MPN_PRICES_PATH = path.join(__dirname, 'custom_mpn_prices.json');
