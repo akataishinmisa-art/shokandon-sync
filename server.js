@@ -904,9 +904,13 @@ let lastScheduledHour = -1;
 
 function runHourlyScheduledSync(isForced = false) {
     if (!isAutoScheduleEnabled && !isForced) return;
-    if (activeProcess) {
-        console.log('[AutoSchedule]: 処理がすでに実行中のため、自動スケジュールをスキップしました。');
+    if (activeProcess && !isForced) {
+        console.log('[AutoSchedule]: 処理がすでに実行中のため、自動スケジュールをスキップしました');
         return;
+    }
+    if (activeProcess && isForced) {
+        try { activeProcess.kill(); } catch (e) {}
+        activeProcess = null;
     }
 
     const now = new Date();
