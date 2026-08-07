@@ -1,4 +1,4 @@
-const puppeteer = require('puppeteer-core');
+const puppeteer = require('puppeteer');
 const fs = require('fs');
 const path = require('path');
 const https = require('https');
@@ -348,12 +348,15 @@ const parseNum = (val) => {
     const rowValues = sheetData.data.sheets[0].data[0].rowData || [];
     console.log(`Found ${rowValues.length} rows in Spreadsheet.`);
 
-    console.log(`🌐 Launching Puppeteer browser for web scraping (platform: ${process.platform}, path: ${executablePath})...`);
-    const browser = await puppeteer.launch({
-        executablePath: executablePath,
+    console.log(`🌐 Launching Puppeteer browser for web scraping...`);
+    const launchOptions = {
         headless: true,
         args: ['--no-sandbox', '--disable-setuid-sandbox', '--window-size=1400,900']
-    });
+    };
+    if (executablePath && fs.existsSync(executablePath)) {
+        launchOptions.executablePath = executablePath;
+    }
+    const browser = await puppeteer.launch(launchOptions);
 
     const missingItemsList = [];
 
