@@ -7,8 +7,25 @@ const { processAndDownloadImages } = require('./image_downloader');
 
 const chromePath = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
 const edgePath = 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe';
-const linuxChromePath = process.env.CHROMIUM_PATH || '/usr/bin/chromium' || '/usr/bin/google-chrome';
-const executablePath = fs.existsSync(linuxChromePath) ? linuxChromePath : (fs.existsSync(chromePath) ? chromePath : edgePath);
+function getExecutablePath() {
+    if (process.platform === 'linux') {
+        const linuxPaths = [
+            process.env.CHROMIUM_PATH,
+            '/usr/bin/chromium',
+            '/usr/bin/chromium-browser',
+            '/usr/bin/google-chrome',
+            '/usr/bin/google-chrome-stable'
+        ].filter(Boolean);
+        for (const p of linuxPaths) {
+            if (fs.existsSync(p)) return p;
+        }
+        return '/usr/bin/chromium';
+    }
+    const chromePath = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
+    const edgePath = 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe';
+    return fs.existsSync(chromePath) ? chromePath : edgePath;
+}
+const executablePath = getExecutablePath();
 
 function fetchHtml(url) {
     return new Promise((resolve, reject) => {
@@ -447,3 +464,4 @@ async function getItemDataPuppeteer(browser, url) {
     console.log('Run current batch completed successfully!');
     process.exit(0);
 })();
+
