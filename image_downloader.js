@@ -2,17 +2,20 @@ const fs = require('fs');
 const path = require('path');
 const https = require('https');
 const http = require('http');
-const puppeteer = require('puppeteer-core');
+let puppeteer = null;
+try {
+    puppeteer = require('puppeteer-core');
+} catch (e) {}
 
 const chromePath = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
 const edgePath = 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe';
-const linuxChromePath = process.env.CHROMIUM_PATH || '/usr/bin/chromium' || '/usr/bin/google-chrome';
+const linuxChromePath = process.env.CHROMIUM_PATH || '/usr/bin/chromium';
 const executablePath = fs.existsSync(linuxChromePath) ? linuxChromePath : (fs.existsSync(chromePath) ? chromePath : edgePath);
 
 function getPrimarySaveDir() {
     const candidates = [
-        'C:\\Users\\akata\\OneDrive\\チE��クトップ\\啁E��どん_啁E��画僁E,
-        'C:\\Users\\akata\\Desktop\\啁E��どん_啁E��画僁E,
+        'C:\\Users\\akata\\OneDrive\\デスクトップ\\商管どん_商品画像',
+        'C:\\Users\\akata\\Desktop\\商管どん_商品画像',
         path.join(__dirname, 'downloaded_images')
     ];
 
@@ -49,11 +52,11 @@ function getFormattedTimestamp() {
     const dd = String(now.getDate()).padStart(2, '0');
     const hh = String(now.getHours()).padStart(2, '0');
     const min = String(now.getMinutes()).padStart(2, '0');
-    // Windows safe timestamp format: YYYY-MM-DD_HH晁EM刁E    return `${yyyy}-${mm}-${dd}_${hh}晁E{min}刁E;
+    return `${yyyy}-${mm}-${dd}_${hh}${min}`;
 }
 
 function sanitizeFolderName(name) {
-    if (!name) return '啁E��画僁E;
+    if (!name) return '商品画像';
     return name.replace(/[\\/:*?"<>|]/g, '_').replace(/\s+/g, '_').substring(0, 35).trim();
 }
 
@@ -100,7 +103,7 @@ async function extractAllImageUrls(targetUrl, externalPage = null) {
     let page = externalPage;
     let browserToClose = null;
 
-    if (!page) {
+    if (!page && puppeteer) {
         try {
             const browser = await puppeteer.launch({
                 executablePath: executablePath,
@@ -232,13 +235,13 @@ async function processAndDownloadImages(page, url, rowNum, title, html = '', fal
         ensureDir(activeSaveDir);
 
         const timeStr = getFormattedTimestamp();
-        const safeTitle = sanitizeFolderName(title || '啁E��画僁E);
+        const safeTitle = sanitizeFolderName(title || '商品画像');
         const folderName = `${timeStr}_${safeTitle}`;
         const itemSaveDir = path.join(activeSaveDir, folderName);
 
         ensureDir(itemSaveDir);
 
-        console.log(`🔍 啁E��ペ�Eジ (${url}) の全画像をスキャン中...`);
+        console.log(`🔍 商品ページ (${url}) の全画像をスキャン中...`);
         let imageUrls = await extractAllImageUrls(url, page);
 
         if (fallbackImageUrl && fallbackImageUrl.startsWith('http') && !imageUrls.includes(fallbackImageUrl)) {
@@ -246,11 +249,11 @@ async function processAndDownloadImages(page, url, rowNum, title, html = '', fal
         }
 
         if (imageUrls.length === 0) {
-            console.log(`📷 衁E${rowNum}: 画像URLが見つかりませんでした。`);
+            console.log(`📷 行${rowNum}: 画像URLが見つかりませんでした。`);
             return 0;
         }
 
-        console.log(`📷 衁E${rowNum}: 全 ${imageUrls.length}极Eの画像をダウンロード中... (${folderName})`);
+        console.log(`📷 行${rowNum}: 全 ${imageUrls.length}枚 の画像をダウンロード中... (${folderName})`);
 
         let successCount = 0;
         for (let i = 0; i < imageUrls.length; i++) {
@@ -264,14 +267,14 @@ async function processAndDownloadImages(page, url, rowNum, title, html = '', fal
                 await downloadFile(imgUrl, filePath);
                 successCount++;
             } catch (err) {
-                console.warn(`  - 画僁E${i + 1} のダウンロードスキチE�E: ${err.message}`);
+                console.warn(`  - 画像${i + 1} のダウンロードスキップ: ${err.message}`);
             }
         }
 
-        console.log(`✁E衁E${rowNum}: 画僁E${successCount}/${imageUrls.length} 枚を正常保存完亁E��E(${itemSaveDir})`);
+        console.log(`✅ 行${rowNum}: 画像${successCount}/${imageUrls.length} 枚を正常保存完了 (${itemSaveDir})`);
         return successCount;
     } catch (e) {
-        console.error(`❁E衁E${rowNum} 画像ダウンロード例夁E`, e.message);
+        console.error(`❌ 行${rowNum} 画像ダウンロード例外:`, e.message);
         return 0;
     }
 }

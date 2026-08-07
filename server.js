@@ -67,6 +67,15 @@ app.use(express.json());
 app.use('/ebay', express.static(path.join(__dirname, 'ebay-title-generator')));
 app.use(express.static(path.join(__dirname, 'public')));
 
+app.get('/api/version', (req, res) => {
+    res.json({
+        version: 'v2.0.0-sparticuz',
+        commit: 'e62cf36',
+        platform: process.platform,
+        node: process.version
+    });
+});
+
 app.get('/ebay', (req, res) => {
     res.sendFile(path.join(__dirname, 'ebay-title-generator', 'index.html'));
 });
@@ -391,9 +400,24 @@ async function handleDownloadAllImages(req, res) {
     try {
         console.log(`[Download Request]: URL=${url}, Title=${title}, ImageUrl=${imageUrl}`);
 
-        let count = await processAndDownloadImages(null, url, 'Direct', title || '商品画像', '', imageUrl);
+        if (typeof processAndDownloadImages !== 'function') {
+            try {
+                const dl = require('./image_downloader');
+                processAndDownloadImages = dl.processAndDownloadImages;
+                extractImageUrlsFromPage = dl.extractImageUrlsFromPage;
+                BASE_SAVE_DIR = dl.BASE_SAVE_DIR;
+            } catch (e) {}
+        }
 
-        let imageUrls = await extractImageUrlsFromPage(url, null);
+        let count = 0;
+        if (typeof processAndDownloadImages === 'function') {
+            count = await processAndDownloadImages(null, url, 'Direct', title || '商品画像', '', imageUrl);
+        }
+
+        let imageUrls = [];
+        if (typeof extractImageUrlsFromPage === 'function') {
+            imageUrls = await extractImageUrlsFromPage(url, null);
+        }
         if (imageUrl && !imageUrls.includes(imageUrl)) {
             imageUrls.unshift(imageUrl);
         }
@@ -552,32 +576,55 @@ async function handleParseUrlMeta(req, res) {
             return String.fromCharCode(s.charCodeAt(0) - 0xFEE0);
         });
 
+        // Extract Description from Meta Tags if missing
+        if (!description) {
+            const ogDescMatch = rawHtml.match(/<meta[^>]*property=["']og:description["'][^>]*content=["']([\s\S]*?)["']/i) ||
+                                rawHtml.match(/<meta[^>]*name=["']description["'][^>]*content=["']([\s\S]*?)["']/i) ||
+                                rawHtml.match(/<meta[^>]*content=["']([\s\S]*?)["'][^>]*property=["']og:description["']/i) ||
+                                rawHtml.match(/<meta[^>]*content=["']([\s\S]*?)["'][^>]*name=["']description["']/i);
+            if (ogDescMatch && ogDescMatch[1]) {
+                description = ogDescMatch[1].replace(/<[^>]+>/g, '').trim();
+            }
+        }
+
+        // Combine normalized title and description for comprehensive MPN & Brand detection
+        const fullSearchText = (normalizedTitle + ' ' + (description || '')).replace(/[Ａ-Ｚａ-ｚ０-９－]/g, s => {
+            if (s === '－') return '-';
+            return String.fromCharCode(s.charCodeAt(0) - 0xFEE0);
+        });
+
         let brand = '';
-        if (normalizedTitle.match(/Sony|ソニー|PlayStation|PS\s*Vita/i)) brand = 'Sony';
-        else if (normalizedTitle.match(/Nikon|ニコン/i)) brand = 'Nikon';
-        else if (normalizedTitle.match(/Dyson|ダイソン/i)) brand = 'Dyson';
-        else if (normalizedTitle.match(/Panasonic|パナソニック/i)) brand = 'Panasonic';
-        else if (normalizedTitle.match(/Makita|マキタ/i)) brand = 'Makita';
-        else if (normalizedTitle.match(/Carmate|カーメイト/i)) brand = 'Carmate';
-        else if (normalizedTitle.match(/Apple|アップル/i)) brand = 'Apple';
-        else if (normalizedTitle.match(/Canon|キヤノン/i)) brand = 'Canon';
-        else if (normalizedTitle.match(/Nintendo|任天堂|ニンテンドー/gi)) brand = 'Nintendo';
-        else if (normalizedTitle.match(/NGK|エヌジーケー/i)) brand = 'NGK';
-        else if (normalizedTitle.match(/Mercedes[- ]?Benz|メルセデス|ベンツ/i)) brand = 'Mercedes-Benz';
+        if (fullSearchText.match(/Sony|ソニー|PlayStation|PS\s*Vita/i)) brand = 'Sony';
+        else if (fullSearchText.match(/Nikon|ニコン/i)) brand = 'Nikon';
+        else if (fullSearchText.match(/Dyson|ダイソン/i)) brand = 'Dyson';
+        else if (fullSearchText.match(/Panasonic|パナソニック/i)) brand = 'Panasonic';
+        else if (fullSearchText.match(/Makita|マキタ/i)) brand = 'Makita';
+        else if (fullSearchText.match(/Carmate|カーメイト/i)) brand = 'Carmate';
+        else if (fullSearchText.match(/Apple|アップル/i)) brand = 'Apple';
+        else if (fullSearchText.match(/Canon|キヤノン/i)) brand = 'Canon';
+        else if (fullSearchText.match(/Nintendo|任天堂|ニンテンドー/gi)) brand = 'Nintendo';
+        else if (fullSearchText.match(/NGK|エヌジーケー/i)) brand = 'NGK';
+        else if (fullSearchText.match(/Mercedes[- ]?Benz|メルセデス|ベンツ/i)) brand = 'Mercedes-Benz';
 
         let mpn = '';
         // Priority 0: Specific Camera & Console Body Series (Nikon 1 J5, EOS Kiss, PS Vita, etc.)
-        const cameraBodyMatch = normalizedTitle.match(/\b(Nikon\s*1\s*[J|V]\d?|J5|J4|J3|J2|J1|V3|V2|V1|EOS\s*Kiss\s*[X\d]+|EOS\s*M\d*|ILCE-\d+|NEX-[A-Z0-9]+|A6\d{3}|PCH-\d{4}|PSP-\d{4}|DMC-[A-Z0-9]+|EX-[A-Z0-9]+)\b/i);
+        const cameraBodyMatch = fullSearchText.match(/(Nikon\s*1\s*[J|V]\d?|J5|J4|J3|J2|J1|V3|V2|V1|EOS\s*Kiss\s*[X\d]+|EOS\s*M\d*|ILCE-\d+|NEX-[A-Z0-9]+|A6\d{3}|PCH[-_]?\d{4}|PSP[-_]?\d{4}|DMC-[A-Z0-9]+|EX-[A-Z0-9]+)/i);
         if (cameraBodyMatch) {
-            mpn = cameraBodyMatch[1].toUpperCase().replace(/\s+/g, ' ');
+            mpn = cameraBodyMatch[1].toUpperCase().replace('_', '-');
+            if (!mpn.includes('-') && mpn.match(/^(PCH|PSP)(\d{4})$/)) {
+                mpn = mpn.replace(/^(PCH|PSP)(\d{4})$/, '$1-$2');
+            }
             if (mpn === 'J5' || mpn === 'NIKON 1 J5') mpn = 'Nikon 1 J5';
         }
 
         // Priority 1: General Model numbers (filtering out lens focal lengths like 10-30mm, 18-55mm)
         if (!mpn) {
-            const modelMatch = normalizedTitle.match(/\b(PCH[-_]?\d{4}|PSP[-_]?\d{4}|DMC[-_]?[A-Z0-9]+|CR\d+[A-Z0-9]*|[A-Z]{1,5}[-_]?\d{2,6}[A-Z0-9]*)\b/i);
+            const modelMatch = fullSearchText.match(/(PCH[-_]?\d{4}|PSP[-_]?\d{4}|DMC[-_]?[A-Z0-9]+|CR\d+[A-Z0-9]*|[A-Z]{1,5}[-_]?\d{2,6}[A-Z0-9]*)/i);
             if (modelMatch) {
-                const candidate = modelMatch[1].toUpperCase().replace('_', '-');
+                let candidate = modelMatch[1].toUpperCase().replace('_', '-');
+                if (!candidate.includes('-') && candidate.match(/^(PCH|PSP)(\d{4})$/)) {
+                    candidate = candidate.replace(/^(PCH|PSP)(\d{4})$/, '$1-$2');
+                }
                 // Filter out lens focal lengths like 10-30MM, 18-55MM, 55-200MM
                 if (!candidate.match(/^\d{2,3}-\d{2,3}MM$/i) && !candidate.match(/^\d{2,3}MM$/i)) {
                     mpn = candidate;
@@ -586,7 +633,7 @@ async function handleParseUrlMeta(req, res) {
         }
 
         if (!mpn) {
-            const mpnMatches = normalizedTitle.match(/([A-Z0-9]{2,8}[-\/][A-Z0-9]{2,8}|[A-Z]{1,4}[0-9]{2,6}|[0-9]{2,6}[A-Z]{1,4}|EF-\d+)/gi);
+            const mpnMatches = fullSearchText.match(/([A-Z0-9]{2,8}[-\/][A-Z0-9]{2,8}|[A-Z]{1,4}[0-9]{2,6}|[0-9]{2,6}[A-Z]{1,4}|EF-\d+)/gi);
             if (mpnMatches) {
                 const validMpn = mpnMatches.find(m => m.toLowerCase() !== brand.toLowerCase() && m.length > 2);
                 if (validMpn) mpn = validMpn;
