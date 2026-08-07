@@ -1,8 +1,35 @@
+const puppeteer = require('puppeteer-core');
 const fs = require('fs');
 const path = require('path');
 const https = require('https');
 const http = require('http');
 const { google } = require('googleapis');
+
+function getExecutablePath() {
+    if (process.platform === 'linux') {
+        const candidates = [
+            process.env.CHROMIUM_PATH,
+            '/usr/bin/chromium',
+            '/usr/bin/chromium-browser',
+            '/usr/bin/google-chrome',
+            '/usr/bin/google-chrome-stable'
+        ].filter(Boolean);
+        for (const p of candidates) {
+            if (fs.existsSync(p)) {
+                console.log(`[Browser] Linux: using ${p}`);
+                return p;
+            }
+        }
+        console.log('[Browser] Linux: defaulting to /usr/bin/chromium');
+        return '/usr/bin/chromium';
+    }
+    const chromePath = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
+    const edgePath = 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe';
+    const chosen = fs.existsSync(chromePath) ? chromePath : edgePath;
+    console.log(`[Browser] Windows: using ${chosen}`);
+    return chosen;
+}
+const executablePath = getExecutablePath();
 
 const CONFIG_PATH = path.join(__dirname, 'config.json');
 const SPREADSHEET_ID = '15skxiK9eL6JDzq76JX3_3uS5-puJIqGGZngv3bJ4iv4';
@@ -73,81 +100,219 @@ function fetchHtml(url) {
     });
 }
 
-async function getItemDataHttp(url) {
+async function getYahooItemData(url) {
+    const html = await fetchHtml(url);
     let title = '';
     let price = '';
     let isClosed = false;
 
-    try {
-        const html = await fetchHtml(url);
+    const pageDataMatch = html.match(/var pageData = (.*?);/);
+    if (pageDataMatch) {
+        try {
+            const data = JSON.parse(pageDataMatch[1]);
+            if (data.items) {
+                title = data.items.productName || '';
+                price = parseInt(data.items.price, 10).toLocaleString('ja-JP') + '円';
+                isClosed = (data.items.isClosed === '1' || data.items.hasWinner === '1');
+            }
+        } catch (e) {}
+    }
 
-        if (url.includes('auctions.yahoo.co.jp')) {
-            const pageDataMatch = html.match(/var pageData = (.*?);/);
-            if (pageDataMatch) {
-                try {
-                    const data = JSON.parse(pageDataMatch[1]);
-                    if (data.items) {
-                        title = data.items.productName || '';
-                        price = parseInt(data.items.price, 10).toLocaleString('ja-JP') + '円';
-                        isClosed = (data.items.isClosed === '1' || data.items.hasWinner === '1');
-                    }
-                } catch (e) {}
-            }
-            if (!title) {
-                const titleMatch = html.match(/<title>(.*?)<\/title>/i);
-                title = titleMatch ? titleMatch[1].replace(' - Yahoo!オークション', '').replace(' - ヤフオク!', '').trim() : '';
-            }
-            if (html.includes('このオークションは終了しています') || html.includes('オークション終了')) {
-                isClosed = true;
-            }
-        } else if (url.includes('mercari.com')) {
-            const ogTitleMatch = html.match(/<meta\s+property="og:title"\s+content="([^"]+)"/i) || html.match(/<title>(.*?)<\/title>/i);
-            title = ogTitleMatch ? ogTitleMatch[1].replace(' - メルカリ', '').trim() : '';
+    if (!title) {
+        const titleMatch = html.match(/<title>(.*?)<\/title>/i);
+        title = titleMatch ? titleMatch[1].replace(' - Yahoo!オークション', '').replace(' - ヤフオク!', '').trim() : '';
+    }
 
-            const priceMatch = html.match(/<meta\s+(?:name|property)="product:price:amount"\s+content="([0-9]+)"/i) || html.match(/"price"\s*:\s*([0-9]+)/i);
-            if (priceMatch && priceMatch[1]) {
-                const pVal = parseInt(priceMatch[1], 10);
-                if (!isNaN(pVal) && pVal > 0) {
-                    price = pVal.toLocaleString('ja-JP') + '円';
-                }
-            }
-            isClosed = html.includes('"isSoldOut":true') || html.includes('ITEM_STATUS_SOLDOUT') || html.includes('売り切れ');
-        } else if (url.includes('paypayfleamarket') || url.includes('paypayfleamarket.yahoo.co.jp')) {
-            const titleMatch = html.match(/<title>(.*?)<\/title>/i);
-            title = titleMatch ? titleMatch[1].replace(/\s*-\s*Yahoo!フリマ.*/i, '').replace(/\s*-\s*PayPayフリマ.*/i, '').trim() : '';
-
-            const priceMatch = html.match(/<meta\s+(?:name|property)="product:price:amount"\s+content="([0-9]+)"/i) || html.match(/"price"\s*:\s*([0-9]+)/i);
-            if (priceMatch && priceMatch[1]) {
-                const pVal = parseInt(priceMatch[1], 10);
-                if (!isNaN(pVal) && pVal > 0) {
-                    price = pVal.toLocaleString('ja-JP') + '円';
-                }
-            }
-            isClosed = html.includes('売り切れました') || html.includes('SOLD OUT') || html.includes('公開が停止') || html.includes('掲載が終了');
-        } else if (url.includes('amazon.co.jp')) {
-            const titleMatch = html.match(/<title>(.*?)<\/title>/i);
-            title = titleMatch ? titleMatch[1].replace(/^Amazon\s*\|\s*/i, '').trim() : '';
-
-            const priceMatch = html.match(/class="a-price-whole">([0-9,]+)/i) || html.match(/￥\s*([0-9,]+)/);
-            if (priceMatch && priceMatch[1]) {
-                price = priceMatch[1].replace(/,/g, '').replace(/[^0-9]/g, '');
-                if (price) price = parseInt(price, 10).toLocaleString('ja-JP') + '円';
-            }
-            isClosed = html.includes('一時的に在庫切れ') || html.includes('現在お取り扱いしておりません') || html.includes('在庫切れ');
-        } else {
-            const titleMatch = html.match(/<title>(.*?)<\/title>/i);
-            title = titleMatch ? titleMatch[1].trim() : '';
-            const priceMatch = html.match(/([0-9,]{3,9})\s*円/);
-            if (priceMatch && priceMatch[1]) {
-                price = priceMatch[1] + '円';
-            }
-        }
-    } catch (e) {
-        console.error('HTTP fetch error for', url, e.message);
+    if (html.includes('このオークションは終了しています') || html.includes('オークション終了')) {
+        isClosed = true;
     }
 
     const statusText = isClosed ? '欠品' : '販売中';
-    return { title: title || '商品情報取得中', price: price || '', isClosed, statusText };
+    return { title, price, isClosed, statusText, html };
+}
+
+async function getItemDataPuppeteer(browser, url) {
+    const page = await browser.newPage();
+    await page.setViewport({ width: 1400, height: 900 });
+    await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
+
+    try {
+        await page.goto(url, { waitUntil: 'networkidle2', timeout: 60000 });
+        await page.evaluate(() => new Promise(r => setTimeout(r, 3000)));
+
+        const html = await page.content();
+        const info = await page.evaluate((targetUrl) => {
+            let title = '';
+            let price = '';
+            let isClosed = false;
+
+            if (targetUrl.includes('amazon.co.jp')) {
+                const titleEl = document.querySelector('#productTitle') || document.querySelector('h1');
+                title = titleEl ? titleEl.textContent.trim() : document.title;
+
+                const priceEl = document.querySelector('.priceToPay') ||
+                                document.querySelector('#corePrice_feature_div .a-price .a-offscreen') ||
+                                document.querySelector('#corePriceDisplay_desktop_feature_div .a-price .a-offscreen') ||
+                                document.querySelector('.a-price .a-offscreen');
+                price = priceEl ? priceEl.textContent.trim() : '';
+                if (price && !price.includes('円') && price.includes('￥')) {
+                    price = price.replace('￥', '') + '円';
+                }
+
+                const availabilityEl = document.querySelector('#availability');
+                const availText = availabilityEl ? availabilityEl.textContent.trim() : '';
+                isClosed = availText.includes('一時的に在庫切れ') || availText.includes('現在お取り扱いしておりません') || availText.includes('在庫切れ');
+            } else if (targetUrl.includes('aliexpress.com')) {
+                const titleEl = document.querySelector('h1[data-pl="product-title"]') || document.querySelector('h1');
+                title = titleEl ? titleEl.textContent.trim() : document.title;
+
+                let currentPriceEl = document.querySelector('[class*="price"][class*="current"]') ||
+                                     document.querySelector('[class*="currentPrice"]') ||
+                                     document.querySelector('.product-price-current');
+
+                if (!currentPriceEl) {
+                    const candidates = Array.from(document.querySelectorAll('*')).filter(el => {
+                        const text = el.childNodes.length === 1 && el.childNodes[0].nodeType === 3 ? el.textContent.trim() : '';
+                        if (!text.includes('円') || text.length > 20) return false;
+
+                        const style = window.getComputedStyle(el);
+                        const isLineThrough = (style.textDecorationLine || '').includes('line-through') || (style.textDecoration || '').includes('line-through');
+                        const isSavings = text.includes('お買得') || text.includes('OFF') || text.includes('引き');
+
+                        return !isLineThrough && !isSavings;
+                    });
+
+                    if (candidates.length > 0) {
+                        candidates.sort((a, b) => parseFloat(window.getComputedStyle(b).fontSize) - parseFloat(window.getComputedStyle(a).fontSize));
+                        currentPriceEl = candidates[0];
+                    }
+                }
+
+                let rawPrice = currentPriceEl ? currentPriceEl.textContent.trim() : '';
+                if (rawPrice.includes('円')) {
+                    const priceMatch = rawPrice.match(/([0-9,]+円)/);
+                    price = priceMatch ? priceMatch[1] : rawPrice;
+                } else {
+                    price = rawPrice;
+                }
+
+                const mainArea = document.querySelector('#root') || document.body;
+                const mainText = mainArea ? mainArea.textContent : '';
+                isClosed = mainText.includes('Page Not Found') || mainText.includes('Sorry, this item is no longer available');
+            } else if (targetUrl.includes('mercari.com')) {
+                const titleEl = document.querySelector('[data-testid="item-name"]') || document.querySelector('h1');
+                title = titleEl ? titleEl.textContent.trim() : document.title.replace(' - メルカリ', '');
+
+                const metaPrice = document.querySelector('meta[name="product:price:amount"], meta[property="product:price:amount"]');
+                if (metaPrice && metaPrice.getAttribute('content')) {
+                    const pVal = parseInt(metaPrice.getAttribute('content'), 10);
+                    if (!isNaN(pVal) && pVal > 0) {
+                        price = pVal.toLocaleString('ja-JP') + '円';
+                    }
+                }
+
+                if (!price) {
+                    const priceEl = document.querySelector('[data-testid="product-price"]') || document.querySelector('[class*="price"]');
+                    let rawPrice = priceEl ? priceEl.textContent.trim() : '';
+                    const cleanDigits = rawPrice.replace(/[^0-9]/g, '');
+                    if (cleanDigits) {
+                        price = parseInt(cleanDigits, 10).toLocaleString('ja-JP') + '円';
+                    }
+                }
+
+                const soldBadge = document.querySelector('[data-testid="item-sold-out-badge"]') ||
+                                  document.querySelector('div[aria-label*="売り切れ"]');
+                const checkoutBtn = document.querySelector('[data-testid="checkout-button"]');
+                const btnText = checkoutBtn ? checkoutBtn.textContent.trim() : '';
+
+                isClosed = Boolean(soldBadge || (checkoutBtn && checkoutBtn.disabled && btnText.includes('売り切れ')));
+            } else if (targetUrl.includes('fril.jp') || targetUrl.includes('rakuma')) {
+                const titleEl = document.querySelector('.item__name') ||
+                                document.querySelector('[class*="item__name"]') ||
+                                document.querySelector('.item-header__name') ||
+                                document.querySelector('h1');
+                title = titleEl ? titleEl.textContent.trim() : document.title.replace(/\s*-\s*ラクマ.*/i, '').trim();
+
+                const priceEl = document.querySelector('[itemprop="price"]') ||
+                                document.querySelector('.item__price') ||
+                                document.querySelector('.item-price') ||
+                                document.querySelector('[class*="item__price"]');
+                let rawPrice = priceEl ? (priceEl.getAttribute('content') || priceEl.textContent.trim()) : '';
+                const cleanNum = rawPrice.replace(/[^0-9]/g, '');
+                if (cleanNum) {
+                    price = parseInt(cleanNum, 10).toLocaleString('ja-JP') + '円';
+                }
+
+                const soldoutBadge = document.querySelector('.item__badge--soldout') ||
+                                     document.querySelector('[class*="soldout"]') ||
+                                     document.querySelector('[class*="SOLD"]') ||
+                                     Array.from(document.querySelectorAll('*')).find(el => {
+                                         const t = el.children.length === 0 ? el.textContent.trim() : '';
+                                         return t === 'SOLDOUT' || t === 'SOLD OUT' || t === '売り切れ' || t === '売り切れました';
+                                     });
+
+                const purchaseBtn = Array.from(document.querySelectorAll('a, button')).find(el => el.textContent.includes('購入に進む'));
+
+                isClosed = Boolean(soldoutBadge || !purchaseBtn);
+            } else if (targetUrl.includes('paypayfleamarket') || targetUrl.includes('paypayfleamarket.yahoo.co.jp')) {
+                const titleEl = document.querySelector('h1') || document.querySelector('[class*="ItemTitle_title"]') || document.querySelector('[class*="title"]');
+                if (titleEl && titleEl.textContent) {
+                    title = titleEl.textContent.trim();
+                } else {
+                    title = document.title
+                        .replace(/\s*-\s*Yahoo!フリマ.*/i, '')
+                        .replace(/\s*-\s*PayPayフリマ.*/i, '')
+                        .trim();
+                }
+
+                const metaPrice = document.querySelector('meta[name="product:price:amount"], meta[property="product:price:amount"]');
+                if (metaPrice && metaPrice.getAttribute('content')) {
+                    const pVal = parseInt(metaPrice.getAttribute('content'), 10);
+                    if (!isNaN(pVal) && pVal > 0) {
+                        price = pVal.toLocaleString('ja-JP') + '円';
+                    }
+                }
+
+                if (!price) {
+                    const purchaseBtnEl = Array.from(document.querySelectorAll('button, a')).find(el => el.textContent.includes('購入手続きへ'));
+                    if (purchaseBtnEl) {
+                        let parent = purchaseBtnEl.parentElement;
+                        while (parent && parent !== document.body) {
+                            const text = parent.innerText || '';
+                            const match = text.match(/([0-9,]{3,9})\s*円/);
+                            if (match) {
+                                price = match[1] + '円';
+                                break;
+                            }
+                            parent = parent.parentElement;
+                        }
+                    }
+                }
+
+                if (!price) {
+                    const bodyText = document.body.innerText || '';
+                    const m = bodyText.match(/([0-9,]{3,9})\s*円/);
+                    if (m) price = m[1] + '円';
+                }
+
+                const bodyText = document.body.innerText || '';
+                const hasPurchaseBtn = Array.from(document.querySelectorAll('button, a')).some(el => el.textContent.includes('購入手続きへ'));
+                const hasCopyBtn = Array.from(document.querySelectorAll('button, a')).some(el => el.textContent.includes('この情報をコピーして出品する'));
+                const isSoldText = bodyText.includes('売り切れました') || bodyText.includes('SOLD OUT') || bodyText.includes('公開が停止') || bodyText.includes('掲載が終了') || bodyText.includes('この情報を使って新しく出品できます');
+
+                isClosed = Boolean(isSoldText || hasCopyBtn || !hasPurchaseBtn);
+            }
+
+            const statusText = isClosed ? '欠品' : '販売中';
+            return { title, price, isClosed, statusText };
+        }, url);
+
+        return { ...info, html, page };
+    } catch (e) {
+        await page.close();
+        console.error('Puppeteer error for', url, e.message);
+        return { title: '取得エラー', price: '', isClosed: false, statusText: '販売中', html: '', page: null };
+    }
 }
 
 function getGoogleAuth() {
@@ -188,7 +353,13 @@ const parseNum = (val) => {
 
     const rowValues = sheetData.data.sheets[0].data[0].rowData || [];
     console.log(`Found ${rowValues.length} rows in Spreadsheet.`);
-    console.log('⚡ Running pure HTTP fast-sync mode (no heavy browser required)...');
+
+    console.log('🌐 Launching Puppeteer browser for web scraping...');
+    const browser = await puppeteer.launch({
+        executablePath: executablePath,
+        headless: true,
+        args: ['--no-sandbox', '--disable-setuid-sandbox', '--window-size=1400,900']
+    });
 
     const missingItemsList = [];
 
@@ -226,8 +397,20 @@ const parseNum = (val) => {
         console.log(`\n================ Processing Row ${r} ================`);
         console.log(`Row ${r} URL:`, targetUrl);
 
-        const itemData = await getItemDataHttp(targetUrl);
+        let itemData;
+        let itemPage = null;
+        if (targetUrl.includes('auctions.yahoo.co.jp')) {
+            itemData = await getYahooItemData(targetUrl);
+        } else {
+            itemData = await getItemDataPuppeteer(browser, targetUrl);
+            itemPage = itemData.page;
+        }
+
         console.log(`Row ${r} Item Data:`, { title: itemData.title, price: itemData.price, isClosed: itemData.isClosed, statusText: itemData.statusText });
+
+        if (itemPage) {
+            await itemPage.close().catch(() => {});
+        }
 
         const cCell = rowObj.values[2] || {};
         const dCell = rowObj.values[3] || {};
@@ -261,8 +444,8 @@ const parseNum = (val) => {
                 newF = '販売中';
             } else {
                 newE = currentDValue;
-                newD = itemData.price || currentDValue;
-                const numD = parseNum(newD);
+                newD = itemData.price;
+                const numD = parseNum(itemData.price);
                 const numE = parseNum(currentDValue);
                 if (numD !== null && numE !== null && numD > numE) {
                     console.log(`Row ${r}: Price INCREASED (${numD} > ${numE}). Status: '値上げ'`);
@@ -285,6 +468,8 @@ const parseNum = (val) => {
         });
     }
 
+    await browser.close();
+
     if (missingItemsList.length > 0) {
         console.log(`\n================ Sending Batch LINE Notification ================`);
         let lineBatchMsg = '';
@@ -298,6 +483,6 @@ const parseNum = (val) => {
         console.log('No missing items found. No LINE notification sent.');
     }
 
-    console.log('✅ Fast HTTP Auto-sync via Google Sheets API completed successfully!');
+    console.log('✅ Auto-sync via Google Sheets API completed successfully!');
     process.exit(0);
 })();
