@@ -5,7 +5,7 @@ const http = require('http');
 
 const chromePath = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
 const edgePath = 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe';
-const linuxChromePath = '/usr/bin/google-chrome';
+const linuxChromePath = process.env.CHROMIUM_PATH || '/usr/bin/chromium' || '/usr/bin/google-chrome';
 const executablePath = fs.existsSync(linuxChromePath) ? linuxChromePath : (fs.existsSync(chromePath) ? chromePath : edgePath);
 
 function fetchHtml(url) {
@@ -39,7 +39,7 @@ async function getYahooItemData(url) {
             const data = JSON.parse(pageDataMatch[1]);
             if (data.items) {
                 title = data.items.productName || '';
-                price = parseInt(data.items.price, 10).toLocaleString('ja-JP') + '円';
+                price = parseInt(data.items.price, 10).toLocaleString('ja-JP') + '冁E;
                 isClosed = (data.items.isClosed === '1' || data.items.hasWinner === '1');
             }
         } catch (e) {}
@@ -50,11 +50,11 @@ async function getYahooItemData(url) {
         title = titleMatch ? titleMatch[1].replace(' - Yahoo!オークション', '').replace(' - ヤフオク!', '').trim() : '';
     }
 
-    if (html.includes('このオークションは終了しています') || html.includes('オークション終了')) {
+    if (html.includes('こ�Eオークションは終亁E��てぁE��ぁE) || html.includes('オークション終亁E)) {
         isClosed = true;
     }
 
-    const statusText = isClosed ? '欠品' : '販売中';
+    const statusText = isClosed ? '欠品E : '販売中';
     return { title, price, isClosed, statusText };
 }
 
@@ -81,21 +81,21 @@ async function getItemDataPuppeteer(browser, url) {
                                 document.querySelector('#corePriceDisplay_desktop_feature_div .a-price .a-offscreen') ||
                                 document.querySelector('.a-price .a-offscreen');
                 price = priceEl ? priceEl.textContent.trim() : '';
-                if (price && !price.includes('円') && price.includes('￥')) {
-                    price = price.replace('￥', '') + '円';
+                if (price && !price.includes('冁E) && price.includes('�E�')) {
+                    price = price.replace('�E�', '') + '冁E;
                 }
 
                 const availabilityEl = document.querySelector('#availability');
                 const availText = availabilityEl ? availabilityEl.textContent.trim() : '';
-                isClosed = availText.includes('一時的に在庫切れ') || availText.includes('現在お取り扱いしておりません') || availText.includes('在庫切れ');
+                isClosed = availText.includes('一時的に在庫刁E��') || availText.includes('現在お取り扱ぁE��ておりません') || availText.includes('在庫刁E��');
             } else if (targetUrl.includes('aliexpress.com')) {
                 const titleEl = document.querySelector('h1[data-pl="product-title"]') || document.querySelector('h1');
                 title = titleEl ? titleEl.textContent.trim() : document.title;
 
                 const priceEl = document.querySelector('.product-price-current') || document.querySelector('.price-default') || document.querySelector('[class*="price"]');
                 let rawPrice = priceEl ? priceEl.textContent.trim() : '';
-                if (rawPrice.includes('円')) {
-                    const priceMatch = rawPrice.match(/([0-9,]+円)/);
+                if (rawPrice.includes('冁E)) {
+                    const priceMatch = rawPrice.match(/([0-9,]+冁E/);
                     price = priceMatch ? priceMatch[1] : rawPrice;
                 } else {
                     price = rawPrice;
@@ -111,20 +111,20 @@ async function getItemDataPuppeteer(browser, url) {
                 const priceEl = document.querySelector('[data-testid="product-price"]') || document.querySelector('[class*="price"]');
                 let rawPrice = priceEl ? priceEl.textContent.trim() : '';
                 if (rawPrice.startsWith('¥')) {
-                    price = rawPrice.replace('¥', '') + '円';
+                    price = rawPrice.replace('¥', '') + '冁E;
                 } else {
                     price = rawPrice;
                 }
 
                 const soldBadge = document.querySelector('[data-testid="item-sold-out-badge"]') ||
-                                  document.querySelector('div[aria-label*="売り切れ"]');
+                                  document.querySelector('div[aria-label*="売り�EめE]');
                 const checkoutBtn = document.querySelector('[data-testid="checkout-button"]');
                 const btnText = checkoutBtn ? checkoutBtn.textContent.trim() : '';
 
-                isClosed = Boolean(soldBadge || (checkoutBtn && checkoutBtn.disabled && btnText.includes('売り切れ')));
+                isClosed = Boolean(soldBadge || (checkoutBtn && checkoutBtn.disabled && btnText.includes('売り�EめE)));
             }
 
-            const statusText = isClosed ? '欠品' : '販売中';
+            const statusText = isClosed ? '欠品E : '販売中';
             return { title, price, isClosed, statusText };
         }, url);
 
@@ -264,17 +264,17 @@ async function getItemDataPuppeteer(browser, url) {
         }
         console.log(`Row ${r} Item Data:`, itemData);
 
-        // CHECK IF 欠品 (SOLDOUT/Closed)
-        if (itemData.statusText === '欠品') {
-            console.log(`Row ${r} is 欠品 (SOLDOUT). Writing '欠品' into C${r}, E${r}, F${r}, and '出品取り消し' into G${r}.`);
+        // CHECK IF 欠品E(SOLDOUT/Closed)
+        if (itemData.statusText === '欠品E) {
+            console.log(`Row ${r} is 欠品E(SOLDOUT). Writing '欠品E into C${r}, E${r}, F${r}, and '出品取り消し' into G${r}.`);
             await selectCell(`C${r}`);
-            await overwriteCellText('欠品');
+            await overwriteCellText('欠品E);
 
             await selectCell(`E${r}`);
-            await overwriteCellText('欠品');
+            await overwriteCellText('欠品E);
 
             await selectCell(`F${r}`);
-            await overwriteCellText('欠品');
+            await overwriteCellText('欠品E);
 
             await selectCell(`G${r}`);
             await overwriteCellText('出品取り消し');

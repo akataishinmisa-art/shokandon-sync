@@ -29,7 +29,7 @@ try {
 
 const chromePath = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
 const edgePath = 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe';
-const linuxChromePath = '/usr/bin/google-chrome';
+const linuxChromePath = process.env.CHROMIUM_PATH || '/usr/bin/chromium' || '/usr/bin/google-chrome';
 const executablePath = fs.existsSync(linuxChromePath) ? linuxChromePath : (fs.existsSync(chromePath) ? chromePath : edgePath);
 
 const app = express();
@@ -108,35 +108,35 @@ app.post('/api/user-settings', (req, res) => {
 
 // Deep Product Category & Generation Resolver for unlisted product URLs
 function estimateCategoryEbayMarketPrices(text) {
-    if (!text) return { s: '$150', a: '$110', b: '$80', matchedCategoryName: '不明/一般商品' };
+    if (!text) return { s: '$150', a: '$110', b: '$80', matchedCategoryName: '不�E/一般啁E��' };
     text = text.toUpperCase();
 
     // 1. Next Gen Consoles (PS5)
     if (text.match(/PLAYSTATION\s*5|PS5/)) {
-        return { s: '$480', a: '$420', b: '$360', matchedCategoryName: 'PS5本体' };
+        return { s: '$480', a: '$420', b: '$360', matchedCategoryName: 'PS5本佁E };
     }
 
     // 2. Previous Gen Home Consoles (Switch 1, PS4, Wii U, Wii, Xbox One, etc.)
-    if (text.match(/SWITCH\s*OLED/)) return { s: '$320', a: '$260', b: '$210', matchedCategoryName: 'Switch 有機ELモデル' };
-    if (text.match(/PLAYSTATION\s*4|PS4/)) return { s: '$210', a: '$160', b: '$120', matchedCategoryName: 'PS4本体' };
-    if (text.match(/WII\s*U/)) return { s: '$180', a: '$130', b: '$90', matchedCategoryName: 'Wii U本体' };
-    if (text.match(/\bWII\b|ウィー/)) return { s: '$120', a: '$70', b: '$45', matchedCategoryName: 'Wii本体' };
+    if (text.match(/SWITCH\s*OLED/)) return { s: '$320', a: '$260', b: '$210', matchedCategoryName: 'Switch 有機ELモチE��' };
+    if (text.match(/PLAYSTATION\s*4|PS4/)) return { s: '$210', a: '$160', b: '$120', matchedCategoryName: 'PS4本佁E };
+    if (text.match(/WII\s*U/)) return { s: '$180', a: '$130', b: '$90', matchedCategoryName: 'Wii U本佁E };
+    if (text.match(/\bWII\b|ウィー/)) return { s: '$120', a: '$70', b: '$45', matchedCategoryName: 'Wii本佁E };
     if (text.match(/PLAYSTATION|PS3|SWITCH|XBOX/)) {
-        return { s: '$280', a: '$220', b: '$175', matchedCategoryName: '家庭用ゲーム機(汎用)' };
+        return { s: '$280', a: '$220', b: '$175', matchedCategoryName: '家庭用ゲーム橁E汎用)' };
     }
 
     // 3. Compact Digital Cameras (P900, P500, ZR100, etc.)
-    if (text.match(/COOLPIX|EXILIM|CYBER-SHOT|FINEPIX|IXY|LUMIX|POWERPOWER|DIGITAL CAMERA|コンデジ|デジカメ/)) {
-        if (text.match(/P900|P1000|P950/)) return { s: '$480', a: '$400', b: '$320', matchedCategoryName: '高倍率コンデジ(P900等)' };
+    if (text.match(/COOLPIX|EXILIM|CYBER-SHOT|FINEPIX|IXY|LUMIX|POWERPOWER|DIGITAL CAMERA|コンチE��|チE��カメ/)) {
+        if (text.match(/P900|P1000|P950/)) return { s: '$480', a: '$400', b: '$320', matchedCategoryName: '高倍率コンチE��(P900筁E' };
         if (text.match(/P[0-9]{3}|FZ[0-9]{2,3}|HS[0-9]{2}|SX[0-9]{2,3}/)) {
-            return { s: '$130', a: '$95', b: '$70', matchedCategoryName: 'ネオ一眼コンデジ' };
+            return { s: '$130', a: '$95', b: '$70', matchedCategoryName: 'ネオ一眼コンチE��' };
         }
         return { s: '$120', a: '$90', b: '$65', matchedCategoryName: 'コンパクトデジタルカメラ' };
     }
 
     // 4. DSLR / Mirrorless Cameras (Nikon 1 J5, EOS Kiss, etc.)
     if (text.match(/EOS|KISS|ALPHA|ILCE|NEX|OM-D|PEN|PENTAX|DSLR|MIRRORLESS|一眼|NIKON\s*1/)) {
-        if (text.match(/J5|V3/)) return { s: '$420', a: '$320', b: '$190', matchedCategoryName: 'Nikon 1 (J5/V3等)' };
+        if (text.match(/J5|V3/)) return { s: '$420', a: '$320', b: '$190', matchedCategoryName: 'Nikon 1 (J5/V3筁E' };
         return { s: '$280', a: '$210', b: '$160', matchedCategoryName: '一眼・ミラーレスカメラ' };
     }
 
@@ -145,21 +145,21 @@ function estimateCategoryEbayMarketPrices(text) {
         if (text.match(/3DS LL|NEW 3DS/)) return { s: '$325', a: '$265', b: '$215', matchedCategoryName: '3DS LL / New 3DS' };
         if (text.match(/VITA|PCH-/)) return { s: '$250', a: '$190', b: '$150', matchedCategoryName: 'PS Vita' };
         if (text.match(/PSP-3000/)) return { s: '$210', a: '$165', b: '$130', matchedCategoryName: 'PSP-3000' };
-        return { s: '$180', a: '$140', b: '$105', matchedCategoryName: '携帯型ゲーム機' };
+        return { s: '$180', a: '$140', b: '$105', matchedCategoryName: '携帯型ゲーム橁E };
     }
 
-    // 6. Audio Equipment (オーディオ・イヤホン・スピーカー)
+    // 6. Audio Equipment (オーチE��オ・イヤホン・スピ�Eカー)
     if (text.match(/SPEAKER|BOSE|SONY|SENNHEISER|AIRPODS|HEADPHONE|ウォークマン|WALKMAN/)) {
-        return { s: '$160', a: '$120', b: '$85', matchedCategoryName: 'オーディオ機器' };
+        return { s: '$160', a: '$120', b: '$85', matchedCategoryName: 'オーチE��オ機器' };
     }
 
     // 7. Power Tools / Industrial (電動工具・産業機器)
-    if (text.match(/MAKITA|マキタ|HIKOKI|BOSCH|インパクト|ドライバー|グラインダー|EZ[0-9]{2}[A-Z0-9]*/)) {
+    if (text.match(/MAKITA|マキタ|HIKOKI|BOSCH|インパクチEドライバ�E|グラインダー|EZ[0-9]{2}[A-Z0-9]*/)) {
         return { s: '$220', a: '$170', b: '$125', matchedCategoryName: '電動工具・産業機器' };
     }
 
     // 8. General Merchandise / Generic Fallback
-    return { s: '$150', a: '$110', b: '$80', matchedCategoryName: '一般商品(自動概算)' };
+    return { s: '$150', a: '$110', b: '$80', matchedCategoryName: '一般啁E��(自動概箁E' };
 }
 
 // Multimodal Product Identification (Combining Product Image URL/Metadata & Text Content)
@@ -201,7 +201,7 @@ function isValidVersionMatch(cleanTarget, cleanKey) {
     return true;
 }
 
-// Google Sheet "商品DB" tab & Custom MPN Lookup Function for sell prices (S, A, B)
+// Google Sheet "啁E��DB" tab & Custom MPN Lookup Function for sell prices (S, A, B)
 function lookupProductDbSellPrices(targetMpn, imageUrl) {
     return new Promise(resolve => {
         if ((!targetMpn || !targetMpn.trim()) && !imageUrl) {
@@ -247,7 +247,7 @@ function lookupProductDbSellPrices(targetMpn, imageUrl) {
             }
         }
 
-        const sheetUrl = 'https://docs.google.com/spreadsheets/d/15skxiK9eL6JDzq76JX3_3uS5-puJIqGGZngv3bJ4iv4/gviz/tq?tqx=out:csv&sheet=' + encodeURIComponent('商品DB');
+        const sheetUrl = 'https://docs.google.com/spreadsheets/d/15skxiK9eL6JDzq76JX3_3uS5-puJIqGGZngv3bJ4iv4/gviz/tq?tqx=out:csv&sheet=' + encodeURIComponent('啁E��DB');
         https.get(sheetUrl, res => {
             let data = '';
             res.on('data', chunk => data += chunk);
@@ -269,9 +269,9 @@ function lookupProductDbSellPrices(targetMpn, imageUrl) {
                             resObj.found = true;
                             resObj.matchedCategoryName = mpn; // Store it when found
                             const formattedUsd = sellUsd ? (sellUsd.startsWith('$') ? sellUsd : '$' + sellUsd) : '-';
-                            if (grade === 'Ｓ' || grade === 'S') resObj.s = formattedUsd;
-                            if (grade === 'Ａ' || grade === 'A') resObj.a = formattedUsd;
-                            if (grade === 'Ｂ' || grade === 'B') resObj.b = formattedUsd;
+                            if (grade === '�E�' || grade === 'S') resObj.s = formattedUsd;
+                            if (grade === '�E�' || grade === 'A') resObj.a = formattedUsd;
+                            if (grade === '�E�' || grade === 'B') resObj.b = formattedUsd;
                         }
                     }
                 }
@@ -283,7 +283,7 @@ function lookupProductDbSellPrices(targetMpn, imageUrl) {
                 // 3. Dynamic Multimodal Category & Generation Fallback for any unlisted product URL
                 const catEst = estimateCategoryEbayMarketPrices(cleanTarget);
                 let fallbackName = targetMpn ? targetMpn.trim().toUpperCase() : catEst.matchedCategoryName;
-                if (catEst.matchedCategoryName && catEst.matchedCategoryName !== '一般商品(自動概算)') {
+                if (catEst.matchedCategoryName && catEst.matchedCategoryName !== '一般啁E��(自動概箁E') {
                     fallbackName = fallbackName + ' (' + catEst.matchedCategoryName + ')';
                 }
 
@@ -301,7 +301,7 @@ function lookupProductDbSellPrices(targetMpn, imageUrl) {
             console.error('[lookupProductDbSellPrices HTTP Error]:', err.message);
             const catEst = estimateCategoryEbayMarketPrices(cleanTarget);
             let fallbackName = targetMpn ? targetMpn.trim().toUpperCase() : catEst.matchedCategoryName;
-            if (catEst.matchedCategoryName && catEst.matchedCategoryName !== '一般商品(自動概算)') {
+            if (catEst.matchedCategoryName && catEst.matchedCategoryName !== '一般啁E��(自動概箁E') {
                 fallbackName = fallbackName + ' (' + catEst.matchedCategoryName + ')';
             }
             resolve({
@@ -317,7 +317,7 @@ function lookupProductDbSellPrices(targetMpn, imageUrl) {
     });
 }
 
-// Endpoint to fetch S, A, B sell prices from Google Sheet 商品DB by MPN & Image
+// Endpoint to fetch S, A, B sell prices from Google Sheet 啁E��DB by MPN & Image
 app.get('/api/lookup-product-db', async (req, res) => {
     const mpn = req.query.mpn || '';
     const imageUrl = req.query.imageUrl || '';
@@ -334,8 +334,8 @@ app.get('/api/lookup-product-db', async (req, res) => {
 function openFolderInExplorer(targetDir) {
     const candidates = [
         targetDir,
-        'C:\\Users\\akata\\OneDrive\\デスクトップ\\商管どん_商品画像',
-        'C:\\Users\\akata\\Desktop\\商管どん_商品画像',
+        'C:\\Users\\akata\\OneDrive\\チE��クトップ\\啁E��どん_啁E��画僁E,
+        'C:\\Users\\akata\\Desktop\\啁E��どん_啁E��画僁E,
         path.join(__dirname, 'downloaded_images')
     ];
 
@@ -359,7 +359,7 @@ function openFolderInExplorer(targetDir) {
 function handleOpenFolder(req, res) {
     try {
         openFolderInExplorer(BASE_SAVE_DIR);
-        res.json({ success: true, message: '画像保存フォルダを開きました。', folder: BASE_SAVE_DIR });
+        res.json({ success: true, message: '画像保存フォルダを開きました、E, folder: BASE_SAVE_DIR });
     } catch (e) {
         console.error('[handleOpenFolder Exception]:', e.message);
         res.json({ success: false, error: e.message });
@@ -370,13 +370,13 @@ function handleOpenFolder(req, res) {
 async function handleDownloadAllImages(req, res) {
     const { url, title, imageUrl } = req.body;
     if (!url || !url.startsWith('http')) {
-        return res.json({ success: false, error: '有効なURLを入力してください。' });
+        return res.json({ success: false, error: '有効なURLを�E力してください、E });
     }
 
     try {
         console.log(`[Download Request]: URL=${url}, Title=${title}, ImageUrl=${imageUrl}`);
 
-        let count = await processAndDownloadImages(null, url, 'Direct', title || '商品画像', '', imageUrl);
+        let count = await processAndDownloadImages(null, url, 'Direct', title || '啁E��画僁E, '', imageUrl);
 
         let imageUrls = await extractImageUrlsFromPage(url, null);
         if (imageUrl && !imageUrls.includes(imageUrl)) {
@@ -390,7 +390,7 @@ async function handleDownloadAllImages(req, res) {
             count: finalCount,
             imageUrls: imageUrls.slice(0, 15),
             folder: BASE_SAVE_DIR,
-            message: `全 ${finalCount}枚 の画像をデスクトップへ正常保存しました！`
+            message: `全 ${finalCount}极Eの画像をチE��クトップへ正常保存しました�E�`
         });
     } catch (err) {
         console.error('[Download All Images Error]:', err.message);
@@ -399,7 +399,7 @@ async function handleDownloadAllImages(req, res) {
             count: 1,
             imageUrls: imageUrl ? [imageUrl] : [],
             folder: BASE_SAVE_DIR,
-            message: '画像をデスクトップへ正常保存しました！'
+            message: '画像をチE��クトップへ正常保存しました�E�E
         });
     }
 }
@@ -408,7 +408,7 @@ async function handleDownloadAllImages(req, res) {
 async function handleParseUrlMeta(req, res) {
     let { url } = req.body;
     if (!url || typeof url !== 'string') {
-        return res.json({ success: false, error: '有効なURLを入力してください。' });
+        return res.json({ success: false, error: '有効なURLを�E力してください、E });
     }
 
     // Clean duplicate/concatenated protocols or malformed strings
@@ -422,7 +422,7 @@ async function handleParseUrlMeta(req, res) {
         }
     }
     if (!url.startsWith('http')) {
-        return res.json({ success: false, error: '有効なURLを入力してください。' });
+        return res.json({ success: false, error: '有効なURLを�E力してください、E });
     }
 
     try {
@@ -436,7 +436,7 @@ async function handleParseUrlMeta(req, res) {
         let title = '';
         let price = '';
         let imageUrl = '';
-        let shipping = '￥0';
+        let shipping = '�E�0';
         let description = '';
 
         // --- 1. Special Parser for Next.js / Yahoo Fleamarket / PayPay Fleamarket JSON Data (__NEXT_DATA__) ---
@@ -450,7 +450,7 @@ async function handleParseUrlMeta(req, res) {
                     title = item.title || item.name || item.itemTitle || title;
                     if (item.price !== undefined && item.price !== null) {
                         const p = parseInt(item.price, 10);
-                        if (!isNaN(p) && p > 0) price = `￥${p.toLocaleString('ja-JP')}`;
+                        if (!isNaN(p) && p > 0) price = `�E�${p.toLocaleString('ja-JP')}`;
                     }
                     if (item.images && Array.isArray(item.images) && item.images.length > 0) {
                         imageUrl = item.images[0].url || item.images[0].src || (typeof item.images[0] === 'string' ? item.images[0] : imageUrl);
@@ -482,7 +482,7 @@ async function handleParseUrlMeta(req, res) {
                                 const pVal = Array.isArray(target.offers) ? target.offers[0]?.price : target.offers?.price;
                                 if (pVal) {
                                     const p = parseInt(pVal, 10);
-                                    if (!isNaN(p) && p > 0) price = `￥${p.toLocaleString('ja-JP')}`;
+                                    if (!isNaN(p) && p > 0) price = `�E�${p.toLocaleString('ja-JP')}`;
                                 }
                             }
                         }
@@ -515,40 +515,40 @@ async function handleParseUrlMeta(req, res) {
             .replace(/\s*:\s*Amazon.*$/i, '')
             .replace(/\s*-\s*ヤフオク!.*$/i, '')
             .replace(/\s*-\s*Yahoo!オークション.*$/i, '')
-            .replace(/\s*-\s*Yahoo!ショッピング.*$/i, '')
-            .replace(/\s*｜\s*Yahoo!フリマ.*$/i, '')
-            .replace(/\s*-\s*PayPayフリマ.*$/i, '')
-            .replace(/\s*｜\s*PayPayフリマ.*$/i, '')
+            .replace(/\s*-\s*Yahoo!ショチE��ング.*$/i, '')
+            .replace(/\s*�E�\s*Yahoo!フリチE*$/i, '')
+            .replace(/\s*-\s*PayPayフリチE*$/i, '')
+            .replace(/\s*�E�\s*PayPayフリチE*$/i, '')
             .replace(/\s*-\s*メルカリ.*$/i, '')
-            .replace(/\s*-\s*ラクマ.*$/i, '')
-            .replace(/\s*-\s*フリマアプリ ラクマ.*$/i, '')
-            .replace(/\s*-\s*フリマアプリラクマ.*$/i, '')
+            .replace(/\s*-\s*ラクチE*$/i, '')
+            .replace(/\s*-\s*フリマアプリ ラクチE*$/i, '')
+            .replace(/\s*-\s*フリマアプリラクチE*$/i, '')
             .replace(/Yahoo!オークション/gi, '')
-            .replace(/Yahoo!フリマ/gi, '')
-            .replace(/PayPayフリマ/gi, '')
-            .replace(/【/g, ' 【')
-            .replace(/】/g, '】 ')
+            .replace(/Yahoo!フリチEgi, '')
+            .replace(/PayPayフリチEgi, '')
+            .replace(/、Eg, ' 、E)
+            .replace(/、Eg, '、E')
             .replace(/\s+/g, ' ')
             .trim();
 
         // Convert full-width alphanumerics to half-width
-        const normalizedTitle = cleanTitle.replace(/[Ａ-Ｚａ-ｚ０-９－]/g, s => {
-            if (s === '－') return '-';
+        const normalizedTitle = cleanTitle.replace(/[�E�-�E��E�E�E�！E�E�－]/g, s => {
+            if (s === '�E�E) return '-';
             return String.fromCharCode(s.charCodeAt(0) - 0xFEE0);
         });
 
         let brand = '';
-        if (normalizedTitle.match(/Sony|ソニー|PlayStation|PS\s*Vita/i)) brand = 'Sony';
+        if (normalizedTitle.match(/Sony|ソニ�E|PlayStation|PS\s*Vita/i)) brand = 'Sony';
         else if (normalizedTitle.match(/Nikon|ニコン/i)) brand = 'Nikon';
         else if (normalizedTitle.match(/Dyson|ダイソン/i)) brand = 'Dyson';
         else if (normalizedTitle.match(/Panasonic|パナソニック/i)) brand = 'Panasonic';
         else if (normalizedTitle.match(/Makita|マキタ/i)) brand = 'Makita';
-        else if (normalizedTitle.match(/Carmate|カーメイト/i)) brand = 'Carmate';
-        else if (normalizedTitle.match(/Apple|アップル/i)) brand = 'Apple';
+        else if (normalizedTitle.match(/Carmate|カーメイチEi)) brand = 'Carmate';
+        else if (normalizedTitle.match(/Apple|アチE�Eル/i)) brand = 'Apple';
         else if (normalizedTitle.match(/Canon|キヤノン/i)) brand = 'Canon';
-        else if (normalizedTitle.match(/Nintendo|任天堂|ニンテンドー/gi)) brand = 'Nintendo';
+        else if (normalizedTitle.match(/Nintendo|任天堁EニンチE��ド�E/gi)) brand = 'Nintendo';
         else if (normalizedTitle.match(/NGK|エヌジーケー/i)) brand = 'NGK';
-        else if (normalizedTitle.match(/Mercedes[- ]?Benz|メルセデス|ベンツ/i)) brand = 'Mercedes-Benz';
+        else if (normalizedTitle.match(/Mercedes[- ]?Benz|メルセチE��|ベンチEi)) brand = 'Mercedes-Benz';
 
         let mpn = '';
         // Priority 0: Specific Camera & Console Body Series (Nikon 1 J5, EOS Kiss, PS Vita, etc.)
@@ -606,7 +606,7 @@ async function handleParseUrlMeta(req, res) {
             if (strictMetaMatch && strictMetaMatch[1]) {
                 const p = parseInt(strictMetaMatch[1], 10);
                 if (!isNaN(p) && p >= 50 && p < 10000000) {
-                    price = `￥${p.toLocaleString('ja-JP')}`;
+                    price = `�E�${p.toLocaleString('ja-JP')}`;
                 }
             }
         }
@@ -615,9 +615,9 @@ async function handleParseUrlMeta(req, res) {
             const priceRegexes = [
                 /"priceAmount"\s*:\s*"?([0-9.]+)"?/i,
                 /"price"\s*:\s*"?([0-9]+)"?/i,
-                /現在価格[\s\S]*?([0-9,]+)\s*円/i,
-                /即決価格[\s\S]*?([0-9,]+)\s*円/i,
-                /販売価格[\s\S]*?([0-9,]+)\s*円/i,
+                /現在価格[\s\S]*?([0-9,]+)\s*冁Ei,
+                /即決価格[\s\S]*?([0-9,]+)\s*冁Ei,
+                /販売価格[\s\S]*?([0-9,]+)\s*冁Ei,
                 /class="a-price-whole">([0-9,]+)/i
             ];
 
@@ -626,7 +626,7 @@ async function handleParseUrlMeta(req, res) {
                 if (m && m[1]) {
                     const p = parseInt(m[1].replace(/[,.]/g, ''), 10);
                     if (!isNaN(p) && p >= 50 && p < 10000000) {
-                        price = `￥${p.toLocaleString('ja-JP')}`;
+                        price = `�E�${p.toLocaleString('ja-JP')}`;
                         break;
                     }
                 }
@@ -651,28 +651,28 @@ async function handleParseUrlMeta(req, res) {
                         const meta = document.querySelector('meta[name="product:price:amount"], meta[property="product:price:amount"], meta[property="og:price:amount"]');
                         if (meta && meta.getAttribute('content')) {
                             const p = parseInt(meta.getAttribute('content'), 10);
-                            if (!isNaN(p) && p > 0) return `￥${p.toLocaleString('ja-JP')}`;
+                            if (!isNaN(p) && p > 0) return `�E�${p.toLocaleString('ja-JP')}`;
                         }
                         const purchaseBtnEl = Array.from(document.querySelectorAll('button, a')).find(el => el.textContent.includes('購入手続きへ'));
                         if (purchaseBtnEl) {
                             let parent = purchaseBtnEl.parentElement;
                             while (parent && parent !== document.body) {
                                 const text = parent.innerText || '';
-                                const match = text.match(/([0-9,]{3,9})\s*円/);
+                                const match = text.match(/([0-9,]{3,9})\s*冁E);
                                 if (match) {
-                                    return `￥${parseInt(match[1].replace(/,/g, ''), 10).toLocaleString('ja-JP')}`;
+                                    return `�E�${parseInt(match[1].replace(/,/g, ''), 10).toLocaleString('ja-JP')}`;
                                 }
                                 parent = parent.parentElement;
                             }
                         }
                         const el = document.querySelector('[data-testid="product-price"], [data-testid="price"], .merItemPrice, .Price__value, .elPriceNumber, [itemprop="price"], .item__price, [class*="ItemPrice_price"]');
                         if (el && el.textContent) {
-                            const m = el.textContent.match(/¥\s*([0-9,]+)|￥\s*([0-9,]+)|([0-9,]+)\s*円/);
-                            if (m) return `￥${parseInt((m[1]||m[2]||m[3]).replace(/,/g, ''), 10).toLocaleString('ja-JP')}`;
+                            const m = el.textContent.match(/¥\s*([0-9,]+)|�E�\s*([0-9,]+)|([0-9,]+)\s*冁E);
+                            if (m) return `�E�${parseInt((m[1]||m[2]||m[3]).replace(/,/g, ''), 10).toLocaleString('ja-JP')}`;
                         }
                         const bodyText = document.body.innerText || '';
-                        const m2 = bodyText.match(/([0-9,]{3,9})\s*円/);
-                        if (m2) return `￥${parseInt(m2[1].replace(/,/g, ''), 10).toLocaleString('ja-JP')}`;
+                        const m2 = bodyText.match(/([0-9,]{3,9})\s*冁E);
+                        if (m2) return `�E�${parseInt(m2[1].replace(/,/g, ''), 10).toLocaleString('ja-JP')}`;
                         return '';
                     });
                 }
@@ -691,11 +691,11 @@ async function handleParseUrlMeta(req, res) {
         }
 
         if (url.includes('paypay') || url.includes('frima.yahoo.co.jp')) {
-            shipping = '￥0'; // ヤフーフリマは基本的に出品者負担(送料無料)
+            shipping = '�E�0'; // ヤフ�Eフリマ�E基本皁E��出品老E��拁E送料無斁E
         } else if (rawHtml.match(/送料別|着払い|送料有料/i)) {
-            const shipMatch = rawHtml.match(/送料\s*([0-9,]+)\s*円/i);
+            const shipMatch = rawHtml.match(/送料\s*([0-9,]+)\s*冁Ei);
             if (shipMatch && shipMatch[1]) {
-                shipping = `￥${parseInt(shipMatch[1].replace(/,/g, '')).toLocaleString('ja-JP')}`;
+                shipping = `�E�${parseInt(shipMatch[1].replace(/,/g, '')).toLocaleString('ja-JP')}`;
             } else {
                 shipping = '送料別';
             }
@@ -751,7 +751,7 @@ function fetchUrlHtml(targetUrl) {
         req.on('error', reject);
         req.setTimeout(8000, () => {
             req.destroy();
-            reject(new Error('URL読み込みタイムアウト'));
+            reject(new Error('URL読み込みタイムアウチE));
         });
     });
 }
@@ -793,9 +793,9 @@ async function handleTranslateTitle(req, res) {
         let textToTranslate = text
             .replace(/【美品】|美品/gi, '[Excellent]')
             .replace(/【極美品】|極美品/gi, '[Mint]')
-            .replace(/【未使用品】|未使用品/gi, '[Unused]')
-            .replace(/充電器|ACアダプター/gi, 'AC Charger Power Supply')
-            .replace(/即日発送/gi, 'Fast Shipping')
+            .replace(/【未使用品】|未使用品Egi, '[Unused]')
+            .replace(/允E��器|ACアダプター/gi, 'AC Charger Power Supply')
+            .replace(/即日発送Egi, 'Fast Shipping')
             .replace(/純正/gi, 'Genuine');
 
         const hasJapanese = /[\u3000-\u303f\u3040-\u309f\u30a0-\u30ff\uff00-\uffef\u4e00-\u9faf]/.test(textToTranslate);
@@ -827,14 +827,14 @@ let activeProcess = null;
 let activeProcessLog = [];
 
 app.get('/api/trigger-sync', (req, res) => {
-    console.log('[TriggerSync]: 外部からの定時アクセスを受信しました。同期処理を起動します。');
+    console.log('[TriggerSync]: 外部からの定時アクセスを受信しました。同期�E琁E��起動します、E);
     runHourlyScheduledSync(true);
-    res.json({ success: true, message: '自動同期処理を即座に起動しました' });
+    res.json({ success: true, message: '自動同期�E琁E��即座に起動しました' });
 });
 app.post('/api/trigger-sync', (req, res) => {
-    console.log('[TriggerSync]: 外部からの定時アクセスを受信しました。同期処理を起動します。');
+    console.log('[TriggerSync]: 外部からの定時アクセスを受信しました。同期�E琁E��起動します、E);
     runHourlyScheduledSync(true);
-    res.json({ success: true, message: '自動同期処理を即座に起動しました' });
+    res.json({ success: true, message: '自動同期�E琁E��即座に起動しました' });
 });
 
 let isAutoScheduleEnabled = true;
@@ -843,25 +843,24 @@ let lastScheduledHour = -1;
 function runHourlyScheduledSync(isForced = false) {
     if (!isAutoScheduleEnabled && !isForced) return;
     if (activeProcess) {
-        console.log('[AutoSchedule]: 処理がすでに実行中のため、自動スケジュールをスキップしました。');
+        console.log('[AutoSchedule]: 処琁E��すでに実行中のため、�E動スケジュールをスキチE�Eしました、E);
         return;
     }
 
     const now = new Date();
     const currentHour = now.getHours();
     
-    // 朝6時から夜12時（0時）までの時間帯判定 (06:00 - 24:00) または強制実行
-    const isTargetHour = (currentHour >= 6 || currentHour === 0) || isForced;
+    // 朁E時から夁E2時！E時）までの時間帯判宁E(06:00 - 24:00) また�E強制実衁E    const isTargetHour = (currentHour >= 6 || currentHour === 0) || isForced;
 
     if (!isTargetHour) {
-        console.log(`[AutoSchedule]: 現在の時刻 (${currentHour}:00) は深夜帯(01:00-05:59)のためスキップしました。`);
+        console.log(`[AutoSchedule]: 現在の時刻 (${currentHour}:00) は深夜帯(01:00-05:59)のためスキチE�Eしました。`);
         return;
     }
 
     const scriptPath = path.join(__dirname, 'process_with_line_notify.js');
-    console.log(`⏰ [AutoSchedule]: 自動スケジュール同期を起動しました (時刻: ${currentHour}:00, モード: LINE通知モード)`);
+    console.log(`⏰ [AutoSchedule]: 自動スケジュール同期を起動しました (時刻: ${currentHour}:00, モーチE LINE通知モーチE`);
 
-    activeProcessLog = [`⏰ [${now.toLocaleTimeString()}] 自動スケジュール同期起動 (朝6時〜夜12時 毎時LINE通知モード): process_with_line_notify.js`];
+    activeProcessLog = [`⏰ [${now.toLocaleTimeString()}] 自動スケジュール同期起勁E(朁E時〜夁E2晁E毎時LINE通知モーチE: process_with_line_notify.js`];
 
     activeProcess = spawn('node', [scriptPath], {
         cwd: __dirname,
@@ -879,7 +878,7 @@ function runHourlyScheduledSync(isForced = false) {
     });
 
     activeProcess.on('close', (code) => {
-        activeProcessLog.push(`\n✅ [${new Date().toLocaleTimeString()}] 自動スケジュール同期完了 (終了コード: ${code})`);
+        activeProcessLog.push(`\n✁E[${new Date().toLocaleTimeString()}] 自動スケジュール同期完亁E(終亁E��ーチE ${code})`);
         activeProcess = null;
     });
 }
@@ -899,9 +898,9 @@ setInterval(() => {
 app.get('/api/schedule-status', (req, res) => {
     res.json({
         enabled: isAutoScheduleEnabled,
-        scheduleRange: '朝 6:00 〜 夜 24:00 (毎時 00 分)',
-        mode: '📱 LINE通知モード',
-        lastRunHour: lastScheduledHour >= 0 ? `${lastScheduledHour}:00` : '次回正時に自動起動'
+        scheduleRange: '朁E6:00 、E夁E24:00 (毎時 00 刁E',
+        mode: '📱 LINE通知モーチE,
+        lastRunHour: lastScheduledHour >= 0 ? `${lastScheduledHour}:00` : '次回正時に自動起勁E
     });
 });
 
@@ -909,7 +908,7 @@ app.post('/api/schedule-toggle', (req, res) => {
     isAutoScheduleEnabled = !isAutoScheduleEnabled;
     res.json({
         enabled: isAutoScheduleEnabled,
-        message: isAutoScheduleEnabled ? '自動スケジュール同期を有効化しました。' : '自動スケジュール同期を一時停止しました。'
+        message: isAutoScheduleEnabled ? '自動スケジュール同期を有効化しました、E : '自動スケジュール同期を一時停止しました、E
     });
 });
 
@@ -945,7 +944,7 @@ app.post('/api/config', (req, res) => {
 // Run Sync Script
 app.post('/api/run-sync', (req, res) => {
     if (activeProcess) {
-        return res.status(400).json({ success: false, message: 'すでに処理が実行中です。完了までお待ちください。' });
+        return res.status(400).json({ success: false, message: 'すでに処琁E��実行中です。完亁E��でお征E��ください、E });
     }
 
     const { mode } = req.body;
@@ -958,7 +957,7 @@ app.post('/api/run-sync', (req, res) => {
     }
 
     const scriptPath = path.join(__dirname, scriptFile);
-    activeProcessLog = [`🚀 [${new Date().toLocaleTimeString()}] スクリプト起動: ${scriptFile}`];
+    activeProcessLog = [`🚀 [${new Date().toLocaleTimeString()}] スクリプト起勁E ${scriptFile}`];
 
     activeProcess = spawn('node', [scriptPath], {
         cwd: __dirname,
@@ -976,7 +975,7 @@ app.post('/api/run-sync', (req, res) => {
     });
 
     activeProcess.on('close', (code) => {
-        activeProcessLog.push(`\n✅ [${new Date().toLocaleTimeString()}] 処理完了 (終了コード: ${code})`);
+        activeProcessLog.push(`\n✁E[${new Date().toLocaleTimeString()}] 処琁E��亁E(終亁E��ーチE ${code})`);
         activeProcess = null;
     });
 
@@ -1027,23 +1026,23 @@ process.on('unhandledRejection', (reason, promise) => {
 
 if (!process.env.RENDER) {
     ebayApp.listen(EBAY_PORT, '0.0.0.0', () => {
-        console.log(`⚡ eBay Title & Description Generator サーバー起動完了!`);
-        console.log(`👉 eBayツール URL: http://localhost:${EBAY_PORT}`);
+        console.log(`⚡ eBay Title & Description Generator サーバ�E起動完亁E`);
+        console.log(`👉 eBayチE�Eル URL: http://localhost:${EBAY_PORT}`);
     });
 }
 
 const server = app.listen(PORT, '0.0.0.0', () => {
     console.log(`=================================================`);
-    console.log(`🚀 商管どん UI ダッシュボード サーバー起動完了!`);
-    console.log(`👉 ポート: ${PORT}`);
+    console.log(`🚀 啁E��どめEUI ダチE��ュボ�EチEサーバ�E起動完亁E`);
+    console.log(`👉 ポ�EチE ${PORT}`);
     if (!process.env.RENDER) {
-        console.log(`👉 eBayツール URL: http://localhost:${EBAY_PORT}`);
+        console.log(`👉 eBayチE�Eル URL: http://localhost:${EBAY_PORT}`);
     }
     console.log(`=================================================`);
 });
 server.on('error', (err) => {
     console.error('[Server Error]:', err.message);
     if (err.code === 'EADDRINUSE') {
-        console.error(`ポート ${PORT} は既に使用中です。`);
+        console.error(`ポ�EチE${PORT} は既に使用中です。`);
     }
 });

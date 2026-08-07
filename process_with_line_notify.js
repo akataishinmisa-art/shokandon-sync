@@ -5,10 +5,25 @@ const https = require('https');
 const http = require('http');
 const { google } = require('googleapis');
 
-const chromePath = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
-const edgePath = 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe';
-const linuxChromePath = process.env.CHROMIUM_PATH || '/usr/bin/chromium' || '/usr/bin/google-chrome';
-const executablePath = fs.existsSync(linuxChromePath) ? linuxChromePath : (fs.existsSync(chromePath) ? chromePath : edgePath);
+function getExecutablePath() {
+    if (process.platform === 'linux') {
+        const linuxPaths = [
+            process.env.CHROMIUM_PATH,
+            '/usr/bin/chromium',
+            '/usr/bin/chromium-browser',
+            '/usr/bin/google-chrome',
+            '/usr/bin/google-chrome-stable'
+        ].filter(Boolean);
+        for (const p of linuxPaths) {
+            if (fs.existsSync(p)) return p;
+        }
+        return '/usr/bin/chromium';
+    }
+    const chromePath = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
+    const edgePath = 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe';
+    return fs.existsSync(chromePath) ? chromePath : edgePath;
+}
+const executablePath = getExecutablePath();
 
 const CONFIG_PATH = path.join(__dirname, 'config.json');
 const SPREADSHEET_ID = '15skxiK9eL6JDzq76JX3_3uS5-puJIqGGZngv3bJ4iv4';
