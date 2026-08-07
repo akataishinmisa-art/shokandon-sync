@@ -1,4 +1,4 @@
-const puppeteer = require('puppeteer');
+const puppeteer = require('puppeteer-core');
 const fs = require('fs');
 const path = require('path');
 const https = require('https');
@@ -348,15 +348,28 @@ const parseNum = (val) => {
     const rowValues = sheetData.data.sheets[0].data[0].rowData || [];
     console.log(`Found ${rowValues.length} rows in Spreadsheet.`);
 
-    console.log(`🌐 Launching Puppeteer browser for web scraping...`);
-    const launchOptions = {
-        headless: true,
-        args: ['--no-sandbox', '--disable-setuid-sandbox', '--window-size=1400,900']
-    };
-    if (executablePath && fs.existsSync(executablePath)) {
-        launchOptions.executablePath = executablePath;
+    console.log(`🌐 Launching Puppeteer browser for web scraping (platform: ${process.platform})...`);
+    let browser;
+    if (process.platform === 'linux') {
+        const chromium = require('@sparticuz/chromium');
+        console.log('🐧 Using @sparticuz/chromium for Linux/Render');
+        browser = await puppeteer.launch({
+            args: chromium.args,
+            defaultViewport: chromium.defaultViewport,
+            executablePath: await chromium.executablePath(),
+            headless: chromium.headless,
+        });
+    } else {
+        const chromePath = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
+        const edgePath = 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe';
+        const execPath = fs.existsSync(chromePath) ? chromePath : edgePath;
+        console.log(`🪟 Using local browser on Windows: ${execPath}`);
+        browser = await puppeteer.launch({
+            executablePath: execPath,
+            headless: true,
+            args: ['--no-sandbox', '--disable-setuid-sandbox', '--window-size=1400,900']
+        });
     }
-    const browser = await puppeteer.launch(launchOptions);
 
     const missingItemsList = [];
 
@@ -370,9 +383,22 @@ const parseNum = (val) => {
         const bCell = rowObj.values[1] || {};
         const bFormatted = bCell.formattedValue || '';
         let targetUrl = bCell.hyperlink || '';
+        if (!targetUrl && bCell.textFormatRuns && Array.isArray(bCell.textFormatRuns)) {
+            for (const run of bCell.textFormatRuns) {
+                if (run.format && run.format.link && run.format.link.uri) {
+                    targetUrl = run.format.link.uri;
+                    break;
+                }
+            }
+        }
         if (!targetUrl && bCell.userEnteredValue && bCell.userEnteredValue.formulaValue) {
             const match = bCell.userEnteredValue.formulaValue.match(/HYPERLINK\("([^"]+)"/i);
             if (match) targetUrl = match[1];
+        }
+        if (!targetUrl) {
+            const jsonStr = JSON.stringify(bCell);
+            const match = jsonStr.match(/https?:\/\/[^\s"'\\]+/i);
+            if (match) targetUrl = match[0];
         }
         if (!targetUrl && bFormatted.startsWith('http')) {
             targetUrl = bFormatted;
