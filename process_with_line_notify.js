@@ -351,7 +351,7 @@ const parseNum = (val) => {
     console.log(`🌐 Launching Puppeteer browser for web scraping (platform: ${process.platform})...`);
     let browser;
     if (process.platform === 'linux') {
-        const chromiumMod = await import('@sparticuz/chromium');
+        const chromiumMod = await eval('import("@sparticuz/chromium")');
         const chromium = chromiumMod.default || chromiumMod;
         console.log('🐧 Using @sparticuz/chromium for Linux/Render');
         browser = await puppeteer.launch({
