@@ -1,4 +1,4 @@
-const puppeteer = require('puppeteer-core');
+const puppeteer = require('puppeteer');
 const fs = require('fs');
 const path = require('path');
 const https = require('https');
@@ -349,28 +349,19 @@ const parseNum = (val) => {
     console.log(`Found ${rowValues.length} rows in Spreadsheet.`);
 
     console.log(`🌐 Launching Puppeteer browser for web scraping (platform: ${process.platform})...`);
-    let browser;
-    if (process.platform === 'linux') {
-        const chromiumMod = await eval('import("@sparticuz/chromium")');
-        const chromium = chromiumMod.default || chromiumMod;
-        console.log('🐧 Using @sparticuz/chromium for Linux/Render');
-        browser = await puppeteer.launch({
-            args: chromium.args,
-            defaultViewport: chromium.defaultViewport,
-            executablePath: await chromium.executablePath(),
-            headless: chromium.headless,
-        });
-    } else {
-        const chromePath = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
-        const edgePath = 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe';
-        const execPath = fs.existsSync(chromePath) ? chromePath : edgePath;
-        console.log(`🪟 Using local browser on Windows: ${execPath}`);
-        browser = await puppeteer.launch({
-            executablePath: execPath,
-            headless: true,
-            args: ['--no-sandbox', '--disable-setuid-sandbox', '--window-size=1400,900']
-        });
+    const chromePath = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
+    const edgePath = 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe';
+    const localExecPath = fs.existsSync(chromePath) ? chromePath : (fs.existsSync(edgePath) ? edgePath : null);
+
+    const launchOpts = {
+        headless: true,
+        args: ['--no-sandbox', '--disable-setuid-sandbox', '--window-size=1400,900']
+    };
+    if (process.platform === 'win32' && localExecPath) {
+        launchOpts.executablePath = localExecPath;
     }
+
+    const browser = await puppeteer.launch(launchOpts);
 
     const missingItemsList = [];
 
