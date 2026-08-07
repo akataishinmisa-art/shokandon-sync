@@ -348,7 +348,7 @@ const parseNum = (val) => {
     const rowValues = sheetData.data.sheets[0].data[0].rowData || [];
     console.log(`Found ${rowValues.length} rows in Spreadsheet.`);
 
-    console.log('🌐 Launching Puppeteer browser for web scraping...');
+    console.log(`🌐 Launching Puppeteer browser for web scraping (platform: ${process.platform}, path: ${executablePath})...`);
     const browser = await puppeteer.launch({
         executablePath: executablePath,
         headless: true,
