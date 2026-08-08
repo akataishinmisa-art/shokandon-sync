@@ -360,9 +360,22 @@ const parseNum = (val) => {
             newE = currentEValue;
             newF = '欠品';
             newG = '出品取り消し';
+        } else if (itemData.title === '取得エラー' || (itemData.title === 'Amazon.co.jp' && !itemData.price)) {
+            console.log(`Row ${r}: Scraping failed or returned invalid placeholder ('${itemData.title}'). Preserving existing sheet values.`);
+            const cCell = rowObj.values[2] || {};
+            const fCell = rowObj.values[5] || {};
+            newTitle = cCell.formattedValue || '';
+            newD = currentDValue;
+            newE = currentEValue;
+            newF = fCell.formattedValue || '販売中';
         } else {
-            newTitle = itemData.title;
-            if (!currentDValue) {
+            newTitle = itemData.title || (rowObj.values[2] ? rowObj.values[2].formattedValue : '');
+            if (!itemData.price) {
+                // 価格が取れなかった場合は既存の価格をそのまま維持
+                newD = currentDValue;
+                newE = currentEValue;
+                newF = '販売中';
+            } else if (!currentDValue) {
                 console.log(`Row ${r} D is empty. Writing price '${itemData.price}' to D.`);
                 newD = itemData.price;
                 newE = currentEValue;
