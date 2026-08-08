@@ -909,6 +909,16 @@ let lastScheduledHour = -1;
 
 function runHourlyScheduledSync(isForced = false) {
     if (!isAutoScheduleEnabled && !isForced) return;
+
+    const now = new Date();
+    const currentHour = now.getHours();
+
+    // 1時間に1回のみ実行する安全装置（同じ時間帯での重複実行を防止）
+    if (!isForced && lastScheduledHour === currentHour) {
+        console.log(`[AutoSchedule]: ${currentHour}時台の自動同期は既に実行済みのためスキップしました。`);
+        return;
+    }
+
     if (activeProcess && !isForced) {
         console.log('[AutoSchedule]: 処理がすでに実行中のため、自動スケジュールをスキップしました');
         return;
@@ -918,8 +928,7 @@ function runHourlyScheduledSync(isForced = false) {
         activeProcess = null;
     }
 
-    const now = new Date();
-    const currentHour = now.getHours();
+    lastScheduledHour = currentHour;
     
     // 朝6時から夜12時（0時）までの時間帯判定 (06:00 - 24:00) または強制実行
     const isTargetHour = (currentHour >= 6 || currentHour === 0) || isForced;
