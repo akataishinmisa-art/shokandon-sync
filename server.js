@@ -888,6 +888,11 @@ app.post('/api/translate-title', handleTranslateTitle);
 let activeProcess = null;
 let activeProcessLog = [];
 
+app.get('/api/wakeup', (req, res) => {
+    console.log('[Wakeup]: クラウドサーバーのウェイクアップアクセス（たたき起こし）を受信しました。');
+    res.json({ success: true, message: 'サーバーは正常に起動・待機中です' });
+});
+
 app.get('/api/trigger-sync', (req, res) => {
     console.log('[TriggerSync]: 外部からの定時アクセスを受信しました。同期処理を起動します。');
     runHourlyScheduledSync(true);
