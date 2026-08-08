@@ -256,7 +256,10 @@ document.addEventListener('DOMContentLoaded', () => {
             card.innerHTML = `
                 <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.4rem;">
                     <span style="font-weight: 700; color: #38bdf8; font-size: 0.9rem;">👤 顧客アカウント #${index + 1}</span>
-                    <button type="button" class="btn-delete-user" data-index="${index}" style="background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid #ef4444; border-radius: 4px; padding: 0.15rem 0.5rem; font-size: 0.75rem; cursor: pointer;">削除</button>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <span style="font-size: 0.72rem; color: #a7f3d0; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); padding: 0.1rem 0.4rem; border-radius: 4px;">📅 登録日: ${user.createdAt || '2026/08/08'}</span>
+                        <button type="button" class="btn-delete-user" data-index="${index}" style="background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid #ef4444; border-radius: 4px; padding: 0.15rem 0.5rem; font-size: 0.75rem; cursor: pointer;">削除</button>
+                    </div>
                 </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
                     <div>
@@ -325,6 +328,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (addSaasUserBtn) {
         addSaasUserBtn.addEventListener('click', () => {
+            const today = new Date().toLocaleDateString('ja-JP', { year: 'numeric', month: '2-digit', day: '2-digit' });
             currentSaasUsers.push({
                 id: 'user_' + Date.now(),
                 name: `新規顧客 ${currentSaasUsers.length + 1}`,
@@ -333,6 +337,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 lineUserId: '',
                 mode: 'line_transfer',
                 enabled: true,
+                createdAt: today,
                 lastSyncTime: '未実行',
                 lastStatus: '待機中'
             });
