@@ -131,24 +131,39 @@ async function getYahooItemData(url) {
     return { title, price, isClosed, statusText, html };
 }
 
-async function getItemDataPuppeteer(browser, url) {
+async function getItemDataPuppeteerOnce(browser, url) {
     const page = await browser.newPage();
     await page.setViewport({ width: 1400, height: 900 });
-    await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
+    await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36');
+    await page.setExtraHTTPHeaders({
+        'Accept-Language': 'ja-JP,ja;q=0.9,en-US;q=0.8,en;q=0.7'
+    });
+    await page.evaluateOnNewDocument(() => {
+        Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
+    });
 
     try {
-        await page.goto(url, { waitUntil: 'networkidle2', timeout: 60000 });
-        await page.evaluate(() => new Promise(r => setTimeout(r, 3000)));
+        await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
+        await page.evaluate(() => new Promise(r => setTimeout(r, 2500)));
 
         const html = await page.content();
-        const info = await page.evaluate((targetUrl) => {
+        let info = await page.evaluate((targetUrl) => {
             let title = '';
             let price = '';
             let isClosed = false;
 
             if (targetUrl.includes('amazon.co.jp')) {
                 const titleEl = document.querySelector('#productTitle') || document.querySelector('h1');
-                title = titleEl ? titleEl.textContent.trim() : document.title;
+                title = titleEl ? titleEl.textContent.trim() : '';
+                if (!title || title === 'Amazon.co.jp') {
+                    const ogTitle = document.querySelector('meta[property="og:title"]') || document.querySelector('meta[name="title"]');
+                    if (ogTitle && ogTitle.getAttribute('content')) {
+                        title = ogTitle.getAttribute('content').replace(/^Amazon\s*\|\s*/i, '').trim();
+                    }
+                }
+                if (!title || title === 'Amazon.co.jp') {
+                    title = document.title.replace(/^Amazon\s*\|\s*/i, '').trim();
+                }
 
                 const priceEl = document.querySelector('.priceToPay') ||
                                 document.querySelector('#corePrice_feature_div .a-price .a-offscreen') ||
@@ -162,46 +177,15 @@ async function getItemDataPuppeteer(browser, url) {
                 const availabilityEl = document.querySelector('#availability');
                 const availText = availabilityEl ? availabilityEl.textContent.trim() : '';
                 isClosed = availText.includes('一時的に在庫切れ') || availText.includes('現在お取り扱いしておりません') || availText.includes('在庫切れ');
-            } else if (targetUrl.includes('aliexpress.com')) {
-                const titleEl = document.querySelector('h1[data-pl="product-title"]') || document.querySelector('h1');
-                title = titleEl ? titleEl.textContent.trim() : document.title;
-
-                let currentPriceEl = document.querySelector('[class*="price"][class*="current"]') ||
-                                     document.querySelector('[class*="currentPrice"]') ||
-                                     document.querySelector('.product-price-current');
-
-                if (!currentPriceEl) {
-                    const candidates = Array.from(document.querySelectorAll('*')).filter(el => {
-                        const text = el.childNodes.length === 1 && el.childNodes[0].nodeType === 3 ? el.textContent.trim() : '';
-                        if (!text.includes('円') || text.length > 20) return false;
-
-                        const style = window.getComputedStyle(el);
-                        const isLineThrough = (style.textDecorationLine || '').includes('line-through') || (style.textDecoration || '').includes('line-through');
-                        const isSavings = text.includes('お買得') || text.includes('OFF') || text.includes('引き');
-
-                        return !isLineThrough && !isSavings;
-                    });
-
-                    if (candidates.length > 0) {
-                        candidates.sort((a, b) => parseFloat(window.getComputedStyle(b).fontSize) - parseFloat(window.getComputedStyle(a).fontSize));
-                        currentPriceEl = candidates[0];
-                    }
-                }
-
-                let rawPrice = currentPriceEl ? currentPriceEl.textContent.trim() : '';
-                if (rawPrice.includes('円')) {
-                    const priceMatch = rawPrice.match(/([0-9,]+円)/);
-                    price = priceMatch ? priceMatch[1] : rawPrice;
-                } else {
-                    price = rawPrice;
-                }
-
-                const mainArea = document.querySelector('#root') || document.body;
-                const mainText = mainArea ? mainArea.textContent : '';
-                isClosed = mainText.includes('Page Not Found') || mainText.includes('Sorry, this item is no longer available');
             } else if (targetUrl.includes('mercari.com')) {
                 const titleEl = document.querySelector('[data-testid="item-name"]') || document.querySelector('h1');
-                title = titleEl ? titleEl.textContent.trim() : document.title.replace(' - メルカリ', '');
+                title = titleEl ? titleEl.textContent.trim() : '';
+                if (!title) {
+                    const ogTitle = document.querySelector('meta[property="og:title"]');
+                    if (ogTitle && ogTitle.getAttribute('content')) {
+                        title = ogTitle.getAttribute('content').replace(' - メルカリ', '').trim();
+                    }
+                }
 
                 const metaPrice = document.querySelector('meta[name="product:price:amount"], meta[property="product:price:amount"]');
                 if (metaPrice && metaPrice.getAttribute('content')) {
@@ -307,12 +291,80 @@ async function getItemDataPuppeteer(browser, url) {
             return { title, price, isClosed, statusText };
         }, url);
 
+        // HTML/JSON Backup extraction if DOM evaluation returned incomplete data
+        if (url.includes('mercari.com')) {
+            const nextDataMatch = html.match(/<script id="__NEXT_DATA__" type="application\/json">(.*?)<\/script>/);
+            if (nextDataMatch) {
+                try {
+                    const nextJson = JSON.parse(nextDataMatch[1]);
+                    const itemObj = (nextJson.props && nextJson.props.pageProps && (nextJson.props.pageProps.item || (nextJson.props.pageProps.initialState && nextJson.props.pageProps.initialState.item))) || null;
+                    if (itemObj) {
+                        if (!info.title || info.title === 'メルカリ') info.title = itemObj.name || info.title;
+                        if (!info.price && itemObj.price) info.price = parseInt(itemObj.price, 10).toLocaleString('ja-JP') + '円';
+                        if (itemObj.status === 'ITEM_STATUS_SOLDOUT' || itemObj.status === 'ITEM_STATUS_TRADING') {
+                            info.isClosed = true;
+                            info.statusText = '欠品';
+                        }
+                    }
+                } catch (e) {}
+            }
+            if (!info.title || info.title === 'メルカリ') {
+                const ogTitle = html.match(/<meta\s+property="og:title"\s+content="([^"]+)"/i);
+                if (ogTitle) info.title = ogTitle[1].replace(' - メルカリ', '').trim();
+            }
+            if (!info.price) {
+                const metaPrice = html.match(/<meta\s+(?:name|property)="product:price:amount"\s+content="([0-9]+)"/i);
+                if (metaPrice) info.price = parseInt(metaPrice[1], 10).toLocaleString('ja-JP') + '円';
+            }
+            if (html.includes('"isSoldOut":true') || html.includes('ITEM_STATUS_SOLDOUT')) {
+                info.isClosed = true;
+                info.statusText = '欠品';
+            }
+        } else if (url.includes('amazon.co.jp')) {
+            if (!info.title || info.title === 'Amazon.co.jp') {
+                const ogTitle = html.match(/<meta\s+property="og:title"\s+content="([^"]+)"/i) || html.match(/<title>(.*?)<\/title>/i);
+                if (ogTitle) info.title = ogTitle[1].replace(/^Amazon\s*\|\s*/i, '').trim();
+            }
+            if (!info.price) {
+                const priceMatch = html.match(/class="a-price-whole">([0-9,]+)/i) || html.match(/￥\s*([0-9,]+)/);
+                if (priceMatch && priceMatch[1]) {
+                    const pDigits = priceMatch[1].replace(/,/g, '');
+                    if (pDigits) info.price = parseInt(pDigits, 10).toLocaleString('ja-JP') + '円';
+                }
+            }
+            if (html.includes('一時的に在庫切れ') || html.includes('現在お取り扱いしておりません') || html.includes('在庫切れ')) {
+                info.isClosed = true;
+                info.statusText = '欠品';
+            }
+        }
+
         return { ...info, html, page };
     } catch (e) {
-        await page.close();
+        await page.close().catch(() => {});
         console.error('Puppeteer error for', url, e.message);
-        return { title: '取得エラー', price: '', isClosed: false, statusText: '販売中', html: '', page: null };
+        return { title: '', price: '', isClosed: false, statusText: '販売中', html: '', page: null };
     }
+}
+
+async function getItemDataPuppeteer(browser, url) {
+    let attempts = 0;
+    let result = null;
+
+    while (attempts < 2) {
+        attempts++;
+        result = await getItemDataPuppeteerOnce(browser, url);
+        const isValid = result.title && result.title !== '取得エラー' && (result.title !== 'Amazon.co.jp' || result.price);
+        if (isValid) {
+            return result;
+        }
+        if (result.page) {
+            await result.page.close().catch(() => {});
+            result.page = null;
+        }
+        console.log(`[Scrape Retry]: Attempt ${attempts} for ${url} produced incomplete data. Retrying...`);
+        await new Promise(r => setTimeout(r, 2000));
+    }
+    return result || { title: '', price: '', isClosed: false, statusText: '販売中', html: '', page: null };
 }
 
 function getGoogleAuth() {
