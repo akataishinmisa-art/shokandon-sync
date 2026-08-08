@@ -904,6 +904,31 @@ app.post('/api/trigger-sync', (req, res) => {
     res.json({ success: true, message: '自動同期処理を即座に起動しました' });
 });
 
+app.get('/api/saas/users', (req, res) => {
+    const usersPath = path.join(__dirname, 'users_config.json');
+    try {
+        if (fs.existsSync(usersPath)) {
+            const data = JSON.parse(fs.readFileSync(usersPath, 'utf8'));
+            return res.json({ success: true, users: data });
+        }
+    } catch (e) {}
+    res.json({ success: true, users: [] });
+});
+
+app.post('/api/saas/users', (req, res) => {
+    const usersPath = path.join(__dirname, 'users_config.json');
+    const { users } = req.body;
+    if (!Array.isArray(users)) {
+        return res.status(400).json({ success: false, message: 'Invalid users array' });
+    }
+    try {
+        fs.writeFileSync(usersPath, JSON.stringify(users, null, 2), 'utf8');
+        res.json({ success: true, message: 'ユーザー設定を更新しました。' });
+    } catch (e) {
+        res.status(500).json({ success: false, error: e.message });
+    }
+});
+
 let isAutoScheduleEnabled = true;
 let lastScheduledHour = -1;
 
@@ -938,10 +963,10 @@ function runHourlyScheduledSync(isForced = false) {
         return;
     }
 
-    const scriptPath = path.join(__dirname, 'process_with_line_notify.js');
-    console.log(`⏰ [AutoSchedule]: 自動スケジュール同期を起動しました (時刻: ${currentHour}:00, モード: LINE通知モード)`);
+    const scriptPath = path.join(__dirname, 'saas_batch_engine.js');
+    console.log(`⏰ [AutoSchedule]: SaaSマルチユーザー同期エンジンを起動しました (時刻: ${currentHour}:00)`);
 
-    activeProcessLog = [`⏰ [${now.toLocaleTimeString()}] 自動スケジュール同期起動 (朝6時〜夜12時 毎時LINE通知モード): process_with_line_notify.js`];
+    activeProcessLog = [`⏰ [${now.toLocaleTimeString()}] 自動スケジュール同期起動 (全SaaSユーザー対象一括監視): saas_batch_engine.js`];
 
     activeProcess = spawn('node', [scriptPath], {
         cwd: __dirname,

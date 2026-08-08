@@ -220,6 +220,29 @@
                     <pre class="terminal-body" id="terminalLog">実行ログがここに表示されます...</pre>
                 </section>
 
+                <!-- SaaS Customer Multi-Tenant Management Panel -->
+                <section class="card compact-settings-card" style="margin-top: 1rem; border: 1px solid rgba(59, 130, 246, 0.4); background: rgba(15, 23, 42, 0.75);">
+                    <details class="settings-details" open>
+                        <summary class="settings-summary" style="color: #60a5fa; font-weight: 700;">
+                            <span>👑 SaaS顧客管理・スプレッドシートアカウント設定</span>
+                            <span class="summary-arrow">▼</span>
+                        </summary>
+                        <div class="settings-content" style="padding-top: 0.8rem;">
+                            <p style="font-size: 0.82rem; color: #94a3b8; margin-bottom: 0.8rem;">登録された顧客のスプレッドシート・LINE設定を24時間自動監視・同期します。</p>
+                            
+                            <div id="saasUsersList" style="display: flex; flex-direction: column; gap: 0.8rem;">
+                                <!-- User Items rendered dynamically -->
+                            </div>
+
+                            <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                                <button type="button" class="btn-secondary" id="addSaasUserBtn" style="font-size: 0.82rem; padding: 0.4rem 0.8rem;">➕ 顧客アカウントを追加</button>
+                                <button type="button" class="btn-primary" id="saveSaasUsersBtn" style="font-size: 0.82rem; padding: 0.4rem 0.8rem; background: #3b82f6;">💾 顧客設定を保存</button>
+                            </div>
+                            <div class="alert-msg" id="saasUsersAlert" style="margin-top: 0.5rem;"></div>
+                        </div>
+                    </details>
+                </section>
+
                 <!-- Compact LINE API Settings Card -->
                 <section class="card compact-settings-card">
                     <details class="settings-details">

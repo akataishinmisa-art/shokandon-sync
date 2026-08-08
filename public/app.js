@@ -219,4 +219,152 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         });
+
+    // --- SaaS Multi-Tenant Users Management Logic ---
+    const saasUsersList = document.getElementById('saasUsersList');
+    const addSaasUserBtn = document.getElementById('addSaasUserBtn');
+    const saveSaasUsersBtn = document.getElementById('saveSaasUsersBtn');
+    const saasUsersAlert = document.getElementById('saasUsersAlert');
+
+    let currentSaasUsers = [];
+
+    function loadSaasUsers() {
+        if (!saasUsersList) return;
+        fetch('/api/saas/users')
+            .then(res => res.json())
+            .then(data => {
+                if (data.success && Array.isArray(data.users)) {
+                    currentSaasUsers = data.users;
+                    renderSaasUsers();
+                }
+            })
+            .catch(() => {});
+    }
+
+    function renderSaasUsers() {
+        if (!saasUsersList) return;
+        saasUsersList.innerHTML = '';
+
+        if (currentSaasUsers.length === 0) {
+            saasUsersList.innerHTML = '<div style="font-size: 0.8rem; color: #64748b;">登録された顧客アカウントはありません。</div>';
+            return;
+        }
+
+        currentSaasUsers.forEach((user, index) => {
+            const card = document.createElement('div');
+            card.style.cssText = 'background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(148, 163, 184, 0.2); border-radius: 8px; padding: 0.8rem; display: flex; flex-direction: column; gap: 0.5rem;';
+            card.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.4rem;">
+                    <span style="font-weight: 700; color: #38bdf8; font-size: 0.9rem;">👤 顧客アカウント #${index + 1}</span>
+                    <button type="button" class="btn-delete-user" data-index="${index}" style="background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid #ef4444; border-radius: 4px; padding: 0.15rem 0.5rem; font-size: 0.75rem; cursor: pointer;">削除</button>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                    <div>
+                        <label style="font-size: 0.75rem; color: #94a3b8;">顧客名 / アカウント名</label>
+                        <input type="text" class="user-name-input" data-index="${index}" value="${user.name || ''}" placeholder="例: A社 様 / ユーザー1" style="width: 100%; background: #0f172a; border: 1px solid #334155; color: #fff; border-radius: 4px; padding: 0.3rem 0.5rem; font-size: 0.8rem;">
+                    </div>
+                    <div>
+                        <label style="font-size: 0.75rem; color: #94a3b8;">スプレッドシートID</label>
+                        <input type="text" class="user-sheet-input" data-index="${index}" value="${user.spreadsheetId || ''}" placeholder="15skxiK9eL6JDzq..." style="width: 100%; background: #0f172a; border: 1px solid #334155; color: #fff; border-radius: 4px; padding: 0.3rem 0.5rem; font-size: 0.8rem;">
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                    <div>
+                        <label style="font-size: 0.75rem; color: #94a3b8;">LINE Access Token</label>
+                        <input type="password" class="user-token-input" data-index="${index}" value="${user.lineChannelAccessToken || ''}" placeholder="B2HWvVXYh0ry..." style="width: 100%; background: #0f172a; border: 1px solid #334155; color: #fff; border-radius: 4px; padding: 0.3rem 0.5rem; font-size: 0.8rem;">
+                    </div>
+                    <div>
+                        <label style="font-size: 0.75rem; color: #94a3b8;">LINE User ID</label>
+                        <input type="text" class="user-userid-input" data-index="${index}" value="${user.lineUserId || ''}" placeholder="U25f6fe2beb5..." style="width: 100%; background: #0f172a; border: 1px solid #334155; color: #fff; border-radius: 4px; padding: 0.3rem 0.5rem; font-size: 0.8rem;">
+                    </div>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: #64748b; margin-top: 0.2rem;">
+                    <span>最終同期: ${user.lastSyncTime || '未実行'}</span>
+                    <span>状態: ${user.lastStatus || '正常'}</span>
+                </div>
+            `;
+            saasUsersList.appendChild(card);
+        });
+
+        document.querySelectorAll('.btn-delete-user').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const idx = parseInt(e.target.dataset.index, 10);
+                currentSaasUsers.splice(idx, 1);
+                renderSaasUsers();
+            });
+        });
+
+        document.querySelectorAll('.user-name-input').forEach(input => {
+            input.addEventListener('input', (e) => {
+                const idx = parseInt(e.target.dataset.index, 10);
+                currentSaasUsers[idx].name = e.target.value;
+            });
+        });
+        document.querySelectorAll('.user-sheet-input').forEach(input => {
+            input.addEventListener('input', (e) => {
+                const idx = parseInt(e.target.dataset.index, 10);
+                let val = e.target.value.trim();
+                const match = val.match(/\/d\/([a-zA-Z0-9-_]+)/);
+                if (match) val = match[1];
+                currentSaasUsers[idx].spreadsheetId = val;
+            });
+        });
+        document.querySelectorAll('.user-token-input').forEach(input => {
+            input.addEventListener('input', (e) => {
+                const idx = parseInt(e.target.dataset.index, 10);
+                currentSaasUsers[idx].lineChannelAccessToken = e.target.value.trim();
+            });
+        });
+        document.querySelectorAll('.user-userid-input').forEach(input => {
+            input.addEventListener('input', (e) => {
+                const idx = parseInt(e.target.dataset.index, 10);
+                currentSaasUsers[idx].lineUserId = e.target.value.trim();
+            });
+        });
+    }
+
+    if (addSaasUserBtn) {
+        addSaasUserBtn.addEventListener('click', () => {
+            currentSaasUsers.push({
+                id: 'user_' + Date.now(),
+                name: `新規顧客 ${currentSaasUsers.length + 1}`,
+                spreadsheetId: '',
+                lineChannelAccessToken: '',
+                lineUserId: '',
+                mode: 'line_transfer',
+                enabled: true,
+                lastSyncTime: '未実行',
+                lastStatus: '待機中'
+            });
+            renderSaasUsers();
+        });
+    }
+
+    if (saveSaasUsersBtn) {
+        saveSaasUsersBtn.addEventListener('click', () => {
+            saasUsersAlert.style.color = '#38bdf8';
+            saasUsersAlert.textContent = '保存中...';
+            fetch('/api/saas/users', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ users: currentSaasUsers })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    saasUsersAlert.style.color = '#34d399';
+                    saasUsersAlert.textContent = '✅ SaaS顧客アカウント設定を更新・保存しました！';
+                } else {
+                    saasUsersAlert.style.color = '#f87171';
+                    saasUsersAlert.textContent = '保存エラー: ' + data.message;
+                }
+            })
+            .catch(() => {
+                saasUsersAlert.style.color = '#f87171';
+                saasUsersAlert.textContent = '通信エラーが発生しました。';
+            });
+        });
+    }
+
+    loadSaasUsers();
 });
