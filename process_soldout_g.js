@@ -287,6 +287,15 @@ const parseNum = (val) => {
         const bCell = rowObj.values[1] || {};
         const bFormatted = bCell.formattedValue || '';
         let targetUrl = bCell.hyperlink || '';
+
+        if (!targetUrl && bCell.textRuns) {
+            for (const run of bCell.textRuns) {
+                if (run.hyperlink) {
+                    targetUrl = run.hyperlink;
+                    break;
+                }
+            }
+        }
         if (!targetUrl && bCell.textFormatRuns && Array.isArray(bCell.textFormatRuns)) {
             for (const run of bCell.textFormatRuns) {
                 if (run.format && run.format.link && run.format.link.uri) {
@@ -296,16 +305,12 @@ const parseNum = (val) => {
             }
         }
         if (!targetUrl && bCell.userEnteredValue && bCell.userEnteredValue.formulaValue) {
-            const match = bCell.userEnteredValue.formulaValue.match(/HYPERLINK\("([^"]+)"/i);
-            if (match) targetUrl = match[1];
-        }
-        if (!targetUrl) {
-            const jsonStr = JSON.stringify(bCell);
-            const match = jsonStr.match(/https?:\/\/[^\s"'\\]+/i);
+            const match = bCell.userEnteredValue.formulaValue.match(/https?:\/\/[^\s"'\)\,\;]+/i);
             if (match) targetUrl = match[0];
         }
-        if (!targetUrl && bFormatted.startsWith('http')) {
-            targetUrl = bFormatted;
+        if (!targetUrl && bFormatted) {
+            const match = bFormatted.match(/https?:\/\/[^\s"'\)\,\;]+/i);
+            if (match) targetUrl = match[0];
         }
 
         if (!bFormatted && !targetUrl) {

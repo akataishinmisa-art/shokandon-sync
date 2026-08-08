@@ -336,6 +336,15 @@ const parseNum = (val) => {
         const bCell = rowObj.values[1] || {};
         const bFormatted = bCell.formattedValue || '';
         let targetUrl = bCell.hyperlink || '';
+
+        if (!targetUrl && bCell.textRuns) {
+            for (const run of bCell.textRuns) {
+                if (run.hyperlink) {
+                    targetUrl = run.hyperlink;
+                    break;
+                }
+            }
+        }
         if (!targetUrl && bCell.textFormatRuns && Array.isArray(bCell.textFormatRuns)) {
             for (const run of bCell.textFormatRuns) {
                 if (run.format && run.format.link && run.format.link.uri) {
@@ -345,16 +354,12 @@ const parseNum = (val) => {
             }
         }
         if (!targetUrl && bCell.userEnteredValue && bCell.userEnteredValue.formulaValue) {
-            const match = bCell.userEnteredValue.formulaValue.match(/HYPERLINK\("([^"]+)"/i);
-            if (match) targetUrl = match[1];
-        }
-        if (!targetUrl) {
-            const jsonStr = JSON.stringify(bCell);
-            const match = jsonStr.match(/https?:\/\/[^\s"'\\]+/i);
+            const match = bCell.userEnteredValue.formulaValue.match(/https?:\/\/[^\s"'\)\,\;]+/i);
             if (match) targetUrl = match[0];
         }
-        if (!targetUrl && bFormatted.startsWith('http')) {
-            targetUrl = bFormatted;
+        if (!targetUrl && bFormatted) {
+            const match = bFormatted.match(/https?:\/\/[^\s"'\)\,\;]+/i);
+            if (match) targetUrl = match[0];
         }
 
         if (!bFormatted && !targetUrl) {
@@ -447,16 +452,9 @@ const parseNum = (val) => {
     await browser.close();
 
     if (missingItemsList.length > 0) {
-        console.log(`\n================ Sending Batch LINE Notification ================`);
-        let lineBatchMsg = '';
-        for (const item of missingItemsList) {
-            lineBatchMsg += `要出品取り消し\n${item.bUrl}\n${item.gUrl}\n\n`;
-        }
-        lineBatchMsg = lineBatchMsg.trim();
-        console.log(`Batch LINE Message Content:\n${lineBatchMsg}`);
-        await sendLineNotification(lineBatchMsg);
+        console.log(`\n[標準モード] 欠品商品が${missingItemsList.length}件検出されましたが、標準モードのためLINE通知は送信しません（LINE通数節約）。`);
     } else {
-        console.log('No missing items found. No LINE notification sent.');
+        console.log('欠品商品は検出されませんでした。');
     }
 
     console.log('✅ Auto-sync via Google Sheets API completed successfully!');
