@@ -424,15 +424,25 @@ const parseNum = (val) => {
                 newE = currentEValue;
                 newF = '販売中';
             } else {
-                newE = currentDValue;
-                newD = itemData.price;
-                const numD = parseNum(itemData.price);
-                const numE = parseNum(currentDValue);
-                if (numD !== null && numE !== null && numD > numE) {
-                    console.log(`Row ${r}: Price INCREASED (${numD} > ${numE}). Status: '値上げ'`);
-                    newF = '値上げ';
+                const numScraped = parseNum(itemData.price);
+                const numD = parseNum(currentDValue);
+
+                if (numScraped !== null && numD !== null && numScraped !== numD) {
+                    // 価格が変更された場合のみ、前回のD列(新価格)をE列(旧価格)に移動
+                    newE = currentDValue;
+                    newD = itemData.price;
+
+                    if (numScraped > numD) {
+                        console.log(`Row ${r}: Price INCREASED (${numScraped} > ${numD}). Status: '値上げ'`);
+                        newF = '値上げ';
+                    } else {
+                        console.log(`Row ${r}: Price DECREASED (${numScraped} < ${numD}). Status: '販売中'`);
+                        newF = '販売中';
+                    }
                 } else {
-                    console.log(`Row ${r}: Status: '販売中'`);
+                    // 価格変動なし：D列・E列ともに前回の値をそのまま維持
+                    newD = currentDValue;
+                    newE = currentEValue;
                     newF = '販売中';
                 }
             }
