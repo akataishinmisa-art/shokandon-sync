@@ -1090,23 +1090,15 @@ app.post('/api/config', (req, res) => {
     res.json({ success: ok, config: current });
 });
 
-// Run Sync Script
+// Run Sync Script (Unified SaaS Engine)
 app.post('/api/run-sync', (req, res) => {
     if (activeProcess) {
-        return res.status(400).json({ success: false, message: 'すでに処理が実行中です。完了までお待ちください。' });
+        return res.status(400).json({ success: false, message: 'すでに同期処理が実行中です。完了までお待ちください。' });
     }
 
-    const { mode } = req.body;
-    let scriptFile = 'run_current_batch.js';
-
-    if (mode === 'soldout_g') {
-        scriptFile = 'process_soldout_g.js';
-    } else if (mode === 'line_transfer') {
-        scriptFile = 'process_with_line_notify.js';
-    }
-
+    const scriptFile = 'saas_batch_engine.js';
     const scriptPath = path.join(__dirname, scriptFile);
-    activeProcessLog = [`🚀 [${new Date().toLocaleTimeString()}] スクリプト起動: ${scriptFile}`];
+    activeProcessLog = [`🚀 [${new Date().toLocaleTimeString()}] SaaS一元管理同期エンジン起動: ${scriptFile}`];
 
     activeProcess = spawn('node', [scriptPath], {
         cwd: __dirname,
@@ -1116,19 +1108,23 @@ app.post('/api/run-sync', (req, res) => {
     activeProcess.stdout.on('data', (data) => {
         const text = data.toString();
         activeProcessLog.push(text);
+        process.stdout.write(text);
     });
 
     activeProcess.stderr.on('data', (data) => {
         const text = data.toString();
         activeProcessLog.push(`[ERR] ${text}`);
+        process.stderr.write(`[ERR] ${text}`);
     });
 
     activeProcess.on('close', (code) => {
-        activeProcessLog.push(`\n✅ [${new Date().toLocaleTimeString()}] 処理完了 (終了コード: ${code})`);
+        const endMsg = `\n✅ [${new Date().toLocaleTimeString()}] 処理完了 (終了コード: ${code})`;
+        activeProcessLog.push(endMsg);
+        process.stdout.write(endMsg);
         activeProcess = null;
     });
 
-    res.json({ success: true, message: `同期タスク (${scriptFile}) を開始しました。` });
+    res.json({ success: true, message: `SaaS統合同期エンジン (${scriptFile}) を起動しました。` });
 });
 
 app.get('/api/status', (req, res) => {
