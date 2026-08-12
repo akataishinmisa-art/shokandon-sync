@@ -33,7 +33,7 @@ function fetchHtml(url) {
         const client = url.startsWith('https') ? https : http;
         client.get(url, {
             headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
                 'Accept-Language': 'ja-JP,ja;q=0.9,en-US;q=0.8,en;q=0.7'
             }
         }, (res) => {
@@ -70,12 +70,50 @@ async function getYahooItemData(url) {
         title = titleMatch ? titleMatch[1].replace(' - Yahoo!オークション', '').replace(' - ヤフオク!', '').trim() : '';
     }
 
-    if (html.includes('このオークションは終了しています') || html.includes('オークション終了')) {
+    if (html.includes('このオークションは終了しています') || html.includes('オークション終了') || html.includes('指定されたオークションは存在しません') || html.includes('削除されました')) {
         isClosed = true;
     }
 
     const statusText = isClosed ? '欠品' : '販売中';
     return { title, price, isClosed, statusText, html };
+}
+
+async function getRakumaItemDataDirect(url) {
+    try {
+        const html = await fetchHtml(url);
+        let title = '';
+        let price = '';
+        let isClosed = false;
+
+        const titleMatch = html.match(/<meta\s+property="og:title"\s+content="([^"]+)"/i) ||
+                           html.match(/<title>(.*?)<\/title>/i);
+        if (titleMatch) {
+            title = titleMatch[1]
+                .replace(/\s*-\s*ラクマ.*/i, '')
+                .replace(/\s*\|\s*ラクマ.*/i, '')
+                .replace(/通販\s*by\s*.*/i, '')
+                .trim();
+        }
+
+        const priceMatch = html.match(/<meta\s+property="product:price:amount"\s+content="([0-9]+)"/i) ||
+                           html.match(/"price":\s*([0-9]+)/) ||
+                           html.match(/class="item__price[^"]*">\s*￥?\s*([0-9,]+)/i);
+        if (priceMatch && priceMatch[1]) {
+            price = parseInt(priceMatch[1].replace(/,/g, ''), 10).toLocaleString('ja-JP') + '円';
+        }
+
+        if (html.includes('該当の商品は削除されました') || html.includes('商品が見つかりませんでした') || html.includes('指定されたページは見つかりませんでした')) {
+            isClosed = true;
+            title = '欠品（削除された商品）';
+        } else if (html.includes('item__badge--soldout') || html.includes('SOLD OUT') || html.includes('売り切れました')) {
+            isClosed = true;
+        }
+
+        const statusText = isClosed ? '欠品' : '販売中';
+        return { title, price, isClosed, statusText, html };
+    } catch (e) {
+        return null;
+    }
 }
 
 async function getItemDataPuppeteerOnce(browser, url) {
@@ -116,79 +154,109 @@ async function getItemDataPuppeteerOnce(browser, url) {
                                 document.querySelector('#corePrice_feature_div .a-price .a-offscreen') ||
                                 document.querySelector('#corePriceDisplay_desktop_feature_div .a-price .a-offscreen') ||
                                 document.querySelector('.a-price .a-offscreen');
-
-                if (priceEl) {
-                    const cleanDigits = priceEl.textContent.replace(/[^0-9]/g, '');
-                    if (cleanDigits) {
-                        price = parseInt(cleanDigits, 10).toLocaleString('ja-JP') + '円';
-                    }
+                price = priceEl ? priceEl.textContent.trim() : '';
+                if (price && !price.includes('円') && price.includes('￥')) {
+                    price = price.replace('￥', '') + '円';
                 }
 
-                const outOfStockEl = document.querySelector('#outOfStock') || document.querySelector('#availability');
-                const outText = outOfStockEl ? outOfStockEl.textContent.trim() : '';
-                isClosed = Boolean(outText.includes('現在在庫切れ') || outText.includes('一時的に在庫切れ') || outText.includes('この商品は現在お取り扱いできません'));
-            } else if (targetUrl.includes('mercari') || targetUrl.includes('jp.mercari.com')) {
-                const titleEl = document.querySelector('h1') || document.querySelector('[data-testid="item-name"]');
+                const availabilityEl = document.querySelector('#availability');
+                const availText = availabilityEl ? availabilityEl.textContent.trim() : '';
+                isClosed = availText.includes('一時的に在庫切れ') || availText.includes('現在お取り扱いしておりません') || availText.includes('在庫切れ');
+            } else if (targetUrl.includes('mercari.com')) {
+                const bodyText = document.body.innerText || '';
+                const isDeleted = bodyText.includes('該当する商品は削除されています') ||
+                                  bodyText.includes('この商品は削除されました') ||
+                                  bodyText.includes('削除された商品') ||
+                                  bodyText.includes('商品が見つかりません') ||
+                                  bodyText.includes('ページが見つかりません');
+
+                const titleEl = document.querySelector('[data-testid="item-name"]') || document.querySelector('h1');
                 title = titleEl ? titleEl.textContent.trim() : '';
                 if (!title) {
                     const ogTitle = document.querySelector('meta[property="og:title"]');
                     if (ogTitle && ogTitle.getAttribute('content')) {
-                        title = ogTitle.getAttribute('content').replace(/\s*-\s*メルカリ.*/i, '').trim();
+                        title = ogTitle.getAttribute('content').replace(' - メルカリ', '').trim();
                     }
                 }
-
-                const metaPrice = document.querySelector('meta[name="product:price:amount"], meta[property="product:price:amount"]');
-                if (metaPrice && metaPrice.getAttribute('content')) {
-                    const pVal = parseInt(metaPrice.getAttribute('content'), 10);
-                    if (!isNaN(pVal) && pVal > 0) {
-                        price = pVal.toLocaleString('ja-JP') + '円';
-                    }
+                if (!title || title.includes('日本最大のフリマサービス') || document.title.includes('日本最大のフリマサービス')) {
+                    title = '欠品（削除された商品）';
                 }
 
-                if (!price) {
-                    const priceEl = document.querySelector('[data-testid="product-price"]') || document.querySelector('[class*="price"]');
-                    let rawPrice = priceEl ? priceEl.textContent.trim() : '';
-                    const cleanDigits = rawPrice.replace(/[^0-9]/g, '');
-                    if (cleanDigits) {
-                        price = parseInt(cleanDigits, 10).toLocaleString('ja-JP') + '円';
+                if (isDeleted || title.includes('欠品（削除された商品）')) {
+                    isClosed = true;
+                } else {
+                    const metaPrice = document.querySelector('meta[name="product:price:amount"], meta[property="product:price:amount"]');
+                    if (metaPrice && metaPrice.getAttribute('content')) {
+                        const pVal = parseInt(metaPrice.getAttribute('content'), 10);
+                        if (!isNaN(pVal) && pVal > 0) {
+                            price = pVal.toLocaleString('ja-JP') + '円';
+                        }
                     }
+
+                    if (!price) {
+                        const priceEl = document.querySelector('[data-testid="product-price"]') || document.querySelector('[class*="price"]');
+                        let rawPrice = priceEl ? priceEl.textContent.trim() : '';
+                        const cleanDigits = rawPrice.replace(/[^0-9]/g, '');
+                        if (cleanDigits) {
+                            price = parseInt(cleanDigits, 10).toLocaleString('ja-JP') + '円';
+                        }
+                    }
+
+                    const soldBadge = document.querySelector('[data-testid="item-sold-out-badge"]') ||
+                                      document.querySelector('div[aria-label*="売り切れ"]');
+                    const checkoutBtn = document.querySelector('[data-testid="checkout-button"]');
+                    const btnText = checkoutBtn ? checkoutBtn.textContent.trim() : '';
+
+                    isClosed = Boolean(soldBadge || (checkoutBtn && checkoutBtn.disabled && btnText.includes('売り切れ')));
                 }
-
-                const soldBadge = document.querySelector('[data-testid="item-sold-out-badge"]') ||
-                                  document.querySelector('div[aria-label*="売り切れ"]');
-                const checkoutBtn = document.querySelector('[data-testid="checkout-button"]');
-                const btnText = checkoutBtn ? checkoutBtn.textContent.trim() : '';
-
-                isClosed = Boolean(soldBadge || (checkoutBtn && checkoutBtn.disabled && btnText.includes('売り切れ')));
             } else if (targetUrl.includes('fril.jp') || targetUrl.includes('rakuma')) {
+                const bodyText = document.body.innerText || '';
+                const isDeleted = bodyText.includes('該当の商品は削除されました') ||
+                                  bodyText.includes('商品が見つかりませんでした') ||
+                                  bodyText.includes('この商品は削除されました') ||
+                                  bodyText.includes('指定されたページは見つかりませんでした');
+
                 const titleEl = document.querySelector('.item__name') ||
                                 document.querySelector('[class*="item__name"]') ||
                                 document.querySelector('.item-header__name') ||
                                 document.querySelector('h1');
                 title = titleEl ? titleEl.textContent.trim() : document.title.replace(/\s*-\s*ラクマ.*/i, '').trim();
 
-                const priceEl = document.querySelector('[itemprop="price"]') ||
-                                document.querySelector('.item__price') ||
-                                document.querySelector('.item-price') ||
-                                document.querySelector('[class*="item__price"]');
-                let rawPrice = priceEl ? (priceEl.getAttribute('content') || priceEl.textContent.trim()) : '';
-                const cleanNum = rawPrice.replace(/[^0-9]/g, '');
-                if (cleanNum) {
-                    price = parseInt(cleanNum, 10).toLocaleString('ja-JP') + '円';
+                if (isDeleted || title.includes('フリマアプリ ラクマ')) {
+                    isClosed = true;
+                    if (!title || title.includes('フリマアプリ')) {
+                        title = '欠品（削除された商品）';
+                    }
+                } else {
+                    const priceEl = document.querySelector('[itemprop="price"]') ||
+                                    document.querySelector('.item__price') ||
+                                    document.querySelector('.item-price') ||
+                                    document.querySelector('[class*="item__price"]');
+                    let rawPrice = priceEl ? (priceEl.getAttribute('content') || priceEl.textContent.trim()) : '';
+                    const cleanNum = rawPrice.replace(/[^0-9]/g, '');
+                    if (cleanNum) {
+                        price = parseInt(cleanNum, 10).toLocaleString('ja-JP') + '円';
+                    }
+
+                    const soldoutBadge = document.querySelector('.item__badge--soldout') ||
+                                         document.querySelector('[class*="soldout"]') ||
+                                         document.querySelector('[class*="SOLD"]') ||
+                                         Array.from(document.querySelectorAll('*')).find(el => {
+                                             const t = el.children.length === 0 ? el.textContent.trim() : '';
+                                             return t === 'SOLDOUT' || t === 'SOLD OUT' || t === '売り切れ' || t === '売り切れました';
+                                         });
+
+                    const purchaseBtn = Array.from(document.querySelectorAll('a, button')).find(el => el.textContent.includes('購入に進む'));
+
+                    isClosed = Boolean(soldoutBadge || !purchaseBtn);
                 }
-
-                const soldoutBadge = document.querySelector('.item__badge--soldout') ||
-                                     document.querySelector('[class*="soldout"]') ||
-                                     document.querySelector('[class*="SOLD"]') ||
-                                     Array.from(document.querySelectorAll('*')).find(el => {
-                                         const t = el.children.length === 0 ? el.textContent.trim() : '';
-                                         return t === 'SOLDOUT' || t === 'SOLD OUT' || t === '売り切れ' || t === '売り切れました';
-                                     });
-
-                const purchaseBtn = Array.from(document.querySelectorAll('a, button')).find(el => el.textContent.includes('購入に進む'));
-
-                isClosed = Boolean(soldoutBadge || !purchaseBtn);
             } else if (targetUrl.includes('paypayfleamarket') || targetUrl.includes('paypayfleamarket.yahoo.co.jp')) {
+                const bodyText = document.body.innerText || '';
+                const isDeleted = bodyText.includes('公開が停止') ||
+                                  bodyText.includes('掲載が終了') ||
+                                  bodyText.includes('削除された商品') ||
+                                  bodyText.includes('商品が見つかりません') ||
+                                  bodyText.includes('この商品は削除されました');
                 const titleEl = document.querySelector('h1') || document.querySelector('[class*="ItemTitle_title"]') || document.querySelector('[class*="title"]');
                 if (titleEl && titleEl.textContent) {
                     title = titleEl.textContent.trim();
@@ -224,69 +292,20 @@ async function getItemDataPuppeteerOnce(browser, url) {
                 }
 
                 if (!price) {
-                    const bodyText = document.body.innerText || '';
                     const m = bodyText.match(/([0-9,]{3,9})\s*円/);
                     if (m) price = m[1] + '円';
                 }
 
-                const bodyText = document.body.innerText || '';
                 const hasPurchaseBtn = Array.from(document.querySelectorAll('button, a')).some(el => el.textContent.includes('購入手続きへ'));
                 const hasCopyBtn = Array.from(document.querySelectorAll('button, a')).some(el => el.textContent.includes('この情報をコピーして出品する'));
                 const isSoldText = bodyText.includes('売り切れました') || bodyText.includes('SOLD OUT') || bodyText.includes('公開が停止') || bodyText.includes('掲載が終了') || bodyText.includes('この情報を使って新しく出品できます');
 
-                isClosed = Boolean(isSoldText || hasCopyBtn || !hasPurchaseBtn);
+                isClosed = Boolean(isSoldText || hasCopyBtn || !hasPurchaseBtn || isDeleted);
             }
 
             const statusText = isClosed ? '欠品' : '販売中';
             return { title, price, isClosed, statusText };
         }, url);
-
-        // HTML/JSON Backup extraction if DOM evaluation returned incomplete data
-        if (url.includes('mercari.com') || url.includes('mercari')) {
-            const nextDataMatch = html.match(/<script id="__NEXT_DATA__" type="application\/json">(.*?)<\/script>/);
-            if (nextDataMatch) {
-                try {
-                    const nextJson = JSON.parse(nextDataMatch[1]);
-                    const itemObj = (nextJson.props && nextJson.props.pageProps && (nextJson.props.pageProps.item || (nextJson.props.pageProps.initialState && nextJson.props.pageProps.initialState.item))) || null;
-                    if (itemObj) {
-                        if (!info.title || info.title === 'メルカリ') info.title = itemObj.name || info.title;
-                        if (!info.price && itemObj.price) info.price = parseInt(itemObj.price, 10).toLocaleString('ja-JP') + '円';
-                        if (itemObj.status === 'ITEM_STATUS_SOLDOUT' || itemObj.status === 'ITEM_STATUS_TRADING') {
-                            info.isClosed = true;
-                            info.statusText = '欠品';
-                        }
-                    }
-                } catch (e) {}
-            }
-            if (!info.title || info.title === 'メルカリ') {
-                const ogTitle = html.match(/<meta\s+property="og:title"\s+content="([^"]+)"/i);
-                if (ogTitle) info.title = ogTitle[1].replace(/\s*-\s*メルカリ.*/i, '').trim();
-            }
-            if (!info.price) {
-                const metaPrice = html.match(/<meta\s+(?:name|property)="product:price:amount"\s+content="([0-9]+)"/i);
-                if (metaPrice) info.price = parseInt(metaPrice[1], 10).toLocaleString('ja-JP') + '円';
-            }
-            if (html.includes('"isSoldOut":true') || html.includes('ITEM_STATUS_SOLDOUT')) {
-                info.isClosed = true;
-                info.statusText = '欠品';
-            }
-        } else if (url.includes('amazon.co.jp')) {
-            if (!info.title || info.title === 'Amazon.co.jp') {
-                const ogTitle = html.match(/<meta\s+property="og:title"\s+content="([^"]+)"/i) || html.match(/<title>(.*?)<\/title>/i);
-                if (ogTitle) info.title = ogTitle[1].replace(/^Amazon\s*\|\s*/i, '').trim();
-            }
-            if (!info.price) {
-                const priceMatch = html.match(/class="a-price-whole">([0-9,]+)/i) || html.match(/￥\s*([0-9,]+)/);
-                if (priceMatch && priceMatch[1]) {
-                    const pDigits = priceMatch[1].replace(/,/g, '');
-                    if (pDigits) info.price = parseInt(pDigits, 10).toLocaleString('ja-JP') + '円';
-                }
-            }
-            if (html.includes('一時的に在庫切れ') || html.includes('現在お取り扱いしておりません') || html.includes('在庫切れ')) {
-                info.isClosed = true;
-                info.statusText = '欠品';
-            }
-        }
 
         return { ...info, html, page };
     } catch (e) {
@@ -377,14 +396,6 @@ const parseNum = (val) => {
         const bFormatted = bCell.formattedValue || '';
         let targetUrl = bCell.hyperlink || '';
 
-        if (!targetUrl && bCell.textRuns) {
-            for (const run of bCell.textRuns) {
-                if (run.hyperlink) {
-                    targetUrl = run.hyperlink;
-                    break;
-                }
-            }
-        }
         if (!targetUrl && bCell.textFormatRuns && Array.isArray(bCell.textFormatRuns)) {
             for (const run of bCell.textFormatRuns) {
                 if (run.format && run.format.link && run.format.link.uri) {
@@ -397,9 +408,13 @@ const parseNum = (val) => {
             const match = bCell.userEnteredValue.formulaValue.match(/https?:\/\/[^\s"'\)\,\;]+/i);
             if (match) targetUrl = match[0];
         }
-        if (!targetUrl && bFormatted) {
-            const match = bFormatted.match(/https?:\/\/[^\s"'\)\,\;]+/i);
+        if (!targetUrl) {
+            const jsonStr = JSON.stringify(bCell);
+            const match = jsonStr.match(/https?:\/\/[^\s"'\\]+/i);
             if (match) targetUrl = match[0];
+        }
+        if (!targetUrl && bFormatted.startsWith('http')) {
+            targetUrl = bFormatted;
         }
 
         if (!bFormatted && !targetUrl) {
@@ -419,6 +434,12 @@ const parseNum = (val) => {
         let itemPage = null;
         if (targetUrl.includes('auctions.yahoo.co.jp')) {
             itemData = await getYahooItemData(targetUrl);
+        } else if (targetUrl.includes('fril.jp') || targetUrl.includes('rakuma')) {
+            itemData = await getRakumaItemDataDirect(targetUrl);
+            if (!itemData || !itemData.title || itemData.title === '取得エラー') {
+                itemData = await getItemDataPuppeteer(browser, targetUrl);
+                itemPage = itemData.page;
+            }
         } else {
             itemData = await getItemDataPuppeteer(browser, targetUrl);
             itemPage = itemData.page;
@@ -449,9 +470,8 @@ const parseNum = (val) => {
             newE = currentEValue;
             newF = '欠品';
             newG = '出品取り消し';
-        } else if (itemData.title === '取得エラー' || (itemData.title === 'Amazon.co.jp' && !itemData.price)) {
+        } else if (!itemData.title || itemData.title === '取得エラー' || (itemData.title === 'Amazon.co.jp' && !itemData.price)) {
             console.log(`Row ${r}: Scraping failed or returned invalid placeholder ('${itemData.title}'). Preserving existing sheet values.`);
-            const cCell = rowObj.values[2] || {};
             const fCell = rowObj.values[5] || {};
             newTitle = cCell.formattedValue || '';
             newD = currentDValue;
@@ -460,7 +480,6 @@ const parseNum = (val) => {
         } else {
             newTitle = itemData.title || (rowObj.values[2] ? rowObj.values[2].formattedValue : '');
             if (!itemData.price) {
-                // 価格が取れなかった場合は既存の価格をそのまま維持
                 newD = currentDValue;
                 newE = currentEValue;
                 newF = '販売中';
@@ -470,25 +489,15 @@ const parseNum = (val) => {
                 newE = currentEValue;
                 newF = '販売中';
             } else {
-                const numScraped = parseNum(itemData.price);
-                const numD = parseNum(currentDValue);
-
-                if (numScraped !== null && numD !== null && numScraped !== numD) {
-                    // 価格が変更された場合のみ、前回のD列(新価格)をE列(旧価格)に移動
-                    newE = currentDValue;
-                    newD = itemData.price;
-
-                    if (numScraped > numD) {
-                        console.log(`Row ${r}: Price INCREASED (${numScraped} > ${numD}). Status: '値上げ'`);
-                        newF = '値上げ';
-                    } else {
-                        console.log(`Row ${r}: Price DECREASED (${numScraped} < ${numD}). Status: '販売中'`);
-                        newF = '販売中';
-                    }
+                newE = currentDValue;
+                newD = itemData.price;
+                const numD = parseNum(itemData.price);
+                const numE = parseNum(currentDValue);
+                if (numD !== null && numE !== null && numD > numE) {
+                    console.log(`Row ${r}: Price INCREASED (${numD} > ${numE}). Status: '値上げ'`);
+                    newF = '値上げ';
                 } else {
-                    // 価格変動なし：D列・E列ともに前回の値をそのまま維持
-                    newD = currentDValue;
-                    newE = currentEValue;
+                    console.log(`Row ${r}: Status: '販売中'`);
                     newF = '販売中';
                 }
             }

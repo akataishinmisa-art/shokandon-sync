@@ -428,13 +428,13 @@ function initApp() {
   if (inputUrl) {
     inputUrl.addEventListener('paste', () => {
       setTimeout(() => {
-        if (inputUrl.value.trim().startsWith('http')) {
+        if (inputUrl.value.trim()) {
           parseUrlAndGenerate();
         }
       }, 150);
     });
     inputUrl.addEventListener('change', () => {
-      if (inputUrl.value.trim().startsWith('http')) {
+      if (inputUrl.value.trim()) {
         parseUrlAndGenerate();
       }
     });
@@ -443,7 +443,13 @@ function initApp() {
   async function parseUrlAndGenerate() {
     let url = inputUrl ? inputUrl.value.trim() : '';
 
-    if (url && !url.match(/^https?:\/\//i)) {
+    // Fix https://file:/// or http://file:/// pasted by mistake
+    if (url.startsWith('https://file://') || url.startsWith('http://file://')) {
+      url = url.replace(/^https?:\/\//i, '');
+      if (inputUrl) inputUrl.value = url;
+    }
+
+    if (url && !url.match(/^(https?|file):\/\//i) && !url.match(/^[a-zA-Z]:[\\\/]/)) {
       url = 'https://' + url;
       if (inputUrl) inputUrl.value = url;
     }
@@ -460,7 +466,7 @@ function initApp() {
       btnParseUrl.innerHTML = '<span>⏳ Webページを解析中...</span>';
     }
 
-    if (url && url.startsWith('http')) {
+    if (url && (url.startsWith('http') || url.startsWith('file') || url.match(/^[a-zA-Z]:[\\\/]/))) {
       showToast('⏳ URLから実際のWebページ情報を自動解析中...');
 
       try {
@@ -814,6 +820,57 @@ function initApp() {
       const combinedText = `${sku}\t${title}`;
       copyToClipboard(combinedText);
       showToast('商管どん用データ（SKU+タイトル）をクリップボードにコピーしました！');
+    });
+  }
+
+  // Gemini Prompt Generator & Copy Handler
+  const btnCopyGeminiPrompt = document.getElementById('btn-copy-gemini-prompt');
+  const btnOpenNotebooklm = document.getElementById('btn-open-notebooklm');
+  const inputGeminiCustomNotes = document.getElementById('input-gemini-custom-notes');
+
+  function buildGeminiPromptText() {
+    const productName = inputProductName ? inputProductName.value.trim() : '';
+    const customNotes = inputGeminiCustomNotes ? inputGeminiCustomNotes.value.trim() : '';
+    const urlVal = inputUrl ? inputUrl.value.trim() : '';
+
+    let promptLines = [
+      'この商品のタイトルと説明を書いてください。',
+      '',
+      '【出力指定】',
+      '1. eBay用タイトルは76文字以内の英語で作成してください（eBay出品ページ貼り付け用）。',
+      '2. 作成した英文タイトルの「直訳日本語」も併記してください。',
+      '3. 海外バイヤー向けにわかりやすく丁寧な商品説明文を作成してください。'
+    ];
+
+    if (customNotes) {
+      promptLines.push(`4. 追加で考慮する事項: ${customNotes}`);
+    }
+
+    if (productName || urlVal) {
+      promptLines.push('');
+      promptLines.push('【参照情報】');
+      if (productName) promptLines.push(`・商品名 / 製品名: ${productName}`);
+      if (urlVal) promptLines.push(`・参照URL: ${urlVal}`);
+    }
+
+    return promptLines.join('\n');
+  }
+
+  if (btnCopyGeminiPrompt) {
+    btnCopyGeminiPrompt.addEventListener('click', () => {
+      const promptText = buildGeminiPromptText();
+      copyToClipboard(promptText);
+      window.open('https://gemini.google.com/', '_blank');
+      showToast('✨ 指示文をコピーしGeminiを別タブで自動起動しました！【Ctrl + V】で貼り付けてください。');
+    });
+  }
+
+  if (btnOpenNotebooklm) {
+    btnOpenNotebooklm.addEventListener('click', () => {
+      const promptText = buildGeminiPromptText();
+      copyToClipboard(promptText);
+      window.open('https://notebooklm.google.com/', '_blank');
+      showToast('📓 指示文をコピーしNotebookLMを自動起動しました！【Ctrl + V】で貼り付けてください。');
     });
   }
 

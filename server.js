@@ -450,26 +450,55 @@ async function handleParseUrlMeta(req, res) {
         return res.json({ success: false, error: '有効なURLを入力してください。' });
     }
 
-    // Clean duplicate/concatenated protocols or malformed strings
     url = url.trim();
-    if (url.includes('https://') || url.includes('http://')) {
-        // Fix concatenated URLs like https://shopping.yahoo.co.jhttps://...
+
+    // Clean duplicate/concatenated protocols (e.g., https://file:// or http://file://)
+    if (url.startsWith('https://file://') || url.startsWith('http://file://')) {
+        url = url.replace(/^https?:\/\//i, '');
+    }
+
+    let isLocalFile = false;
+    let localFilePath = '';
+
+    if (url.startsWith('file://')) {
+        isLocalFile = true;
+        localFilePath = decodeURIComponent(url.replace(/^file:\/\/\/?/i, ''));
+        if (process.platform === 'win32' && localFilePath.match(/^[a-zA-Z]:/)) {
+            localFilePath = localFilePath.replace(/\//g, '\\');
+        }
+    } else if (url.match(/^[a-zA-Z]:[\\\/]/)) {
+        isLocalFile = true;
+        localFilePath = url;
+    } else if (url.includes('https://') || url.includes('http://')) {
         const matches = url.match(/https?:\/\/[^\s"'<>]+/gi);
         if (matches && matches.length > 0) {
-            // Take the last valid HTTP/HTTPS URL
             url = matches[matches.length - 1];
         }
     }
-    if (!url.startsWith('http')) {
+
+    if (!isLocalFile && !url.startsWith('http')) {
         return res.json({ success: false, error: '有効なURLを入力してください。' });
     }
 
     try {
         let rawHtml = '';
-        try {
-            rawHtml = await fetchUrlHtml(url);
-        } catch (e) {
-            console.warn('[fetchUrlHtml Warning]:', e.message);
+        if (isLocalFile) {
+            try {
+                if (fs.existsSync(localFilePath)) {
+                    rawHtml = fs.readFileSync(localFilePath, 'utf8');
+                    console.log(`[LocalFile Parse]: Loaded ${rawHtml.length} bytes from "${localFilePath}"`);
+                } else {
+                    return res.json({ success: false, error: '指定されたローカルファイルが見つかりません。' });
+                }
+            } catch (e) {
+                return res.json({ success: false, error: `ローカルファイル読み込みエラー: ${e.message}` });
+            }
+        } else {
+            try {
+                rawHtml = await fetchUrlHtml(url);
+            } catch (e) {
+                console.warn('[fetchUrlHtml Warning]:', e.message);
+            }
         }
 
         let title = '';
@@ -534,7 +563,8 @@ async function handleParseUrlMeta(req, res) {
         if (!title) {
             const ogTitleMatch = rawHtml.match(/<meta[^>]*property=["']og:title["'][^>]*content=["']([\s\S]*?)["']/i) ||
                                  rawHtml.match(/<meta[^>]*content=["']([\s\S]*?)["'][^>]*property=["']og:title["']/i);
-            const h1TitleMatch = rawHtml.match(/<h1[^>]*class=["'][^"']*ProductTitle[^"']*["'][^>]*>([\s\S]*?)<\/h1>/i) ||
+            const h1TitleMatch = rawHtml.match(/<h1[^>]*id=["']productTitle["'][^>]*>([\s\S]*?)<\/h1>/i) ||
+                                 rawHtml.match(/<h1[^>]*class=["'][^"']*ProductTitle[^"']*["'][^>]*>([\s\S]*?)<\/h1>/i) ||
                                  rawHtml.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i);
             const titleMatch = rawHtml.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
 
@@ -549,6 +579,7 @@ async function handleParseUrlMeta(req, res) {
         title = title.replace(/[\r\n\t]+/g, ' ').replace(/\s+/g, ' ').trim();
 
         let cleanTitle = title
+            .replace(/キーボードショートカット[\s\S]*/i, '')
             .replace(/^Amazon(?:\.co\.jp|\.com)?\s*[:|-]\s*/i, '')
             .replace(/\s*\|\s*Amazon.*$/i, '')
             .replace(/\s*:\s*Amazon.*$/i, '')
@@ -646,7 +677,7 @@ async function handleParseUrlMeta(req, res) {
 
         // Extract Main Image URL
         if (!imageUrl) {
-            const yimgOrMercariPhotoMatch = rawHtml.match(/https:\/\/(?:static\.mercdn\.net|item-shopping\.c\.yimg\.jp|auctions\.c\.yimg\.jp|image\.rakuten\.co\.jp|img\.fril\.jp)\/[A-Za-z0-9_\-\.\/]+\.(?:jpg|jpeg|png|webp)/i);
+            const yimgOrMercariPhotoMatch = rawHtml.match(/https:\/\/(?:static\.mercdn\.net|item-shopping\.c\.yimg\.jp|auctions\.c\.yimg\.jp|image\.rakuten\.co\.jp|img\.fril\.jp|m\.media-amazon\.com\/images\/I|images-na\.ssl-images-amazon\.com\/images\/I)\/[A-Za-z0-9_\-\.\/]+\.(?:jpg|jpeg|png|webp)/i);
             if (yimgOrMercariPhotoMatch) {
                 imageUrl = yimgOrMercariPhotoMatch[0];
             }
@@ -680,13 +711,14 @@ async function handleParseUrlMeta(req, res) {
                 /現在価格[\s\S]*?([0-9,]+)\s*円/i,
                 /即決価格[\s\S]*?([0-9,]+)\s*円/i,
                 /販売価格[\s\S]*?([0-9,]+)\s*円/i,
-                /class="a-price-whole">([0-9,]+)/i
+                /class="a-price-whole">([0-9,]+)/i,
+                /class="a-offscreen">￥\s*([0-9,]+)/i
             ];
 
             for (const re of priceRegexes) {
                 const m = rawHtml.match(re);
                 if (m && m[1]) {
-                    const p = parseInt(m[1].replace(/[,.]/g, ''), 10);
+                    const p = Math.round(parseFloat(m[1].replace(/,/g, '')));
                     if (!isNaN(p) && p >= 50 && p < 10000000) {
                         price = `￥${p.toLocaleString('ja-JP')}`;
                         break;
@@ -695,56 +727,55 @@ async function handleParseUrlMeta(req, res) {
             }
         }
 
-        // Puppeteer fallback if price or image or title is missing for major Japanese sites
-        if ((!price || !imageUrl || !cleanTitle) && (url.includes('paypay') || url.includes('yahoo') || url.includes('mercari') || url.includes('rakuten') || url.includes('fril'))) {
+        // Puppeteer fallback if price or image or title is missing for major Japanese sites & Amazon
+        if (!isLocalFile && (!price || !imageUrl || !cleanTitle || cleanTitle.includes('ページが見つかりません') || cleanTitle.length < 3) && (url.includes('amazon') || url.includes('paypay') || url.includes('yahoo') || url.includes('mercari') || url.includes('rakuten') || url.includes('fril'))) {
             let browser = null;
             try {
                 browser = await puppeteer.launch({
                     executablePath,
                     headless: true,
-                    args: ['--no-sandbox', '--disable-setuid-sandbox']
+                    args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-blink-features=AutomationControlled']
                 });
                 const page = await browser.newPage();
+                await page.setExtraHTTPHeaders({
+                    'Accept-Language': 'ja-JP,ja;q=0.9,en-US;q=0.8,en;q=0.7'
+                });
                 await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36');
-                await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 15000 });
+                await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 20000 });
 
-                if (!price) {
-                    price = await page.evaluate(() => {
-                        const meta = document.querySelector('meta[name="product:price:amount"], meta[property="product:price:amount"], meta[property="og:price:amount"]');
-                        if (meta && meta.getAttribute('content')) {
-                            const p = parseInt(meta.getAttribute('content'), 10);
-                            if (!isNaN(p) && p > 0) return `￥${p.toLocaleString('ja-JP')}`;
-                        }
-                        const purchaseBtnEl = Array.from(document.querySelectorAll('button, a')).find(el => el.textContent.includes('購入手続きへ'));
-                        if (purchaseBtnEl) {
-                            let parent = purchaseBtnEl.parentElement;
-                            while (parent && parent !== document.body) {
-                                const text = parent.innerText || '';
-                                const match = text.match(/([0-9,]{3,9})\s*円/);
-                                if (match) {
-                                    return `￥${parseInt(match[1].replace(/,/g, ''), 10).toLocaleString('ja-JP')}`;
-                                }
-                                parent = parent.parentElement;
-                            }
-                        }
-                        const el = document.querySelector('[data-testid="product-price"], [data-testid="price"], .merItemPrice, .Price__value, .elPriceNumber, [itemprop="price"], .item__price, [class*="ItemPrice_price"]');
-                        if (el && el.textContent) {
-                            const m = el.textContent.match(/¥\s*([0-9,]+)|￥\s*([0-9,]+)|([0-9,]+)\s*円/);
-                            if (m) return `￥${parseInt((m[1]||m[2]||m[3]).replace(/,/g, ''), 10).toLocaleString('ja-JP')}`;
-                        }
-                        const bodyText = document.body.innerText || '';
-                        const m2 = bodyText.match(/([0-9,]{3,9})\s*円/);
-                        if (m2) return `￥${parseInt(m2[1].replace(/,/g, ''), 10).toLocaleString('ja-JP')}`;
-                        return '';
-                    });
-                }
+                const pupData = await page.evaluate(() => {
+                    let p = '', img = '', t = '';
+                    
+                    const titleEl = document.querySelector('#productTitle, #title, h1');
+                    if (titleEl) {
+                        t = titleEl.textContent.replace(/キーボードショートカット[\s\S]*/, '').trim();
+                    }
+                    if (!t) t = document.title || '';
 
-                if (!imageUrl) {
-                    imageUrl = await page.evaluate(() => {
-                        const img = document.querySelector('img[src*="mercdn"], img[src*="yimg"], img[src*="fril"], img[src*="rakuten"], #landingImage');
-                        return img ? img.src : '';
-                    });
+                    const priceEl = document.querySelector('.a-price .a-offscreen, #priceblock_ourprice, #priceblock_dealprice, .a-price-whole, #corePrice_feature_div .a-offscreen, span.a-color-price, #price_inside_buybox, [data-testid="product-price"], [data-testid="price"], .merItemPrice, .Price__value, .elPriceNumber, [itemprop="price"], .item__price, [class*="ItemPrice_price"]');
+                    if (priceEl) {
+                        const m = priceEl.textContent.match(/¥\s*([0-9,]+)|￥\s*([0-9,]+)|([0-9,]+)\s*円/);
+                        if (m) p = `￥${parseInt((m[1]||m[2]||m[3]).replace(/,/g, ''), 10).toLocaleString('ja-JP')}`;
+                        else p = priceEl.textContent.trim();
+                    }
+
+                    const imgEl = document.querySelector('#landingImage, #imgBlkFront, #main-image-container img, img[src*="media-amazon"], img[src*="mercdn"], img[src*="yimg"], img[src*="fril"], img[src*="rakuten"]');
+                    if (imgEl) img = imgEl.getAttribute('data-old-hires') || imgEl.src || '';
+
+                    return { t, p, img };
+                });
+
+                if (pupData.t && (!cleanTitle || cleanTitle.includes('ページが見つかりません'))) {
+                    title = pupData.t;
+                    cleanTitle = title
+                        .replace(/キーボードショートカット[\s\S]*/i, '')
+                        .replace(/^Amazon(?:\.co\.jp|\.com)?\s*[:|-]\s*/i, '')
+                        .replace(/\s*\|\s*Amazon.*$/i, '')
+                        .replace(/\s*:\s*Amazon.*$/i, '')
+                        .trim();
                 }
+                if (pupData.p && !price) price = pupData.p;
+                if (pupData.img && !imageUrl) imageUrl = pupData.img;
             } catch (err) {
                 console.warn('[Puppeteer Meta Fallback Warning]:', err.message);
             } finally {
@@ -894,12 +925,22 @@ app.get('/api/wakeup', (req, res) => {
 });
 
 app.get('/api/trigger-sync', (req, res) => {
-    console.log('[TriggerSync]: 外部からの定時アクセスを受信しました。同期処理を起動します。');
+    const min = new Date().getMinutes();
+    if (min >= 50 && min <= 59) {
+        console.log('[TriggerSync Guard]: 正時00分の直前(50〜59分)のため、自動実行への競合を防ぎ即座に拒否しました。');
+        return res.json({ success: false, message: '00分正時自動実行の直前のため外部起動はスキップされました' });
+    }
+    console.log('[TriggerSync]: 外部からのアクセスを受信しました。同期処理を起動します。');
     runHourlyScheduledSync(true);
     res.json({ success: true, message: '自動同期処理を即座に起動しました' });
 });
 app.post('/api/trigger-sync', (req, res) => {
-    console.log('[TriggerSync]: 外部からの定時アクセスを受信しました。同期処理を起動します。');
+    const min = new Date().getMinutes();
+    if (min >= 50 && min <= 59) {
+        console.log('[TriggerSync Guard]: 正時00分の直前(50〜59分)のため、自動実行への競合を防ぎ即座に拒否しました。');
+        return res.json({ success: false, message: '00分正時自動実行の直前のため外部起動はスキップされました' });
+    }
+    console.log('[TriggerSync]: 外部からのアクセスを受信しました。同期処理を起動します。');
     runHourlyScheduledSync(true);
     res.json({ success: true, message: '自動同期処理を即座に起動しました' });
 });
@@ -944,11 +985,10 @@ function runHourlyScheduledSync(isForced = false) {
         return;
     }
 
-    if (activeProcess && !isForced) {
-        console.log('[AutoSchedule]: 処理がすでに実行中のため、自動スケジュールをスキップしました');
-        return;
-    }
-    if (activeProcess && isForced) {
+
+    // 00分正時スケジュールの絶対最優先：古い実行中プロセスがあれば即座に強制停止(kill)して最新00分実行を最優先起動
+    if (activeProcess) {
+        console.log('⚠️ [AutoSchedule]: 古い実行中プロセスを00分正時スケジュールのために強制停止(kill)し、最新の00分同期を最優先起動します。');
         try { activeProcess.kill(); } catch (e) {}
         activeProcess = null;
     }
@@ -976,15 +1016,19 @@ function runHourlyScheduledSync(isForced = false) {
     activeProcess.stdout.on('data', (data) => {
         const text = data.toString();
         activeProcessLog.push(text);
+        process.stdout.write(text);
     });
 
     activeProcess.stderr.on('data', (data) => {
         const text = data.toString();
         activeProcessLog.push(`[ERR] ${text}`);
+        process.stderr.write(`[ERR] ${text}`);
     });
 
     activeProcess.on('close', (code) => {
-        activeProcessLog.push(`\n✅ [${new Date().toLocaleTimeString()}] 自動スケジュール同期完了 (終了コード: ${code})`);
+        const endMsg = `\n✅ [${new Date().toLocaleTimeString()}] 自動スケジュール同期完了 (終了コード: ${code})\n`;
+        activeProcessLog.push(endMsg);
+        process.stdout.write(endMsg);
         activeProcess = null;
     });
 }
@@ -996,7 +1040,6 @@ setInterval(() => {
     const currentMinute = now.getMinutes();
 
     if (currentMinute === 0 && currentHour !== lastScheduledHour) {
-        lastScheduledHour = currentHour;
         runHourlyScheduledSync();
     }
 }, 30000);

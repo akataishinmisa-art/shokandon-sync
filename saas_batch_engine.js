@@ -306,10 +306,6 @@ async function getItemDataPuppeteerOnce(browser, url) {
                     if (pDigits) info.price = parseInt(pDigits, 10).toLocaleString('ja-JP') + '円';
                 }
             }
-            if (html.includes('一時的に在庫切れ') || html.includes('現在お取り扱いしておりません') || html.includes('在庫切れ')) {
-                info.isClosed = true;
-                info.statusText = '欠品';
-            }
         }
 
         return { ...info, html, page };

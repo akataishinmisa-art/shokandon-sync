@@ -98,8 +98,87 @@ function downloadFile(url, destPath) {
     });
 }
 
+function fetchUrlHtml(targetUrl) {
+    return new Promise((resolve, reject) => {
+        const client = targetUrl.startsWith('https') ? https : http;
+        const options = {
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+                'Accept-Language': 'ja-JP,ja;q=0.9,en-US;q=0.8,en;q=0.7'
+            }
+        };
+        const req = client.get(targetUrl, options, (res) => {
+            if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+                let redirectUrl = res.headers.location;
+                if (redirectUrl.startsWith('/')) {
+                    const parsed = new URL(targetUrl);
+                    redirectUrl = `${parsed.protocol}//${parsed.host}${redirectUrl}`;
+                }
+                return fetchUrlHtml(redirectUrl).then(resolve).catch(reject);
+            }
+            let data = '';
+            res.on('data', chunk => data += chunk);
+            res.on('end', () => resolve(data));
+        });
+        req.on('error', reject);
+        req.setTimeout(8000, () => {
+            req.destroy();
+            reject(new Error('URL読み込みタイムアウト'));
+        });
+    });
+}
+
 // Full-fledged image extraction engine using Puppeteer & HTML Regex
 async function extractAllImageUrls(targetUrl, externalPage = null) {
+    const images = [];
+
+    // --- Special Fast & Isolated Handler for Yahoo Fleamarket / PayPay Fleamarket ---
+    if (targetUrl.includes('paypayfleamarket.yahoo.co.jp') || targetUrl.includes('frima.yahoo.co.jp') || targetUrl.includes('paypay')) {
+        try {
+            let html = '';
+            if (externalPage) {
+                html = await externalPage.content();
+            } else {
+                html = await fetchUrlHtml(targetUrl);
+            }
+
+            const nextDataMatch = html.match(/<script id="__NEXT_DATA__" type="application\/json">([\s\S]*?)<\/script>/i);
+            if (nextDataMatch) {
+                try {
+                    const nextData = JSON.parse(nextDataMatch[1]);
+                    const pageProps = nextData?.props?.pageProps;
+                    const item = pageProps?.item || pageProps?.initialState?.item || pageProps?.itemDetail || pageProps?.productDetail;
+                    if (item) {
+                        const itemImgs = item.images || item.imageUrls || item.itemImages || [];
+                        const itemOnlyUrls = [];
+                        for (const imgObj of itemImgs) {
+                            let u = typeof imgObj === 'string' ? imgObj : (imgObj?.url || imgObj?.src || imgObj?.originalUrl);
+                            if (u && typeof u === 'string' && u.startsWith('http')) {
+                                itemOnlyUrls.push(u);
+                            }
+                        }
+                        if (itemOnlyUrls.length > 0) {
+                            console.log(`[Yahoo Fleamarket Image Extractor]: __NEXT_DATA__ から出品商品の画像 ${itemOnlyUrls.length}枚 のみを完全限定抽出（関連商品を除外）`);
+                            return Array.from(new Set(itemOnlyUrls));
+                        }
+                    }
+                } catch (e) {
+                    console.warn('[Yahoo Fleamarket __NEXT_DATA__ Parse Exception]:', e.message);
+                }
+            }
+
+            // OGP Meta tag fallback for single main image
+            const ogImgMatch = html.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i) ||
+                               html.match(/<meta[^>]*content=["']([^"']+)["'][^>]*property=["']og:image["']/i);
+            if (ogImgMatch && ogImgMatch[1] && !ogImgMatch[1].includes('ogp_1200_630') && !ogImgMatch[1].includes('auc-pctr')) {
+                console.log(`[Yahoo Fleamarket Image Extractor]: OGP メイン画像1枚のみを抽出: ${ogImgMatch[1]}`);
+                return [ogImgMatch[1]];
+            }
+        } catch (e) {
+            console.warn('[Yahoo Fleamarket Fast Extraction Warning]:', e.message);
+        }
+    }
+
     let page = externalPage;
     let browserToClose = null;
 
@@ -122,13 +201,28 @@ async function extractAllImageUrls(targetUrl, externalPage = null) {
         }
     }
 
-    const images = [];
-
     if (page) {
         try {
             const html = await page.content();
 
-            if (targetUrl.includes('amazon.co.jp') || targetUrl.includes('amazon.com')) {
+            if (targetUrl.includes('paypayfleamarket.yahoo.co.jp') || targetUrl.includes('frima.yahoo.co.jp')) {
+                // Yahoo Fleamarket DOM Fallback strictly isolated from recommendations
+                const domImages = await page.evaluate(() => {
+                    const imgs = Array.from(document.querySelectorAll('main img, [class*="ItemImage"] img, [class*="ItemSlider"] img, [class*="ImageGallery"] img, [data-testid="item-image"] img'));
+                    return imgs.filter(img => {
+                        const parent = img.closest('section, div, article');
+                        if (parent) {
+                            const className = parent.className || '';
+                            const text = parent.innerText || '';
+                            if (className.toLowerCase().includes('recommend') || text.includes('オススメ') || text.includes('おすすめ')) {
+                                return false;
+                            }
+                        }
+                        return true;
+                    }).map(img => img.src).filter(Boolean);
+                });
+                images.push(...domImages);
+            } else if (targetUrl.includes('amazon.co.jp') || targetUrl.includes('amazon.com')) {
                 // 1. Amazon inline script colorImages
                 const colorImagesMatch = html.match(/'colorImages':\s*\{\s*'INITIAL':\s*(\[[\s\S]*?\])\s*\}/) ||
                                          html.match(/"colorImages":\s*\{\s*"INITIAL":\s*(\[[\s\S]*?\])\s*\}/);
@@ -205,9 +299,10 @@ async function extractAllImageUrls(targetUrl, externalPage = null) {
 
     for (let imgUrl of images) {
         if (!imgUrl || !imgUrl.startsWith('http')) continue;
-        if (imgUrl.includes('play-button') || imgUrl.includes('icon') || imgUrl.includes('logo') || imgUrl.includes('sprite')) continue;
+        if (imgUrl.includes('.svg') || imgUrl.includes('play-button') || imgUrl.includes('icon') || imgUrl.includes('logo') || imgUrl.includes('sprite')) continue;
+        if (imgUrl.includes('auc-pctr.c.yimg.jp') || imgUrl.includes('nf_src=sy') || imgUrl.includes('na_170x170') || imgUrl.includes('ogp_1200_630')) continue;
 
-        // Clean Amazon thumbnail parameters (e.g. ._AC_US40_.jpg -> .jpg)
+        // Clean Amazon thumbnail parameters
         if (imgUrl.includes('amazon.com') || imgUrl.includes('media-amazon.com')) {
             imgUrl = imgUrl.replace(/\._AC_[^.]*(\.[a-zA-Z]+)$/, '$1')
                            .replace(/\._SS[^.]*(\.[a-zA-Z]+)$/, '$1')
