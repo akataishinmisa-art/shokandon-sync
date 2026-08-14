@@ -617,15 +617,30 @@ const parseNum = (val) => {
             }
         }
 
-        console.log(`Row ${r} Updating Google Sheets API C${r}:F${r} ->`, [newTitle, newD, newE, newF]);
-        await sheets.spreadsheets.values.update({
-            spreadsheetId: SPREADSHEET_ID,
-            range: `C${r}:F${r}`,
-            valueInputOption: 'USER_ENTERED',
-            requestBody: {
-                values: [[ newTitle, newD, newE, newF ]]
-            }
-        });
+        const currentCValue = cCell.formattedValue || '';
+        const fCell = rowObj.values[5] || {};
+        const currentFValue = fCell.formattedValue || '';
+
+        const hasChanges = (
+            newTitle !== currentCValue ||
+            newD !== currentDValue ||
+            newE !== currentEValue ||
+            newF !== currentFValue
+        );
+
+        if (!hasChanges) {
+            console.log(`Row ${r}: 変更なしのためセル上書きをスキップしました (旧価格・初期価格をそのまま保持)`);
+        } else {
+            console.log(`Row ${r} Updating Google Sheets API C${r}:F${r} ->`, [newTitle, newD, newE, newF]);
+            await sheets.spreadsheets.values.update({
+                spreadsheetId: SPREADSHEET_ID,
+                range: `C${r}:F${r}`,
+                valueInputOption: 'USER_ENTERED',
+                requestBody: {
+                    values: [[ newTitle, newD, newE, newF ]]
+                }
+            });
+        }
     }
 
     await browser.close();

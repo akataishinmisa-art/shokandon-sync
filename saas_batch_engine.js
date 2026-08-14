@@ -465,20 +465,37 @@ async function getItemDataPuppeteer(browser, url) {
                     }
                 }
 
-                if (user.mode === 'soldout_g') {
-                    await sheets.spreadsheets.values.update({
-                        spreadsheetId: user.spreadsheetId,
-                        range: `C${r}:G${r}`,
-                        valueInputOption: 'USER_ENTERED',
-                        requestBody: { values: [[ newTitle, newD, newE, newF, newG ]] }
-                    });
+                const cCell = rowObj.values[2] || {};
+                const fCell = rowObj.values[5] || {};
+                const currentCValue = cCell.formattedValue || '';
+                const currentFValue = fCell.formattedValue || '';
+
+                const hasChanges = (
+                    newTitle !== currentCValue ||
+                    newD !== currentDValue ||
+                    newE !== currentEValue ||
+                    newF !== currentFValue ||
+                    (user.mode === 'soldout_g' && newG !== ((rowObj.values.length > 6 && rowObj.values[6]) ? rowObj.values[6].formattedValue || '' : ''))
+                );
+
+                if (!hasChanges) {
+                    console.log(`[User: ${user.name}] Row ${r}: 変更なしのためセル上書きをスキップしました (旧価格・初期価格をそのまま保持)`);
                 } else {
-                    await sheets.spreadsheets.values.update({
-                        spreadsheetId: user.spreadsheetId,
-                        range: `C${r}:F${r}`,
-                        valueInputOption: 'USER_ENTERED',
-                        requestBody: { values: [[ newTitle, newD, newE, newF ]] }
-                    });
+                    if (user.mode === 'soldout_g') {
+                        await sheets.spreadsheets.values.update({
+                            spreadsheetId: user.spreadsheetId,
+                            range: `C${r}:G${r}`,
+                            valueInputOption: 'USER_ENTERED',
+                            requestBody: { values: [[ newTitle, newD, newE, newF, newG ]] }
+                        });
+                    } else {
+                        await sheets.spreadsheets.values.update({
+                            spreadsheetId: user.spreadsheetId,
+                            range: `C${r}:F${r}`,
+                            valueInputOption: 'USER_ENTERED',
+                            requestBody: { values: [[ newTitle, newD, newE, newF ]] }
+                        });
+                    }
                 }
             }
 

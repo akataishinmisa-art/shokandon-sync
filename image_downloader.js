@@ -158,7 +158,7 @@ async function extractAllImageUrls(targetUrl, externalPage = null) {
                             }
                         }
                         if (itemOnlyUrls.length > 0) {
-                            console.log(`[Yahoo Fleamarket Image Extractor]: __NEXT_DATA__ から出品商品の画像 ${itemOnlyUrls.length}枚 のみを完全限定抽出（関連商品を除外）`);
+                            console.log(`[Yahoo Fleamarket Image Extractor]: __NEXT_DATA__ から出品商品の全画像 ${itemOnlyUrls.length}枚 のみを限定抽出（関連商品を除外）`);
                             return Array.from(new Set(itemOnlyUrls));
                         }
                     }
@@ -167,12 +167,38 @@ async function extractAllImageUrls(targetUrl, externalPage = null) {
                 }
             }
 
-            // OGP Meta tag fallback for single main image
-            const ogImgMatch = html.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i) ||
-                               html.match(/<meta[^>]*content=["']([^"']+)["'][^>]*property=["']og:image["']/i);
-            if (ogImgMatch && ogImgMatch[1] && !ogImgMatch[1].includes('ogp_1200_630') && !ogImgMatch[1].includes('auc-pctr')) {
-                console.log(`[Yahoo Fleamarket Image Extractor]: OGP メイン画像1枚のみを抽出: ${ogImgMatch[1]}`);
-                return [ogImgMatch[1]];
+            // Regex extraction for all Yahoo item images (auctions.c.yimg.jp or item-shopping) from static HTML
+            const yimgRegexMatches = html.match(/https:\/\/(?:auctions\.c\.yimg\.jp|item-shopping\.c\.yimg\.jp)\/images\.auctions\.yahoo\.co\.jp\/image\/[^\s"'<>]+/gi) ||
+                                     html.match(/https:\/\/auc-pctr\.c\.yimg\.jp\/i\/auctions\.c\.yimg\.jp\/images\.auctions\.yahoo\.co\.jp\/image\/[^\s"'<>]+/gi);
+            if (yimgRegexMatches && yimgRegexMatches.length > 0) {
+                const itemImgSet = new Set();
+                for (let matchUrl of yimgRegexMatches) {
+                    // Extract high-resolution original image URL from yimg CDN url
+                    let cleanUrl = matchUrl.split('?')[0];
+                    if (cleanUrl.includes('auc-pctr.c.yimg.jp/i/')) {
+                        const subMatch = cleanUrl.match(/https:\/\/(?:images|auctions)[^\s"'<>]+/);
+                        if (subMatch) cleanUrl = subMatch[0];
+                    }
+                    if (cleanUrl && !cleanUrl.includes('na_170x170') && !cleanUrl.includes('ogp_1200_630')) {
+                        itemImgSet.add(cleanUrl);
+                    }
+                }
+
+                // Strictly filter by seller user ID (users/...) if present
+                const ownerMatch = html.match(/users\/([a-f0-9]{32,64})/i) || html.match(/users\/([a-zA-Z0-9_\-]+)\//i);
+                if (ownerMatch && ownerMatch[0]) {
+                    const ownerPath = ownerMatch[0];
+                    const ownerImgs = Array.from(itemImgSet).filter(url => url.includes(ownerPath));
+                    if (ownerImgs.length > 0) {
+                        console.log(`[Yahoo Fleamarket Image Extractor]: 出品者ID (${ownerPath}) の全画像 ${ownerImgs.length}枚 を完全限定抽出！`);
+                        return ownerImgs;
+                    }
+                }
+
+                if (itemImgSet.size > 0) {
+                    console.log(`[Yahoo Fleamarket Image Extractor]: HTML正規表現から出品商品の全画像 ${itemImgSet.size}枚 を限定抽出`);
+                    return Array.from(itemImgSet);
+                }
             }
         } catch (e) {
             console.warn('[Yahoo Fleamarket Fast Extraction Warning]:', e.message);
@@ -208,7 +234,7 @@ async function extractAllImageUrls(targetUrl, externalPage = null) {
             if (targetUrl.includes('paypayfleamarket.yahoo.co.jp') || targetUrl.includes('frima.yahoo.co.jp')) {
                 // Yahoo Fleamarket DOM Fallback strictly isolated from recommendations
                 const domImages = await page.evaluate(() => {
-                    const imgs = Array.from(document.querySelectorAll('main img, [class*="ItemImage"] img, [class*="ItemSlider"] img, [class*="ImageGallery"] img, [data-testid="item-image"] img'));
+                    const imgs = Array.from(document.querySelectorAll('main img, [class*="ItemImage"] img, [class*="ItemSlider"] img, [class*="ImageGallery"] img, [data-testid="item-image"] img, [class*="Thumbnail"] img'));
                     return imgs.filter(img => {
                         const parent = img.closest('section, div, article');
                         if (parent) {

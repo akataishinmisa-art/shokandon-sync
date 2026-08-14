@@ -489,29 +489,46 @@ const parseNum = (val) => {
                 newE = currentEValue;
                 newF = '販売中';
             } else {
-                newE = currentDValue;
-                newD = itemData.price;
-                const numD = parseNum(itemData.price);
-                const numE = parseNum(currentDValue);
-                if (numD !== null && numE !== null && numD > numE) {
-                    console.log(`Row ${r}: Price INCREASED (${numD} > ${numE}). Status: '値上げ'`);
-                    newF = '値上げ';
+                const numScraped = parseNum(itemData.price);
+                const numD = parseNum(currentDValue);
+
+                if (numScraped !== null && numD !== null && numScraped !== numD) {
+                    newE = currentDValue;
+                    newD = itemData.price;
+                    newF = (numScraped > numD) ? '値上げ' : '販売中';
                 } else {
-                    console.log(`Row ${r}: Status: '販売中'`);
+                    newD = currentDValue;
+                    newE = currentEValue;
                     newF = '販売中';
                 }
             }
         }
 
-        console.log(`Row ${r} Updating Google Sheets API C${r}:G${r} ->`, [newTitle, newD, newE, newF, newG]);
-        await sheets.spreadsheets.values.update({
-            spreadsheetId: SPREADSHEET_ID,
-            range: `C${r}:G${r}`,
-            valueInputOption: 'USER_ENTERED',
-            requestBody: {
-                values: [[ newTitle, newD, newE, newF, newG ]]
-            }
-        });
+        const currentCValue = cCell.formattedValue || '';
+        const fCell = rowObj.values[5] || {};
+        const currentFValue = fCell.formattedValue || '';
+
+        const hasChanges = (
+            newTitle !== currentCValue ||
+            newD !== currentDValue ||
+            newE !== currentEValue ||
+            newF !== currentFValue ||
+            newG !== (rowObj.values.length > 6 && rowObj.values[6] ? rowObj.values[6].formattedValue || '' : '')
+        );
+
+        if (!hasChanges) {
+            console.log(`Row ${r}: 変更なしのためセル上書きをスキップしました (旧価格・初期価格をそのまま保持)`);
+        } else {
+            console.log(`Row ${r} Updating Google Sheets API C${r}:G${r} ->`, [newTitle, newD, newE, newF, newG]);
+            await sheets.spreadsheets.values.update({
+                spreadsheetId: SPREADSHEET_ID,
+                range: `C${r}:G${r}`,
+                valueInputOption: 'USER_ENTERED',
+                requestBody: {
+                    values: [[ newTitle, newD, newE, newF, newG ]]
+                }
+            });
+        }
     }
 
     await browser.close();
