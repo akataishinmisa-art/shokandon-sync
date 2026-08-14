@@ -466,7 +466,8 @@ async function getItemDataPuppeteer(browser, url) {
                             }
                         } else {
                             newD = currentDValue;
-                            newE = currentEValue;
+                            // もし旧価格E列に誤ってD列と同じ数値が入っている場合は空欄にクリーンアップし、本物の旧価格または空欄を維持
+                            newE = (currentEValue && currentEValue === currentDValue) ? '' : currentEValue;
                             newF = '販売中';
                         }
                     }

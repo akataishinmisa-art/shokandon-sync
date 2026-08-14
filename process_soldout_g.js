@@ -495,10 +495,10 @@ const parseNum = (val) => {
                 if (numScraped !== null && numD !== null && numScraped !== numD) {
                     newE = currentDValue;
                     newD = itemData.price;
-                    newF = (numScraped > numD) ? '値上げ' : '販売中';
+                    newF = (numScraped > numD) ? '値上げ' : '↓下げ';
                 } else {
                     newD = currentDValue;
-                    newE = currentEValue;
+                    newE = (currentEValue && currentEValue === currentDValue) ? '' : currentEValue;
                     newF = '販売中';
                 }
             }

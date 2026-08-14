@@ -610,7 +610,7 @@ const parseNum = (val) => {
                     }
                 } else {
                     newD = currentDValue;
-                    newE = currentEValue;
+                    newE = (currentEValue && currentEValue === currentDValue) ? '' : currentEValue;
                     newF = '販売中';
                 }
             }
