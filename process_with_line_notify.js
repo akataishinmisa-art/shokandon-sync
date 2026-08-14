@@ -583,7 +583,6 @@ const parseNum = (val) => {
         } else {
             newTitle = itemData.title || (rowObj.values[2] ? rowObj.values[2].formattedValue : '');
             if (!itemData.price) {
-                // 価格が取れなかった場合は既存の価格をそのまま維持
                 newD = currentDValue;
                 newE = currentEValue;
                 newF = '販売中';
@@ -597,19 +596,19 @@ const parseNum = (val) => {
                 const numD = parseNum(currentDValue);
 
                 if (numScraped !== null && numD !== null && numScraped !== numD) {
-                    // 価格が変更された場合のみ、前回のD列(新価格)をE列(旧価格)に移動
                     newE = currentDValue;
                     newD = itemData.price;
 
                     if (numScraped > numD) {
                         console.log(`Row ${r}: Price INCREASED (${numScraped} > ${numD}). Status: '値上げ'`);
                         newF = '値上げ';
+                        priceChangedItemsList.push({ row: r, type: '値上げ', oldPrice: currentDValue, newPrice: itemData.price, bUrl: targetUrl, gUrl: gValue });
                     } else {
-                        console.log(`Row ${r}: Price DECREASED (${numScraped} < ${numD}). Status: '販売中'`);
-                        newF = '販売中';
+                        console.log(`Row ${r}: Price DECREASED (${numScraped} < ${numD}). Status: '↓下げ'`);
+                        newF = '↓下げ';
+                        priceChangedItemsList.push({ row: r, type: '↓下げ', oldPrice: currentDValue, newPrice: itemData.price, bUrl: targetUrl, gUrl: gValue });
                     }
                 } else {
-                    // 価格変動なし：D列・E列ともに前回の値をそのまま維持
                     newD = currentDValue;
                     newE = currentEValue;
                     newF = '販売中';
@@ -645,11 +644,20 @@ const parseNum = (val) => {
 
     await browser.close();
 
-    if (missingItemsList.length > 0) {
+    if (missingItemsList.length > 0 || priceChangedItemsList.length > 0) {
         console.log(`\n================ Sending Batch LINE Notification ================`);
-        let lineBatchMsg = '';
-        for (const item of missingItemsList) {
-            lineBatchMsg += `要出品取り消し\n${item.bUrl}\n${item.gUrl}\n\n`;
+        let lineBatchMsg = `【商管どん 自動通知】\n`;
+        if (missingItemsList.length > 0) {
+            lineBatchMsg += `\n⚠️【欠品（要出品取り消し）】 ${missingItemsList.length}件：\n`;
+            for (const item of missingItemsList) {
+                lineBatchMsg += `要出品取り消し\n${item.bUrl}\n${item.gUrl}\n\n`;
+            }
+        }
+        if (priceChangedItemsList.length > 0) {
+            lineBatchMsg += `\n💰【価格変更通知（要確認）】 ${priceChangedItemsList.length}件：\n`;
+            for (const item of priceChangedItemsList) {
+                lineBatchMsg += `【${item.type}】 ${item.oldPrice} ➔ ${item.newPrice}\n${item.bUrl}\n${item.gUrl}\n\n`;
+            }
         }
         lineBatchMsg = lineBatchMsg.trim();
         console.log(`Batch LINE Message Content:\n${lineBatchMsg}`);

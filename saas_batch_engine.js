@@ -371,6 +371,7 @@ async function getItemDataPuppeteer(browser, url) {
             console.log(`User [${user.name}] Sheet: Found ${rowValues.length} rows.`);
 
             const missingItemsList = [];
+            const priceChangedItemsList = [];
 
             for (let r = 2; r <= rowValues.length; r++) {
                 const rowObj = rowValues[r - 1];
@@ -456,7 +457,13 @@ async function getItemDataPuppeteer(browser, url) {
                         if (numScraped !== null && numD !== null && numScraped !== numD) {
                             newE = currentDValue;
                             newD = itemData.price;
-                            newF = (numScraped > numD) ? '値上げ' : '販売中';
+                            if (numScraped > numD) {
+                                newF = '値上げ';
+                                priceChangedItemsList.push({ row: r, type: '値上げ', oldPrice: currentDValue, newPrice: itemData.price, bUrl: targetUrl, gUrl: gValue });
+                            } else {
+                                newF = '↓下げ';
+                                priceChangedItemsList.push({ row: r, type: '↓下げ', oldPrice: currentDValue, newPrice: itemData.price, bUrl: targetUrl, gUrl: gValue });
+                            }
                         } else {
                             newD = currentDValue;
                             newE = currentEValue;
@@ -499,18 +506,27 @@ async function getItemDataPuppeteer(browser, url) {
                 }
             }
 
-            // LINE notification depending on user mode
-            if (missingItemsList.length > 0 && user.mode === 'line_transfer') {
-                let lineBatchMsg = `【商管どん SaaS 自動通知】\n以下の商品が欠品（売切れ）となりました。要出品取り消し：\n\n`;
-                for (const item of missingItemsList) {
-                    lineBatchMsg += `要出品取り消し\n${item.bUrl}\n${item.gUrl}\n\n`;
+            // LINE notification depending on user mode (欠品 ＋ 価格変更)
+            if (user.mode === 'line_transfer' && (missingItemsList.length > 0 || priceChangedItemsList.length > 0)) {
+                let lineBatchMsg = `【商管どん SaaS 自動通知】\n`;
+                if (missingItemsList.length > 0) {
+                    lineBatchMsg += `\n⚠️【欠品（要出品取り消し）】 ${missingItemsList.length}件：\n`;
+                    for (const item of missingItemsList) {
+                        lineBatchMsg += `要出品取り消し\n${item.bUrl}\n${item.gUrl}\n\n`;
+                    }
+                }
+                if (priceChangedItemsList.length > 0) {
+                    lineBatchMsg += `\n💰【価格変更通知（要確認）】 ${priceChangedItemsList.length}件：\n`;
+                    for (const item of priceChangedItemsList) {
+                        lineBatchMsg += `【${item.type}】 ${item.oldPrice} ➔ ${item.newPrice}\n${item.bUrl}\n${item.gUrl}\n\n`;
+                    }
                 }
                 lineBatchMsg = lineBatchMsg.trim();
                 await sendLineNotificationForUser(user, lineBatchMsg);
             }
 
             user.lastSyncTime = new Date().toLocaleString('ja-JP');
-            user.lastStatus = `正常完了 (欠品: ${missingItemsList.length}件)`;
+            user.lastStatus = `正常完了 (欠品: ${missingItemsList.length}件, 価格変更: ${priceChangedItemsList.length}件)`;
 
         } catch (err) {
             console.error(`Error processing user [${user.name}]:`, err.message);
