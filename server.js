@@ -1096,11 +1096,18 @@ app.post('/api/run-sync', (req, res) => {
         return res.status(400).json({ success: false, message: 'すでに同期処理が実行中です。完了までお待ちください。' });
     }
 
+    const { mode } = req.body;
     const scriptFile = 'saas_batch_engine.js';
     const scriptPath = path.join(__dirname, scriptFile);
-    activeProcessLog = [`🚀 [${new Date().toLocaleTimeString()}] SaaS一元管理同期エンジン起動: ${scriptFile}`];
 
-    activeProcess = spawn('node', [scriptPath], {
+    const spawnArgs = [scriptPath];
+    if (mode) {
+        spawnArgs.push(`--mode=${mode}`);
+    }
+
+    activeProcessLog = [`🚀 [${new Date().toLocaleTimeString()}] SaaS一元管理同期エンジン起動 (${scriptFile} ${mode ? `[モード: ${mode}]` : ''})`];
+
+    activeProcess = spawn('node', spawnArgs, {
         cwd: __dirname,
         env: process.env
     });

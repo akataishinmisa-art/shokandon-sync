@@ -337,7 +337,11 @@ async function getItemDataPuppeteer(browser, url) {
     console.log('🚀 [SaaS Engine] Multi-User Batch Execution Started...');
     const users = loadUsersConfig();
     const activeUsers = users.filter(u => u.enabled !== false);
-    console.log(`Found ${activeUsers.length} active users to process.`);
+
+    const cliModeArg = process.argv.find(arg => arg.startsWith('--mode='));
+    const overrideMode = cliModeArg ? cliModeArg.split('=')[1] : process.env.SYNC_MODE;
+
+    console.log(`Found ${activeUsers.length} active users to process.${overrideMode ? ` [UI Mode Override: ${overrideMode}]` : ''}`);
 
     if (activeUsers.length === 0) {
         console.log('No active users to process. Exiting.');
@@ -354,10 +358,11 @@ async function getItemDataPuppeteer(browser, url) {
     });
 
     for (const user of activeUsers) {
+        const effectiveMode = overrideMode || user.mode || 'line_transfer';
         console.log(`\n==================================================`);
         console.log(`👤 Processing User: [${user.name}] (ID: ${user.id})`);
         console.log(`Spreadsheet ID: ${user.spreadsheetId}`);
-        console.log(`Mode: ${user.mode || 'line_transfer'}`);
+        console.log(`Effective Mode: ${effectiveMode}`);
         console.log(`==================================================`);
 
         try {
@@ -430,7 +435,7 @@ async function getItemDataPuppeteer(browser, url) {
                     newD = currentDValue;
                     newE = currentEValue;
                     newF = '欠品';
-                    if (user.mode === 'soldout_g') newG = '出品取り消し';
+                    if (effectiveMode === 'soldout_g') newG = '出品取り消し';
 
                     missingItemsList.push({ row: r, bUrl: targetUrl, gUrl: gValue });
                 } else if (itemData.title === '取得エラー' || (itemData.title === 'Amazon.co.jp' && !itemData.price)) {
@@ -483,13 +488,13 @@ async function getItemDataPuppeteer(browser, url) {
                     newD !== currentDValue ||
                     newE !== currentEValue ||
                     newF !== currentFValue ||
-                    (user.mode === 'soldout_g' && newG !== ((rowObj.values.length > 6 && rowObj.values[6]) ? rowObj.values[6].formattedValue || '' : ''))
+                    (effectiveMode === 'soldout_g' && newG !== ((rowObj.values.length > 6 && rowObj.values[6]) ? rowObj.values[6].formattedValue || '' : ''))
                 );
 
                 if (!hasChanges) {
                     console.log(`[User: ${user.name}] Row ${r}: 変更なしのためセル上書きをスキップしました (旧価格・初期価格をそのまま保持)`);
                 } else {
-                    if (user.mode === 'soldout_g') {
+                    if (effectiveMode === 'soldout_g') {
                         await sheets.spreadsheets.values.update({
                             spreadsheetId: user.spreadsheetId,
                             range: `C${r}:G${r}`,
@@ -507,8 +512,8 @@ async function getItemDataPuppeteer(browser, url) {
                 }
             }
 
-            // LINE notification depending on user mode (欠品 ＋ 価格変更)
-            if (user.mode === 'line_transfer' && (missingItemsList.length > 0 || priceChangedItemsList.length > 0)) {
+            // LINE notification depending on effectiveMode (LINE通知モード時のみ送信)
+            if (effectiveMode === 'line_transfer' && (missingItemsList.length > 0 || priceChangedItemsList.length > 0)) {
                 let lineBatchMsg = `【商管どん SaaS 自動通知】\n`;
                 if (missingItemsList.length > 0) {
                     lineBatchMsg += `\n⚠️【欠品（要出品取り消し）】 ${missingItemsList.length}件：\n`;
@@ -524,6 +529,8 @@ async function getItemDataPuppeteer(browser, url) {
                 }
                 lineBatchMsg = lineBatchMsg.trim();
                 await sendLineNotificationForUser(user, lineBatchMsg);
+            } else {
+                console.log(`[Mode: ${effectiveMode}] LINE通知対象外のモードのため、LINEメッセージの送信を完全にスキップしました。`);
             }
 
             user.lastSyncTime = new Date().toLocaleString('ja-JP');
