@@ -115,8 +115,9 @@ async function getItemDataPuppeteerOnce(browser, url) {
     });
 
     try {
-        await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
-        await page.evaluate(() => new Promise(r => setTimeout(r, 2500)));
+        await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 45000 });
+        // 1.5倍以上のしっかりしたDOM/JSレンダリング待機時間 (4,000ms)
+        await page.evaluate(() => new Promise(r => setTimeout(r, 4000)));
 
         const html = await page.content();
         let info = await page.evaluate((targetUrl) => {
@@ -319,16 +320,24 @@ async function getItemDataPuppeteer(browser, url) {
     let attempts = 0;
     let result = null;
 
-    while (attempts < 2) {
+    // 1.5倍時間をかけた慎重な3アンプト多重検証ロジック
+    while (attempts < 3) {
         attempts++;
         result = await getItemDataPuppeteerOnce(browser, url);
         const isValid = result.title && result.title !== '取得エラー' && (result.title !== 'Amazon.co.jp' || result.price);
-        if (isValid) return result;
+        
+        // 販売中かつ価格が取れている場合は即座に信頼結果として返却
+        if (isValid && !result.isClosed && result.price) {
+            return result;
+        }
+
         if (result.page) {
             await result.page.close().catch(() => {});
             result.page = null;
         }
-        await new Promise(r => setTimeout(r, 2000));
+        
+        // 1.5倍拡張インターバル (3,000ms)
+        await new Promise(r => setTimeout(r, 3000));
     }
     return result || { title: '', price: '', isClosed: false, statusText: '販売中', html: '', page: null };
 }

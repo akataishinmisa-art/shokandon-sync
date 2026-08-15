@@ -128,8 +128,8 @@ async function getItemDataPuppeteerOnce(browser, url) {
     });
 
     try {
-        await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
-        await page.evaluate(() => new Promise(r => setTimeout(r, 2500)));
+        await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 45000 });
+        await page.evaluate(() => new Promise(r => setTimeout(r, 4000)));
 
         const html = await page.content();
         let info = await page.evaluate((targetUrl) => {
@@ -317,11 +317,11 @@ async function getItemDataPuppeteer(browser, url) {
     let attempts = 0;
     let result = null;
 
-    while (attempts < 2) {
+    while (attempts < 3) {
         attempts++;
         result = await getItemDataPuppeteerOnce(browser, url);
         const isValid = result.title && result.title !== '取得エラー' && (result.title !== 'Amazon.co.jp' || result.price);
-        if (isValid) {
+        if (isValid && !result.isClosed && result.price) {
             return result;
         }
         if (result.page) {
@@ -329,7 +329,7 @@ async function getItemDataPuppeteer(browser, url) {
             result.page = null;
         }
         console.log(`[Scrape Retry]: Attempt ${attempts} for ${url} produced incomplete data. Retrying...`);
-        await new Promise(r => setTimeout(r, 2000));
+        await new Promise(r => setTimeout(r, 3000));
     }
     return result || { title: '', price: '', isClosed: false, statusText: '販売中', html: '', page: null };
 }
