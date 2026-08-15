@@ -343,11 +343,9 @@ async function getItemDataPuppeteerOnce(browser, url) {
                     if (m) price = m[1] + '円';
                 }
 
-                const hasPurchaseBtn = Array.from(document.querySelectorAll('button, a')).some(el => el.textContent.includes('購入手続きへ'));
-                const hasCopyBtn = Array.from(document.querySelectorAll('button, a')).some(el => el.textContent.includes('この情報をコピーして出品する'));
                 const isSoldText = bodyText.includes('売り切れました') || bodyText.includes('SOLD OUT') || bodyText.includes('公開が停止') || bodyText.includes('掲載が終了') || bodyText.includes('この情報を使って新しく出品できます');
 
-                isClosed = Boolean(isSoldText || hasCopyBtn || !hasPurchaseBtn || isDeleted);
+                isClosed = Boolean(isSoldText || isDeleted);
             }
 
             const statusText = isClosed ? '欠品' : '販売中';
@@ -366,6 +364,9 @@ async function getItemDataPuppeteerOnce(browser, url) {
                         if (item.status === 'ITEM_STATUS_SOLDOUT' || item.status === 'ITEM_STATUS_TRADING') {
                             info.isClosed = true;
                             info.statusText = '欠品';
+                        } else if (item.status === 'ITEM_STATUS_ON_SALE') {
+                            info.isClosed = false;
+                            info.statusText = '販売中';
                         }
                     }
                 } catch (e) {}
@@ -556,7 +557,9 @@ const parseNum = (val) => {
         let newE = '';
         let newF = '';
 
-        if (itemData.statusText === '欠品') {
+        const isItemMissing = Boolean(itemData.isClosed || itemData.statusText === '欠品');
+
+        if (isItemMissing) {
             console.log(`Row ${r} is 欠品 (SOLDOUT). Writing '欠品' to C and F.`);
             newTitle = '欠品';
             newD = currentDValue;

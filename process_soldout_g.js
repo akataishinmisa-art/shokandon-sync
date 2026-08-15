@@ -296,11 +296,9 @@ async function getItemDataPuppeteerOnce(browser, url) {
                     if (m) price = m[1] + '円';
                 }
 
-                const hasPurchaseBtn = Array.from(document.querySelectorAll('button, a')).some(el => el.textContent.includes('購入手続きへ'));
-                const hasCopyBtn = Array.from(document.querySelectorAll('button, a')).some(el => el.textContent.includes('この情報をコピーして出品する'));
                 const isSoldText = bodyText.includes('売り切れました') || bodyText.includes('SOLD OUT') || bodyText.includes('公開が停止') || bodyText.includes('掲載が終了') || bodyText.includes('この情報を使って新しく出品できます');
 
-                isClosed = Boolean(isSoldText || hasCopyBtn || !hasPurchaseBtn || isDeleted);
+                isClosed = Boolean(isSoldText || isDeleted);
             }
 
             const statusText = isClosed ? '欠品' : '販売中';
@@ -463,7 +461,9 @@ const parseNum = (val) => {
         let newF = '';
         let newG = (rowObj.values.length > 6 && rowObj.values[6] ? rowObj.values[6].formattedValue : '') || '';
 
-        if (itemData.statusText === '欠品') {
+        const isItemMissing = Boolean(itemData.isClosed || itemData.statusText === '欠品');
+
+        if (isItemMissing) {
             console.log(`Row ${r} is 欠品 (SOLDOUT). Writing '欠品' to C, F and '出品取り消し' to G.`);
             newTitle = '欠品';
             newD = currentDValue;

@@ -299,9 +299,7 @@ async function getItemDataPuppeteerOnce(browser, url) {
                                              return t === 'SOLDOUT' || t === 'SOLD OUT' || t === '売り切れ' || t === '売り切れました';
                                          });
 
-                    const purchaseBtn = Array.from(document.querySelectorAll('a, button')).find(el => el.textContent.includes('購入に進む'));
-
-                    isClosed = Boolean(soldoutBadge || !purchaseBtn);
+                    isClosed = Boolean(soldoutBadge || isDeleted);
                 }
             } else if (targetUrl.includes('paypayfleamarket') || targetUrl.includes('paypayfleamarket.yahoo.co.jp')) {
                 const bodyText = document.body.innerText || '';
@@ -329,31 +327,14 @@ async function getItemDataPuppeteerOnce(browser, url) {
                 }
 
                 if (!price) {
-                    const purchaseBtnEl = Array.from(document.querySelectorAll('button, a')).find(el => el.textContent.includes('購入手続きへ'));
-                    if (purchaseBtnEl) {
-                        let parent = purchaseBtnEl.parentElement;
-                        while (parent && parent !== document.body) {
-                            const text = parent.innerText || '';
-                            const match = text.match(/([0-9,]{3,9})\s*円/);
-                            if (match) {
-                                price = match[1] + '円';
-                                break;
-                            }
-                            parent = parent.parentElement;
-                        }
-                    }
-                }
-
-                if (!price) {
+                    const bodyText = document.body.innerText || '';
                     const m = bodyText.match(/([0-9,]{3,9})\s*円/);
                     if (m) price = m[1] + '円';
                 }
 
-                const hasPurchaseBtn = Array.from(document.querySelectorAll('button, a')).some(el => el.textContent.includes('購入手続きへ'));
-                const hasCopyBtn = Array.from(document.querySelectorAll('button, a')).some(el => el.textContent.includes('この情報をコピーして出品する'));
                 const isSoldText = bodyText.includes('売り切れました') || bodyText.includes('SOLD OUT') || bodyText.includes('公開が停止') || bodyText.includes('掲載が終了') || bodyText.includes('この情報を使って新しく出品できます');
 
-                isClosed = Boolean(isSoldText || hasCopyBtn || !hasPurchaseBtn || isDeleted);
+                isClosed = Boolean(isSoldText || isDeleted);
             }
 
             const statusText = isClosed ? '欠品' : '販売中';
@@ -373,6 +354,9 @@ async function getItemDataPuppeteerOnce(browser, url) {
                         if (itemObj.status === 'ITEM_STATUS_SOLDOUT' || itemObj.status === 'ITEM_STATUS_TRADING') {
                             info.isClosed = true;
                             info.statusText = '欠品';
+                        } else if (itemObj.status === 'ITEM_STATUS_ON_SALE') {
+                            info.isClosed = false;
+                            info.statusText = '販売中';
                         }
                     }
                 } catch (e) {}
@@ -560,7 +544,9 @@ const parseNum = (val) => {
         let newE = '';
         let newF = '';
 
-        if (itemData.statusText === '欠品') {
+        const isItemMissing = Boolean(itemData.isClosed || itemData.statusText === '欠品');
+
+        if (isItemMissing) {
             console.log(`Row ${r} is 欠品 (SOLDOUT). Writing '欠品' to C and F.`);
             newTitle = '欠品';
             newD = currentDValue;
@@ -572,7 +558,7 @@ const parseNum = (val) => {
                 bUrl: targetUrl,
                 gUrl: gValue
             });
-        } else if (itemData.title === '取得エラー' || (itemData.title === 'Amazon.co.jp' && !itemData.price)) {
+        } else if (!itemData.title || itemData.title === '取得エラー' || (itemData.title === 'Amazon.co.jp' && !itemData.price)) {
             console.log(`Row ${r}: Scraping failed or returned invalid placeholder ('${itemData.title}'). Preserving existing sheet values.`);
             const cCell = rowObj.values[2] || {};
             const fCell = rowObj.values[5] || {};
