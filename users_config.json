@@ -9,6 +9,6 @@
     "enabled": true,
     "createdAt": "2026/08/08",
     "lastSyncTime": "2026/8/15 22:49:34",
-    "lastStatus": "正常完了 (欠品: 0件, 価格変更: 0件)"
+    "lastStatus": "エラー: Protocol error (Target.createTarget): Session with given id not found."
   }
 ]
