@@ -676,8 +676,9 @@ async function handleParseUrlMeta(req, res) {
         }
 
         // Extract Main Image URL
-        if (!imageUrl) {
-            const yimgOrMercariPhotoMatch = rawHtml.match(/https:\/\/(?:static\.mercdn\.net|item-shopping\.c\.yimg\.jp|auctions\.c\.yimg\.jp|image\.rakuten\.co\.jp|img\.fril\.jp|m\.media-amazon\.com\/images\/I|images-na\.ssl-images-amazon\.com\/images\/I)\/[A-Za-z0-9_\-\.\/]+\.(?:jpg|jpeg|png|webp)/i);
+        if (!imageUrl || imageUrl.includes('ogp_app') || imageUrl.includes('paypayfleamarket/ogp')) {
+            imageUrl = '';
+            const yimgOrMercariPhotoMatch = rawHtml.match(/https:\/\/(?:static\.mercdn\.net|item-shopping\.c\.yimg\.jp|auctions\.c\.yimg\.jp|paypayfleamarket\.c\.yimg\.jp|image\.rakuten\.co\.jp|img\.fril\.jp|m\.media-amazon\.com\/images\/I|images-na\.ssl-images-amazon\.com\/images\/I)\/[A-Za-z0-9_\-\.\/]+\.(?:jpg|jpeg|png|webp)/i);
             if (yimgOrMercariPhotoMatch) {
                 imageUrl = yimgOrMercariPhotoMatch[0];
             }
@@ -686,7 +687,9 @@ async function handleParseUrlMeta(req, res) {
         if (!imageUrl) {
             const ogImgMatch = rawHtml.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i) ||
                                rawHtml.match(/<meta[^>]*content=["']([^"']+)["'][^>]*property=["']og:image["']/i);
-            if (ogImgMatch && ogImgMatch[1]) imageUrl = ogImgMatch[1];
+            if (ogImgMatch && ogImgMatch[1] && !ogImgMatch[1].includes('ogp_app') && !ogImgMatch[1].includes('paypayfleamarket/ogp')) {
+                imageUrl = ogImgMatch[1];
+            }
         }
 
         // Extract Item Price
@@ -727,8 +730,11 @@ async function handleParseUrlMeta(req, res) {
             }
         }
 
+        const isGenericTitle = !cleanTitle || cleanTitle === 'Yahoo!フリマ' || cleanTitle === 'PayPayフリマ' || cleanTitle.includes('ページが見つかりません') || cleanTitle.length < 3;
+        const isInvalidImage = !imageUrl || imageUrl.includes('ogp_app') || imageUrl.includes('paypayfleamarket/ogp');
+
         // Puppeteer fallback if price or image or title is missing for major Japanese sites & Amazon
-        if (!isLocalFile && (!price || !imageUrl || !cleanTitle || cleanTitle.includes('ページが見つかりません') || cleanTitle.length < 3) && (url.includes('amazon') || url.includes('paypay') || url.includes('yahoo') || url.includes('mercari') || url.includes('rakuten') || url.includes('fril'))) {
+        if (!isLocalFile && (!price || isInvalidImage || isGenericTitle) && (url.includes('amazon') || url.includes('paypay') || url.includes('yahoo') || url.includes('mercari') || url.includes('rakuten') || url.includes('fril'))) {
             let browser = null;
             try {
                 browser = await puppeteer.launch({
@@ -742,24 +748,25 @@ async function handleParseUrlMeta(req, res) {
                 });
                 await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36');
                 await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 20000 });
+                await page.evaluate(() => new Promise(r => setTimeout(r, 2000)));
 
                 const pupData = await page.evaluate(() => {
                     let p = '', img = '', t = '';
                     
-                    const titleEl = document.querySelector('#productTitle, #title, h1');
+                    const titleEl = document.querySelector('h1') || document.querySelector('[class*="ItemTitle_title"]') || document.querySelector('#productTitle, #title');
                     if (titleEl) {
                         t = titleEl.textContent.replace(/キーボードショートカット[\s\S]*/, '').trim();
                     }
                     if (!t) t = document.title || '';
 
-                    const priceEl = document.querySelector('.a-price .a-offscreen, #priceblock_ourprice, #priceblock_dealprice, .a-price-whole, #corePrice_feature_div .a-offscreen, span.a-color-price, #price_inside_buybox, [data-testid="product-price"], [data-testid="price"], .merItemPrice, .Price__value, .elPriceNumber, [itemprop="price"], .item__price, [class*="ItemPrice_price"]');
+                    const priceEl = document.querySelector('[class*="ItemPrice_price"], [class*="Price__value"], [class*="itemPrice"], .a-price .a-offscreen, #priceblock_ourprice, #priceblock_dealprice, .a-price-whole, #corePrice_feature_div .a-offscreen, span.a-color-price, #price_inside_buybox, [data-testid="product-price"], [data-testid="price"], .merItemPrice, .Price__value, .elPriceNumber, [itemprop="price"], .item__price');
                     if (priceEl) {
                         const m = priceEl.textContent.match(/¥\s*([0-9,]+)|￥\s*([0-9,]+)|([0-9,]+)\s*円/);
                         if (m) p = `￥${parseInt((m[1]||m[2]||m[3]).replace(/,/g, ''), 10).toLocaleString('ja-JP')}`;
                         else p = priceEl.textContent.trim();
                     }
 
-                    const imgEl = document.querySelector('#landingImage, #imgBlkFront, #main-image-container img, img[src*="media-amazon"], img[src*="mercdn"], img[src*="yimg"], img[src*="fril"], img[src*="rakuten"]');
+                    const imgEl = document.querySelector('[class*="ItemImage"] img, [class*="ItemSlider"] img, [class*="ImageGallery"] img, #landingImage, #imgBlkFront, #main-image-container img, img[src*="auctions.c.yimg"], img[src*="paypayfleamarket.c.yimg"], img[src*="media-amazon"], img[src*="mercdn"], img[src*="fril"], img[src*="rakuten"]');
                     if (imgEl) img = imgEl.getAttribute('data-old-hires') || imgEl.src || '';
 
                     return { t, p, img };
