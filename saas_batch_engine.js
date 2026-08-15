@@ -103,7 +103,7 @@ const parseNum = (val) => {
     return cleaned ? parseInt(cleaned, 10) : null;
 };
 
-async function getItemDataPuppeteerOnce(browser, url) {
+async function getItemDataPuppeteerOnce(browser, url, waitMs = 2500) {
     const page = await browser.newPage();
     await page.setViewport({ width: 1400, height: 900 });
     await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36');
@@ -116,8 +116,8 @@ async function getItemDataPuppeteerOnce(browser, url) {
 
     try {
         await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 45000 });
-        // 1.5倍以上のしっかりしたDOM/JSレンダリング待機時間 (4,000ms)
-        await page.evaluate(() => new Promise(r => setTimeout(r, 4000)));
+        // 1回目は2.5秒(2,500ms)で高速処理、疑いがある場合は4.0秒(4,000ms)で慎重待機
+        await page.evaluate((delay) => new Promise(r => setTimeout(r, delay)), waitMs);
 
         const html = await page.content();
         let info = await page.evaluate((targetUrl) => {
@@ -318,16 +318,23 @@ async function getItemDataPuppeteerOnce(browser, url) {
 
 async function getItemDataPuppeteer(browser, url) {
     let attempts = 0;
+    const maxAttempts = 5;
     let result = null;
 
-    // 1.5倍時間をかけた慎重な3アンプト多重検証ロジック
-    while (attempts < 3) {
+    while (attempts < maxAttempts) {
         attempts++;
-        result = await getItemDataPuppeteerOnce(browser, url);
+        // 1回目は2.5秒(2,500ms)でスピーディに確認。不完全・欠品の疑いがあれば2回目以降は4.0秒(4,000ms)で慎重判定
+        const currentWait = (attempts === 1) ? 2500 : 4000;
+        result = await getItemDataPuppeteerOnce(browser, url, currentWait);
         const isValid = result.title && result.title !== '取得エラー' && (result.title !== 'Amazon.co.jp' || result.price);
         
-        // 販売中かつ価格が取れている場合は即座に信頼結果として返却
+        // 【成功確定】販売中かつ価格が取れている場合は即座に正常結果として返却
         if (isValid && !result.isClosed && result.price) {
+            return result;
+        }
+
+        // 【欠品確定】明確に売り切れと判定され、2回以上連続して確認できた場合
+        if (isValid && result.isClosed && attempts >= 2) {
             return result;
         }
 
@@ -336,10 +343,23 @@ async function getItemDataPuppeteer(browser, url) {
             result.page = null;
         }
         
-        // 1.5倍拡張インターバル (3,000ms)
-        await new Promise(r => setTimeout(r, 3000));
+        console.log(`[Scrape Check Attempt ${attempts}/${maxAttempts}]: ${url} (Wait: ${currentWait}ms) -> Retrying for accuracy...`);
+        await new Promise(r => setTimeout(r, 2000));
     }
-    return result || { title: '', price: '', isClosed: false, statusText: '販売中', html: '', page: null };
+
+    // 5回試しても完全に読み込めない場合はステータスを「エラー」として記録
+    if (!result || !result.title || result.title === '取得エラー' || (!result.price && !result.isClosed)) {
+        return {
+            title: (result && result.title && result.title !== '取得エラー') ? result.title : '',
+            price: '',
+            isClosed: false,
+            statusText: 'エラー',
+            html: '',
+            page: null
+        };
+    }
+
+    return result;
 }
 
 (async () => {
@@ -441,7 +461,14 @@ async function getItemDataPuppeteer(browser, url) {
 
                 const isItemMissing = Boolean(itemData.isClosed || itemData.statusText === '欠品');
 
-                if (isItemMissing) {
+                if (itemData.statusText === 'エラー') {
+                    const cCell = rowObj.values[2] || {};
+                    newTitle = cCell.formattedValue || '';
+                    newD = currentDValue;
+                    newE = currentEValue;
+                    newF = 'エラー';
+                    console.log(`Row ${r}: 5回判定でも取得不可のためステータスを'エラー'と記載しました。`);
+                } else if (isItemMissing) {
                     newTitle = '欠品';
                     newD = currentDValue;
                     newE = currentEValue;

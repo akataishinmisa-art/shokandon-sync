@@ -169,7 +169,7 @@ async function getRakumaItemDataDirect(url) {
     }
 }
 
-async function getItemDataPuppeteerOnce(browser, url) {
+async function getItemDataPuppeteerOnce(browser, url, waitMs = 2500) {
     const page = await browser.newPage();
     await page.setViewport({ width: 1400, height: 900 });
     await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36');
@@ -182,7 +182,7 @@ async function getItemDataPuppeteerOnce(browser, url) {
 
     try {
         await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 45000 });
-        await page.evaluate(() => new Promise(r => setTimeout(r, 4000)));
+        await page.evaluate((delay) => new Promise(r => setTimeout(r, delay)), waitMs);
 
         const html = await page.content();
         let info = await page.evaluate((targetUrl) => {
@@ -397,23 +397,43 @@ async function getItemDataPuppeteerOnce(browser, url) {
 
 async function getItemDataPuppeteer(browser, url) {
     let attempts = 0;
+    const maxAttempts = 5;
     let result = null;
 
-    while (attempts < 3) {
+    while (attempts < maxAttempts) {
         attempts++;
-        result = await getItemDataPuppeteerOnce(browser, url);
+        const currentWait = (attempts === 1) ? 2500 : 4000;
+        result = await getItemDataPuppeteerOnce(browser, url, currentWait);
         const isValid = result.title && result.title !== '取得エラー' && (result.title !== 'Amazon.co.jp' || result.price);
+        
         if (isValid && !result.isClosed && result.price) {
             return result;
         }
+
+        if (isValid && result.isClosed && attempts >= 2) {
+            return result;
+        }
+
         if (result.page) {
             await result.page.close().catch(() => {});
             result.page = null;
         }
-        console.log(`[Scrape Retry]: Attempt ${attempts} for ${url} produced incomplete data. Retrying...`);
-        await new Promise(r => setTimeout(r, 3000));
+        console.log(`[Scrape Check Attempt ${attempts}/${maxAttempts}]: ${url} (Wait: ${currentWait}ms) -> Retrying for accuracy...`);
+        await new Promise(r => setTimeout(r, 2000));
     }
-    return result || { title: '', price: '', isClosed: false, statusText: '販売中', html: '', page: null };
+
+    if (!result || !result.title || result.title === '取得エラー' || (!result.price && !result.isClosed)) {
+        return {
+            title: (result && result.title && result.title !== '取得エラー') ? result.title : '',
+            price: '',
+            isClosed: false,
+            statusText: 'エラー',
+            html: '',
+            page: null
+        };
+    }
+
+    return result;
 }
 
 function getGoogleAuth() {
@@ -546,7 +566,14 @@ const parseNum = (val) => {
 
         const isItemMissing = Boolean(itemData.isClosed || itemData.statusText === '欠品');
 
-        if (isItemMissing) {
+        if (itemData.statusText === 'エラー') {
+            console.log(`Row ${r}: 5回判定でも取得不可のためステータスを'エラー'と記載しました。`);
+            const cCell = rowObj.values[2] || {};
+            newTitle = cCell.formattedValue || '';
+            newD = currentDValue;
+            newE = currentEValue;
+            newF = 'エラー';
+        } else if (isItemMissing) {
             console.log(`Row ${r} is 欠品 (SOLDOUT). Writing '欠品' to C and F.`);
             newTitle = '欠品';
             newD = currentDValue;
