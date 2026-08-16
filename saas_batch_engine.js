@@ -474,15 +474,19 @@ function sendLineNotificationForUser(user, message) {
 
             let activeRows = [];
 
+            // 1行ずつ上から順番に「B列（仕入れ先URL）」のみをチェック
             for (let r = 2; r <= Math.min(rowValues.length, 1000); r++) {
                 const rowObj = rowValues[r - 1];
-                if (!rowObj || !rowObj.values || rowObj.values.length < 2) {
-                    console.log(`[Data End Detection]: Row ${r} が空白行のため、即座にスキャンを終了しました。`);
+
+                // B列のセルオブジェクトを取得 (B列 = values[1])
+                const bCell = (rowObj && rowObj.values && rowObj.values.length > 1) ? rowObj.values[1] : null;
+
+                if (!bCell) {
+                    console.log(`[Data End Detection]: Row ${r} のB列が空欄のため、ここでスキャンを完全に終了しました。`);
                     break;
                 }
 
-                const bCell = rowObj.values[1] || {};
-                const bFormatted = bCell.formattedValue || '';
+                const bFormatted = (bCell.formattedValue || '').trim();
                 let targetUrl = bCell.hyperlink || '';
 
                 if (!targetUrl && bCell.textFormatRuns && Array.isArray(bCell.textFormatRuns)) {
@@ -506,8 +510,9 @@ function sendLineNotificationForUser(user, message) {
                     targetUrl = bFormatted;
                 }
 
+                // B列に有効なURLが存在しない場合は、即座にスキャンを終了
                 if (!targetUrl || !targetUrl.includes('http')) {
-                    console.log(`[Data End Detection]: Row ${r} (URLなし) に到達したため、即座にスキャンを終了しました。`);
+                    console.log(`[Data End Detection]: Row ${r} のB列にURLが存在しない（空欄またはテキスト）ため、ここでスキャンを完全に終了しました。`);
                     break;
                 }
 
