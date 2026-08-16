@@ -473,18 +473,12 @@ function sendLineNotificationForUser(user, message) {
             console.log(`User [${user.name}] Sheet: Found ${rowValues.length} total rows in sheet range.`);
 
             let activeRows = [];
-            let consecutiveEmptyRows = 0;
 
             for (let r = 2; r <= Math.min(rowValues.length, 1000); r++) {
                 const rowObj = rowValues[r - 1];
                 if (!rowObj || !rowObj.values || rowObj.values.length < 2) {
-                    consecutiveEmptyRows++;
-                    // 空白行が 3行以上 連続したらメインデータの終端と判断してスキャンを終了
-                    if (consecutiveEmptyRows >= 3) {
-                        console.log(`[Data End Detection]: Row ${r} で連続空白行を検出したため、メインデータの終端と判断してスキャンを終了しました。`);
-                        break;
-                    }
-                    continue;
+                    console.log(`[Data End Detection]: Row ${r} が空白行のため、即座にスキャンを終了しました。`);
+                    break;
                 }
 
                 const bCell = rowObj.values[1] || {};
@@ -513,16 +507,10 @@ function sendLineNotificationForUser(user, message) {
                 }
 
                 if (!targetUrl || !targetUrl.includes('http')) {
-                    consecutiveEmptyRows++;
-                    if (consecutiveEmptyRows >= 3) {
-                        console.log(`[Data End Detection]: Row ${r} で連続非URL行を検出したため、メインデータの終端と判断してスキャンを終了しました。`);
-                        break;
-                    }
-                    continue;
+                    console.log(`[Data End Detection]: Row ${r} (URLなし) に到達したため、即座にスキャンを終了しました。`);
+                    break;
                 }
 
-                // 有効なURL行を発見したため連続空白カウンターをリセット
-                consecutiveEmptyRows = 0;
                 activeRows.push({ r, rowObj, targetUrl, bFormatted });
             }
 
