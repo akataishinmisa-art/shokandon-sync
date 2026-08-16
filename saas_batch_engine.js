@@ -157,15 +157,13 @@ async function getItemDataSingleAttempt(browser, url, waitMs = 2500) {
 
         const html = await page.content();
 
-        // 基本要素（タイトル・価格）のスクレイピング
-        let basicData = await page.evaluate((targetUrl) => {
-            let title = '';
-            let price = '';
-
-            if (targetUrl.includes('mercari') || targetUrl.includes('jp.mercari.com')) {
+        // 1. メルカリの場合：【二重ガード＆食い違い自動検出アルゴリズム】
+        if (url.includes('mercari') || url.includes('jp.mercari.com')) {
+            let basicData = await page.evaluate(() => {
                 const titleEl = document.querySelector('h1') || document.querySelector('[data-testid="item-name"]');
-                title = titleEl ? titleEl.textContent.trim() : '';
+                const title = titleEl ? titleEl.textContent.trim() : '';
 
+                let price = '';
                 const metaPrice = document.querySelector('meta[name="product:price:amount"], meta[property="product:price:amount"]');
                 if (metaPrice && metaPrice.getAttribute('content')) {
                     const pVal = parseInt(metaPrice.getAttribute('content'), 10);
@@ -177,42 +175,9 @@ async function getItemDataSingleAttempt(browser, url, waitMs = 2500) {
                     const cleanDigits = rawPrice.replace(/[^0-9]/g, '');
                     if (cleanDigits) price = parseInt(cleanDigits, 10).toLocaleString('ja-JP') + '円';
                 }
-            } else if (targetUrl.includes('amazon.co.jp')) {
-                const titleEl = document.querySelector('#productTitle') || document.querySelector('h1');
-                title = titleEl ? titleEl.textContent.trim() : '';
-                const priceEl = document.querySelector('.priceToPay') || document.querySelector('.a-price .a-offscreen');
-                if (priceEl) {
-                    const cleanDigits = priceEl.textContent.replace(/[^0-9]/g, '');
-                    if (cleanDigits) price = parseInt(cleanDigits, 10).toLocaleString('ja-JP') + '円';
-                }
-            } else if (targetUrl.includes('paypayfleamarket') || targetUrl.includes('paypayfleamarket.yahoo.co.jp') || targetUrl.includes('fleamarket.yahoo.co.jp')) {
-                const titleEl = document.querySelector('h1') || document.querySelector('[class*="ItemTitle_title"]') || document.querySelector('[class*="itemTitle"]');
-                title = titleEl ? titleEl.textContent.trim() : document.title.replace(/\s*-\s*Yahoo!フリマ.*/i, '').trim();
-                const metaPrice = document.querySelector('meta[name="product:price:amount"], meta[property="product:price:amount"]');
-                if (metaPrice && metaPrice.getAttribute('content')) {
-                    const pVal = parseInt(metaPrice.getAttribute('content'), 10);
-                    if (!isNaN(pVal) && pVal > 0) price = pVal.toLocaleString('ja-JP') + '円';
-                }
-                if (!price) {
-                    const priceEl = document.querySelector('[class*="Price_value"]') || document.querySelector('[class*="price"]');
-                    let rawPrice = priceEl ? priceEl.textContent.trim() : '';
-                    const cleanDigits = rawPrice.replace(/[^0-9]/g, '');
-                    if (cleanDigits) price = parseInt(cleanDigits, 10).toLocaleString('ja-JP') + '円';
-                }
-            } else if (targetUrl.includes('fril.jp') || targetUrl.includes('rakuma')) {
-                const titleEl = document.querySelector('.item__name') || document.querySelector('h1');
-                title = titleEl ? titleEl.textContent.trim() : document.title.replace(/\s*-\s*ラクマ.*/i, '').trim();
-                const priceEl = document.querySelector('[itemprop="price"]') || document.querySelector('.item__price');
-                let rawPrice = priceEl ? (priceEl.getAttribute('content') || priceEl.textContent.trim()) : '';
-                const cleanNum = rawPrice.replace(/[^0-9]/g, '');
-                if (cleanNum) price = parseInt(cleanNum, 10).toLocaleString('ja-JP') + '円';
-            }
+                return { title, price };
+            });
 
-            return { title, price };
-        }, url);
-
-        // 1. メルカリの場合：【二重ガード＆食い違い自動検出アルゴリズム】
-        if (url.includes('mercari')) {
             const signals = await page.evaluate(() => {
                 const soldBadge = document.querySelector('[data-testid="item-sold-out-badge"]') || document.querySelector('div[aria-label*="売り切れ"]');
                 const hasSoldBadge = Boolean(soldBadge);
@@ -269,12 +234,47 @@ async function getItemDataSingleAttempt(browser, url, waitMs = 2500) {
             await page.close();
             return { title: basicData.title, price: basicData.price, isClosed: true, statusText: '欠品', page: null };
 
-        // 2. Yahoo!フリマ（PayPayフリマ）の場合：【ユーザー様ご提示画像に基づく完全学習判定】
+        // 2. Yahoo!フリマ（PayPayフリマ）の場合：【完全学習＆堅牢Schema抽出】
         } else if (url.includes('paypayfleamarket') || url.includes('fleamarket.yahoo.co.jp')) {
-            const ySignals = await page.evaluate(() => {
-                const bodyText = document.body.innerText || '';
+            let title = '';
+            let price = '';
+            let isClosed = false;
 
-                // 画像3枚目：商品が存在しない/削除された状態
+            // A. JSON-LD Schema からタイトル・価格・状態を抽出
+            const ldJsonMatches = html.matchAll(/<script type="application\/ld\+json">(.*?)<\/script>/gs);
+            for (const match of ldJsonMatches) {
+                try {
+                    const data = JSON.parse(match[1]);
+                    if (data['@type'] === 'Product' || data.name || data.offers) {
+                        if (data.name) title = data.name;
+                        if (data.offers && data.offers.price) {
+                            price = parseInt(data.offers.price, 10).toLocaleString('ja-JP') + '円';
+                        }
+                    }
+                } catch (e) {}
+            }
+
+            // B. 埋め込みJSON構造体フォールバック
+            if (!price) {
+                const priceMatch = html.match(/"price"\s*:\s*"?(\d+)"?/);
+                if (priceMatch) {
+                    price = parseInt(priceMatch[1], 10).toLocaleString('ja-JP') + '円';
+                }
+            }
+
+            // C. DOMフォールバック
+            const domData = await page.evaluate(() => {
+                const titleEl = document.querySelector('h1') || document.querySelector('[class*="ItemTitle_title"]') || document.querySelector('[class*="itemTitle"]');
+                const t = titleEl ? titleEl.textContent.trim() : '';
+
+                const priceEl = document.querySelector('[class*="ItemPrice"]') || document.querySelector('[class*="Price_value"]') || document.querySelector('[class*="price"]');
+                let p = '';
+                if (priceEl) {
+                    const clean = priceEl.textContent.replace(/[^0-9]/g, '');
+                    if (clean) p = parseInt(clean, 10).toLocaleString('ja-JP') + '円';
+                }
+
+                const bodyText = document.body.innerText || '';
                 const isNotFound = Boolean(
                     bodyText.includes('この商品は存在しません') ||
                     bodyText.includes('公開が停止されました') ||
@@ -282,55 +282,69 @@ async function getItemDataSingleAttempt(browser, url, waitMs = 2500) {
                     document.title.includes('存在しません')
                 );
 
-                // 画像1枚目：赤い「購入手続きへ」ボタン（販売中）
                 const allButtons = Array.from(document.querySelectorAll('button, a'));
                 const hasBuyButton = allButtons.some(el => {
                     const txt = el.textContent.trim();
                     return (txt === '購入手続きへ' || txt.includes('購入手続きへ')) && !el.disabled;
                 });
-
-                // 画像2枚目：「この情報をコピーして出品する」ボタン（売り切れ・欠品）
                 const hasCopyListingButton = allButtons.some(el => el.textContent.includes('この情報をコピーして出品する'));
 
-                // 画像2枚目：メイン商品画像上のSOLDバッジ
-                // （※おすすめ欄のSOLDと混同しないよう、メイン画像コンテナ内をチェック）
                 const mainItemContainer = document.querySelector('[class*="ItemMain_main"]') || document.querySelector('[class*="item-main"]') || document.querySelector('main') || document.body;
                 const soldBadges = Array.from(mainItemContainer.querySelectorAll('[class*="SoldBadge"], [class*="sold"], [aria-label*="SOLD"], div, span'));
                 const hasMainSoldBadge = soldBadges.some(el => {
                     const isInsideRecommend = el.closest('[class*="Recommend"], [class*="recommend"], [class*="suggestion"]');
-                    if (isInsideRecommend) return false; // オススメ欄は無視
+                    if (isInsideRecommend) return false;
                     return el.textContent.trim() === 'SOLD' || el.classList.contains('sold') || (el.getAttribute('aria-label') || '').includes('売り切れ');
                 });
 
-                // 「この商品は○日で売れました」告知
                 const hasSoldNotice = bodyText.includes('で売れました') || bodyText.includes('売り切れました');
 
-                return { isNotFound, hasBuyButton, hasCopyListingButton, hasMainSoldBadge, hasSoldNotice };
+                return { t, p, isNotFound, hasBuyButton, hasCopyListingButton, hasMainSoldBadge, hasSoldNotice };
             });
+
+            if (!title) title = domData.t || document.title.replace(/\s*-\s*Yahoo!フリマ.*/i, '').trim();
+            if (!price) price = domData.p;
 
             await page.close();
 
-            // 判定実行
-            if (ySignals.isNotFound) {
+            // 状態判定
+            if (domData.isNotFound) {
                 return { title: '欠品（存在しません）', price: '', isClosed: true, statusText: '欠品', page: null };
             }
-
-            // 購入ボタンが存在し、コピー出品ボタンやメインSOLDがない場合は確実に「販売中」
-            if (ySignals.hasBuyButton && !ySignals.hasCopyListingButton && !ySignals.hasMainSoldBadge) {
-                return { title: basicData.title, price: basicData.price, isClosed: false, statusText: '販売中', page: null };
+            if (domData.hasBuyButton && !domData.hasCopyListingButton && !domData.hasMainSoldBadge) {
+                return { title, price, isClosed: false, statusText: '販売中', page: null };
+            }
+            if (domData.hasCopyListingButton || domData.hasMainSoldBadge || domData.hasSoldNotice) {
+                return { title, price, isClosed: true, statusText: '欠品', page: null };
             }
 
-            // コピー出品ボタン、メイン画像SOLDバッジ、売れました告知がある場合は「欠品」
-            if (ySignals.hasCopyListingButton || ySignals.hasMainSoldBadge || ySignals.hasSoldNotice) {
-                return { title: basicData.title, price: basicData.price, isClosed: true, statusText: '欠品', page: null };
-            }
-
-            // 購入ボタンがあれば販売中として安全救済
-            const isClosed = !ySignals.hasBuyButton;
-            return { title: basicData.title, price: basicData.price, isClosed, statusText: isClosed ? '欠品' : '販売中', page: null };
+            isClosed = !domData.hasBuyButton;
+            return { title, price, isClosed, statusText: isClosed ? '欠品' : '販売中', page: null };
 
         // 3. 他モール（Amazon / ラクマ）
         } else {
+            let basicData = await page.evaluate((targetUrl) => {
+                let title = '';
+                let price = '';
+                if (targetUrl.includes('amazon.co.jp')) {
+                    const titleEl = document.querySelector('#productTitle') || document.querySelector('h1');
+                    title = titleEl ? titleEl.textContent.trim() : '';
+                    const priceEl = document.querySelector('.priceToPay') || document.querySelector('.a-price .a-offscreen');
+                    if (priceEl) {
+                        const cleanDigits = priceEl.textContent.replace(/[^0-9]/g, '');
+                        if (cleanDigits) price = parseInt(cleanDigits, 10).toLocaleString('ja-JP') + '円';
+                    }
+                } else if (targetUrl.includes('fril.jp') || targetUrl.includes('rakuma')) {
+                    const titleEl = document.querySelector('.item__name') || document.querySelector('h1');
+                    title = titleEl ? titleEl.textContent.trim() : document.title.replace(/\s*-\s*ラクマ.*/i, '').trim();
+                    const priceEl = document.querySelector('[itemprop="price"]') || document.querySelector('.item__price');
+                    let rawPrice = priceEl ? (priceEl.getAttribute('content') || priceEl.textContent.trim()) : '';
+                    const cleanNum = rawPrice.replace(/[^0-9]/g, '');
+                    if (cleanNum) price = parseInt(cleanNum, 10).toLocaleString('ja-JP') + '円';
+                }
+                return { title, price };
+            }, url);
+
             const isClosed = await page.evaluate((targetUrl) => {
                 if (targetUrl.includes('amazon.co.jp')) {
                     const outOfStockEl = document.querySelector('#outOfStock') || document.querySelector('#availability');
