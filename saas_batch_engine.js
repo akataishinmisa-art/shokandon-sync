@@ -98,17 +98,18 @@ const parseNum = (val) => {
 
 // 3. Single Scraping Attempt (waitMs parameter: default 2500ms, retry 4000ms)
 async function getItemDataPuppeteerOnce(browser, url, waitMs = 2500) {
-    const page = await browser.newPage();
-    await page.setViewport({ width: 1400, height: 900 });
-    await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36');
-    await page.setExtraHTTPHeaders({
-        'Accept-Language': 'ja-JP,ja;q=0.9,en-US;q=0.8,en;q=0.7'
-    });
-    await page.evaluateOnNewDocument(() => {
-        Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
-    });
-
+    let page = null;
     try {
+        page = await browser.newPage();
+        await page.setViewport({ width: 1400, height: 900 });
+        await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36');
+        await page.setExtraHTTPHeaders({
+            'Accept-Language': 'ja-JP,ja;q=0.9,en-US;q=0.8,en;q=0.7'
+        });
+        await page.evaluateOnNewDocument(() => {
+            Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
+        });
+
         await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 45000 });
         await page.evaluate((delay) => new Promise(r => setTimeout(r, delay)), waitMs);
 
@@ -304,44 +305,49 @@ async function getItemDataPuppeteerOnce(browser, url, waitMs = 2500) {
 
         return { ...info, html, page };
     } catch (e) {
-        await page.close().catch(() => {});
-        return { title: '', price: '', isClosed: false, statusText: '販売中', html: '', page: null };
+        if (page) await page.close().catch(() => {});
+        return { title: '', price: '', isClosed: false, statusText: '販売中', html: '', page: null, error: e.message };
     }
 }
 
-// 4. Robust 5-Attempt Verification Engine (2.5s default -> 4.0s for retry 2-5 -> Error status on 5th failure)
-async function getItemDataPuppeteer(browser, url) {
+// 4. Robust 5-Attempt Verification Engine with Automatic Browser Session Recovery
+async function getItemDataPuppeteer(getBrowserFn, url) {
     let attempts = 0;
     const maxAttempts = 5;
     let result = null;
 
     while (attempts < maxAttempts) {
         attempts++;
-        // Attempt 1: 2.5s (2500ms) fast default wait; Attempt 2-5: 4.0s (4000ms) careful wait
         const currentWait = (attempts === 1) ? 2500 : 4000;
-        result = await getItemDataPuppeteerOnce(browser, url, currentWait);
-        const isValid = result.title && result.title !== '取得エラー' && (result.title !== 'Amazon.co.jp' || result.price);
+        let browser = await getBrowserFn();
 
-        // 【販売中確定】タイトル・価格が取得でき、欠品でない場合は即座に正常終了として返却
+        try {
+            result = await getItemDataPuppeteerOnce(browser, url, currentWait);
+        } catch (e) {
+            console.log(`[Browser Session Reset Triggered]: ${e.message}`);
+            browser = await getBrowserFn(true); // Force relaunch browser on crash
+            result = await getItemDataPuppeteerOnce(browser, url, currentWait).catch(() => ({ title: '', price: '', isClosed: false, statusText: 'エラー', page: null }));
+        }
+
+        const isValid = result && result.title && result.title !== '取得エラー' && (result.title !== 'Amazon.co.jp' || result.price);
+
         if (isValid && !result.isClosed && result.price) {
             return result;
         }
 
-        // 【欠品確定】明確に売り切れと判定され、2回以上連続して確認できた場合
         if (isValid && result.isClosed && attempts >= 2) {
             return result;
         }
 
-        if (result.page) {
+        if (result && result.page) {
             await result.page.close().catch(() => {});
             result.page = null;
         }
 
-        console.log(`[Scrape Check Attempt ${attempts}/${maxAttempts}]: ${url} (Wait: ${currentWait}ms) -> Retrying for accuracy...`);
+        console.log(`[Scrape Check Attempt ${attempts}/${maxAttempts}]: ${url} (Wait: ${currentWait}ms) -> Retrying...`);
         await new Promise(r => setTimeout(r, 2000));
     }
 
-    // 5回リトライしても正常読み込みできない場合はステータスを「エラー」として記録
     if (!result || !result.title || result.title === '取得エラー' || (!result.price && !result.isClosed)) {
         return {
             title: (result && result.title && result.title !== '取得エラー') ? result.title : '',
@@ -440,6 +446,18 @@ function sendLineNotificationForUser(user, message) {
         launchOptions.executablePath = executablePath;
     }
 
+    let globalBrowser = null;
+    async function getBrowserInstance(forceRestart = false) {
+        if (forceRestart && globalBrowser) {
+            await globalBrowser.close().catch(() => {});
+            globalBrowser = null;
+        }
+        if (!globalBrowser || !globalBrowser.isConnected()) {
+            globalBrowser = await puppeteer.launch(launchOptions);
+        }
+        return globalBrowser;
+    }
+
     for (const user of activeUsers) {
         const effectiveMode = cliModeOverride || user.mode || 'line_transfer';
         console.log(`\n================ Processing User: ${user.name} (${user.spreadsheetId}) [Mode: ${effectiveMode}] ================`);
@@ -494,111 +512,110 @@ function sendLineNotificationForUser(user, message) {
             let missingItemsList = [];
             let priceChangedItemsList = [];
 
-            // Process rows in chunks of 20 to prevent browser memory leaks
-            const CHUNK_SIZE = 20;
-            for (let chunkIdx = 0; chunkIdx < activeRows.length; chunkIdx += CHUNK_SIZE) {
-                const chunk = activeRows.slice(chunkIdx, chunkIdx + CHUNK_SIZE);
-                console.log(`\n--- Processing Chunk ${Math.floor(chunkIdx / CHUNK_SIZE) + 1} (${chunk.length} items, Rows ${chunk[0].r} to ${chunk[chunk.length - 1].r}) ---`);
+            for (let itemIdx = 0; itemIdx < activeRows.length; itemIdx++) {
+                const item = activeRows[itemIdx];
+                const { r, rowObj, targetUrl, bFormatted } = item;
+                console.log(`[User: ${user.name}] Progress [${itemIdx + 1}/${activeRows.length}] Row ${r} Processing URL: ${targetUrl}`);
 
-                const browser = await puppeteer.launch(launchOptions);
-
-                for (const item of chunk) {
-                    const { r, rowObj, targetUrl, bFormatted } = item;
-                    console.log(`[User: ${user.name}] Row ${r} Processing URL: ${targetUrl}`);
-
-                    const itemData = await getItemDataPuppeteer(browser, targetUrl);
+                let itemData = { title: '', price: '', isClosed: false, statusText: 'エラー' };
+                try {
+                    itemData = await getItemDataPuppeteer(getBrowserInstance, targetUrl);
                     if (itemData.page) await itemData.page.close().catch(() => {});
+                } catch (rowErr) {
+                    console.error(`Row ${r} Scraping Exception: ${rowErr.message} -> Continuing with error status.`);
+                }
 
-                    console.log(`Row ${r} Result:`, { title: itemData.title, price: itemData.price, isClosed: itemData.isClosed, statusText: itemData.statusText });
+                console.log(`Row ${r} Result:`, { title: itemData.title, price: itemData.price, isClosed: itemData.isClosed, statusText: itemData.statusText });
 
-                    const dCell = rowObj.values[3] || {};
-                    const eCell = rowObj.values[4] || {};
-                    const currentDValue = (dCell.formattedValue || '').trim();
-                    const currentEValue = (eCell.formattedValue || '').trim();
+                const dCell = rowObj.values[3] || {};
+                const eCell = rowObj.values[4] || {};
+                const currentDValue = (dCell.formattedValue || '').trim();
+                const currentEValue = (eCell.formattedValue || '').trim();
 
-                    let newTitle = '';
-                    let newD = '';
-                    let newE = '';
-                    let newF = '';
-                    let newG = (rowObj.values.length > 6 && rowObj.values[6] ? rowObj.values[6].formattedValue : '') || '';
+                let newTitle = '';
+                let newD = '';
+                let newE = '';
+                let newF = '';
+                let newG = (rowObj.values.length > 6 && rowObj.values[6] ? rowObj.values[6].formattedValue : '') || '';
 
-                    const isItemMissing = Boolean(itemData.isClosed || itemData.statusText === '欠品');
+                const isItemMissing = Boolean(itemData.isClosed || itemData.statusText === '欠品');
 
-                    if (itemData.statusText === 'エラー') {
-                        const cCell = rowObj.values[2] || {};
-                        newTitle = cCell.formattedValue || '';
-                        newD = currentDValue;
-                        newE = (currentEValue && currentEValue === currentDValue) ? '' : currentEValue;
-                        newF = 'エラー';
-                        console.log(`Row ${r}: 5回判定でも取得不可のためステータスを'エラー'と記載しました。`);
-                    } else if (isItemMissing) {
-                        newTitle = '欠品';
-                        newD = currentDValue;
-                        newE = (currentEValue && currentEValue === currentDValue) ? '' : currentEValue;
-                        newF = '欠品';
-                        if (effectiveMode === 'soldout_g') newG = '出品取り消し';
+                if (itemData.statusText === 'エラー') {
+                    const cCell = rowObj.values[2] || {};
+                    newTitle = cCell.formattedValue || '';
+                    newD = currentDValue;
+                    newE = (currentEValue && currentEValue === currentDValue) ? '' : currentEValue;
+                    newF = 'エラー';
+                    console.log(`Row ${r}: 5回判定でも取得不可のためステータスを'エラー'と記載しました。`);
+                } else if (isItemMissing) {
+                    newTitle = '欠品';
+                    newD = currentDValue;
+                    newE = (currentEValue && currentEValue === currentDValue) ? '' : currentEValue;
+                    newF = '欠品';
+                    if (effectiveMode === 'soldout_g') newG = '出品取り消し';
 
-                        const gCell = (rowObj.values.length > 6 ? rowObj.values[6] : {}) || {};
-                        let gValue = gCell.hyperlink || (gCell.userEnteredValue && gCell.userEnteredValue.formulaValue) || gCell.formattedValue || '';
-                        missingItemsList.push({ row: r, bUrl: targetUrl, gUrl: gValue, title: itemData.title || bFormatted });
-                    } else if (!itemData.title || itemData.title === '取得エラー' || (itemData.title === 'Amazon.co.jp' && !itemData.price)) {
-                        const cCell = rowObj.values[2] || {};
-                        const fCell = rowObj.values[5] || {};
-                        newTitle = cCell.formattedValue || '';
-                        newD = currentDValue;
-                        newE = (currentEValue && currentEValue === currentDValue) ? '' : currentEValue;
-                        newF = fCell.formattedValue || '販売中';
-                    } else {
-                        newTitle = itemData.title || (rowObj.values[2] ? rowObj.values[2].formattedValue : '');
-                        if (!itemData.price) {
-                            newD = currentDValue;
-                            newE = (currentEValue && currentEValue === currentDValue) ? '' : currentEValue;
-                            newF = '販売中';
-                        } else if (!currentDValue) {
-                            newD = itemData.price;
-                            newE = currentEValue;
-                            newF = '販売中';
-                        } else {
-                            const numScraped = parseNum(itemData.price);
-                            const numD = parseNum(currentDValue);
-
-                            if (numScraped !== null && numD !== null && numScraped !== numD) {
-                                newE = currentDValue;
-                                newD = itemData.price;
-                                const gCell = (rowObj.values.length > 6 ? rowObj.values[6] : {}) || {};
-                                let gValue = gCell.hyperlink || (gCell.userEnteredValue && gCell.userEnteredValue.formulaValue) || gCell.formattedValue || '';
-                                if (numScraped > numD) {
-                                    newF = '値上げ';
-                                    priceChangedItemsList.push({ row: r, type: '値上げ', oldPrice: currentDValue, newPrice: itemData.price, bUrl: targetUrl, gUrl: gValue, title: newTitle });
-                                } else {
-                                    newF = '↓下げ';
-                                    priceChangedItemsList.push({ row: r, type: '↓下げ', oldPrice: currentDValue, newPrice: itemData.price, bUrl: targetUrl, gUrl: gValue, title: newTitle });
-                                }
-                            } else {
-                                newD = currentDValue;
-                                // もし旧価格E列に誤ってD列と同じ数値が入っている場合は空欄にクリーンアップ
-                                newE = (currentEValue && currentEValue === currentDValue) ? '' : currentEValue;
-                                newF = '販売中';
-                            }
-                        }
-                    }
-
+                    const gCell = (rowObj.values.length > 6 ? rowObj.values[6] : {}) || {};
+                    let gValue = gCell.hyperlink || (gCell.userEnteredValue && gCell.userEnteredValue.formulaValue) || gCell.formattedValue || '';
+                    missingItemsList.push({ row: r, bUrl: targetUrl, gUrl: gValue, title: itemData.title || bFormatted });
+                } else if (!itemData.title || itemData.title === '取得エラー' || (itemData.title === 'Amazon.co.jp' && !itemData.price)) {
                     const cCell = rowObj.values[2] || {};
                     const fCell = rowObj.values[5] || {};
-                    const currentCValue = (cCell.formattedValue || '').trim();
-                    const currentFValue = (fCell.formattedValue || '').trim();
-
-                    const hasChanges = (
-                        newTitle !== currentCValue ||
-                        newD !== currentDValue ||
-                        newE !== currentEValue ||
-                        newF !== currentFValue ||
-                        (effectiveMode === 'soldout_g' && newG !== ((rowObj.values.length > 6 && rowObj.values[6]) ? rowObj.values[6].formattedValue || '' : ''))
-                    );
-
-                    if (!hasChanges) {
-                        console.log(`[User: ${user.name}] Row ${r}: 変更なしのためセル上書きをスキップしました (旧価格・初期価格をそのまま保持)`);
+                    newTitle = cCell.formattedValue || '';
+                    newD = currentDValue;
+                    newE = (currentEValue && currentEValue === currentDValue) ? '' : currentEValue;
+                    newF = fCell.formattedValue || '販売中';
+                } else {
+                    newTitle = itemData.title || (rowObj.values[2] ? rowObj.values[2].formattedValue : '');
+                    if (!itemData.price) {
+                        newD = currentDValue;
+                        newE = (currentEValue && currentEValue === currentDValue) ? '' : currentEValue;
+                        newF = '販売中';
+                    } else if (!currentDValue) {
+                        newD = itemData.price;
+                        newE = currentEValue;
+                        newF = '販売中';
                     } else {
+                        const numScraped = parseNum(itemData.price);
+                        const numD = parseNum(currentDValue);
+
+                        if (numScraped !== null && numD !== null && numScraped !== numD) {
+                            newE = currentDValue;
+                            newD = itemData.price;
+                            const gCell = (rowObj.values.length > 6 ? rowObj.values[6] : {}) || {};
+                            let gValue = gCell.hyperlink || (gCell.userEnteredValue && gCell.userEnteredValue.formulaValue) || gCell.formattedValue || '';
+                            if (numScraped > numD) {
+                                newF = '値上げ';
+                                priceChangedItemsList.push({ row: r, type: '値上げ', oldPrice: currentDValue, newPrice: itemData.price, bUrl: targetUrl, gUrl: gValue, title: newTitle });
+                            } else {
+                                newF = '↓下げ';
+                                priceChangedItemsList.push({ row: r, type: '↓下げ', oldPrice: currentDValue, newPrice: itemData.price, bUrl: targetUrl, gUrl: gValue, title: newTitle });
+                            }
+                        } else {
+                            newD = currentDValue;
+                            // もし旧価格E列に誤ってD列と同じ数値が入っている場合は空欄にクリーンアップ
+                            newE = (currentEValue && currentEValue === currentDValue) ? '' : currentEValue;
+                            newF = '販売中';
+                        }
+                    }
+                }
+
+                const cCell = rowObj.values[2] || {};
+                const fCell = rowObj.values[5] || {};
+                const currentCValue = (cCell.formattedValue || '').trim();
+                const currentFValue = (fCell.formattedValue || '').trim();
+
+                const hasChanges = (
+                    newTitle !== currentCValue ||
+                    newD !== currentDValue ||
+                    newE !== currentEValue ||
+                    newF !== currentFValue ||
+                    (effectiveMode === 'soldout_g' && newG !== ((rowObj.values.length > 6 && rowObj.values[6]) ? rowObj.values[6].formattedValue || '' : ''))
+                );
+
+                if (!hasChanges) {
+                    console.log(`[User: ${user.name}] Row ${r}: 変更なしのためセル上書きをスキップしました (旧価格・初期価格をそのまま保持)`);
+                } else {
+                    try {
                         if (effectiveMode === 'soldout_g') {
                             await sheets.spreadsheets.values.update({
                                 spreadsheetId: user.spreadsheetId,
@@ -614,10 +631,15 @@ function sendLineNotificationForUser(user, message) {
                                 requestBody: { values: [[ newTitle, newD, newE, newF ]] }
                             });
                         }
+                    } catch (sheetErr) {
+                        console.error(`Row ${r} Sheet Update Error: ${sheetErr.message}`);
                     }
                 }
+            }
 
-                await browser.close().catch(() => {});
+            if (globalBrowser) {
+                await globalBrowser.close().catch(() => {});
+                globalBrowser = null;
             }
 
             // 7. Send LINE Notification (only if effectiveMode === 'line_transfer' or user configured LINE)
@@ -650,6 +672,10 @@ function sendLineNotificationForUser(user, message) {
             console.error(`Error processing user [${user.name}]:`, err.message);
             user.lastStatus = `エラー: ${err.message}`;
         }
+    }
+
+    if (globalBrowser) {
+        await globalBrowser.close().catch(() => {});
     }
 
     console.log('✅ Unified SaaS Batch Engine Execution Completed Successfully!');
