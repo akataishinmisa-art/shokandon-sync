@@ -240,7 +240,20 @@ async function getItemDataSingleAttempt(browser, url, waitMs = 2500) {
             let price = '';
             let isClosed = false;
 
-            // A. JSON-LD Schema からタイトル・価格・状態を抽出
+            // A. 非存在・削除判定（画像3枚目の即時判定）
+            const isNotFound = (
+                html.includes('この商品は存在しません') ||
+                html.includes('公開が停止されました') ||
+                html.includes('ページが見つかりません') ||
+                (html.match(/<title>[^<]*存在しません[^<]*<\/title>/i))
+            );
+
+            if (isNotFound) {
+                await page.close();
+                return { title: '欠品（存在しません）', price: '', isClosed: true, isDeleted: true, statusText: '欠品', page: null };
+            }
+
+            // B. JSON-LD Schema からタイトル・価格・状態を抽出
             const ldJsonMatches = html.matchAll(/<script type="application\/ld\+json">(.*?)<\/script>/gs);
             for (const match of ldJsonMatches) {
                 try {
@@ -254,7 +267,7 @@ async function getItemDataSingleAttempt(browser, url, waitMs = 2500) {
                 } catch (e) {}
             }
 
-            // B. 埋め込みJSON構造体フォールバック
+            // C. 埋め込みJSON構造体フォールバック
             if (!price) {
                 const priceMatch = html.match(/"price"\s*:\s*"?(\d+)"?/);
                 if (priceMatch) {
@@ -262,7 +275,7 @@ async function getItemDataSingleAttempt(browser, url, waitMs = 2500) {
                 }
             }
 
-            // C. DOMフォールバック
+            // D. DOMフォールバック & ボタン判定
             const domData = await page.evaluate(() => {
                 const titleEl = document.querySelector('h1') || document.querySelector('[class*="ItemTitle_title"]') || document.querySelector('[class*="itemTitle"]');
                 const t = titleEl ? titleEl.textContent.trim() : '';
@@ -275,13 +288,6 @@ async function getItemDataSingleAttempt(browser, url, waitMs = 2500) {
                 }
 
                 const bodyText = document.body.innerText || '';
-                const isNotFound = Boolean(
-                    bodyText.includes('この商品は存在しません') ||
-                    bodyText.includes('公開が停止されました') ||
-                    bodyText.includes('ページが見つかりません') ||
-                    document.title.includes('存在しません')
-                );
-
                 const allButtons = Array.from(document.querySelectorAll('button, a'));
                 const hasBuyButton = allButtons.some(el => {
                     const txt = el.textContent.trim();
@@ -299,7 +305,7 @@ async function getItemDataSingleAttempt(browser, url, waitMs = 2500) {
 
                 const hasSoldNotice = bodyText.includes('で売れました') || bodyText.includes('売り切れました');
 
-                return { t, p, isNotFound, hasBuyButton, hasCopyListingButton, hasMainSoldBadge, hasSoldNotice };
+                return { t, p, hasBuyButton, hasCopyListingButton, hasMainSoldBadge, hasSoldNotice };
             });
 
             if (!title) title = domData.t || document.title.replace(/\s*-\s*Yahoo!フリマ.*/i, '').trim();
@@ -307,10 +313,6 @@ async function getItemDataSingleAttempt(browser, url, waitMs = 2500) {
 
             await page.close();
 
-            // 状態判定
-            if (domData.isNotFound) {
-                return { title: '欠品（存在しません）', price: '', isClosed: true, statusText: '欠品', page: null };
-            }
             if (domData.hasBuyButton && !domData.hasCopyListingButton && !domData.hasMainSoldBadge) {
                 return { title, price, isClosed: false, statusText: '販売中', page: null };
             }
@@ -383,6 +385,11 @@ async function getItemDataPuppeteer(getBrowserFn, url) {
             console.log(`[Browser Session Reset Triggered]: ${e.message}`);
             browser = await getBrowserFn(true);
             result = await getItemDataSingleAttempt(browser, url, currentWait).catch(() => ({ title: '', price: '', isClosed: false, statusText: 'エラー', page: null }));
+        }
+
+        // 削除済み・非存在ページの場合は即座に1発で欠品として確定終了
+        if (result && result.isDeleted) {
+            return result;
         }
 
         const isValid = result && result.title && result.title !== '取得エラー' && (result.title !== 'Amazon.co.jp' || result.price);
@@ -607,7 +614,8 @@ function sendLineNotificationForUser(user, message) {
                     newF = 'エラー';
                     console.log(`Row ${r}: 判定不可のためステータスを'エラー'と記載しました。`);
                 } else if (isItemMissing) {
-                    newTitle = '欠品';
+                    const cCell = rowObj.values[2] || {};
+                    newTitle = itemData.title && itemData.title !== '欠品（存在しません）' ? itemData.title : (cCell.formattedValue || '欠品');
                     newD = currentDValue;
                     newE = (currentEValue && currentEValue === currentDValue) ? '' : currentEValue;
                     newF = '欠品';
@@ -615,7 +623,7 @@ function sendLineNotificationForUser(user, message) {
 
                     const gCell = (rowObj.values.length > 6 ? rowObj.values[6] : {}) || {};
                     let gValue = gCell.hyperlink || (gCell.userEnteredValue && gCell.userEnteredValue.formulaValue) || gCell.formattedValue || '';
-                    missingItemsList.push({ row: r, bUrl: targetUrl, gUrl: gValue, title: itemData.title || bFormatted });
+                    missingItemsList.push({ row: r, bUrl: targetUrl, gUrl: gValue, title: newTitle });
                 } else if (!itemData.title || itemData.title === '取得エラー' || (itemData.title === 'Amazon.co.jp' && !itemData.price)) {
                     const cCell = rowObj.values[2] || {};
                     const fCell = rowObj.values[5] || {};
