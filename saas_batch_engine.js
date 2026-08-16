@@ -157,23 +157,16 @@ async function getItemDataSingleAttempt(browser, url, waitMs = 2500) {
 
         const html = await page.content();
 
-        // 1. メルカリの場合：【削除即時検知 ＋ 二重ガード＆食い違い自動検出】
+        // 1. メルカリの場合：【高精度判定】
         if (url.includes('mercari') || url.includes('jp.mercari.com')) {
-            // A. 削除・非存在ページの即時検知
-            const isMercariDeleted = (
-                html.includes('該当する商品は削除されています') ||
-                html.includes('この商品は削除されました') ||
-                html.includes('お探しの商品は見つかりませんでした') ||
-                html.includes('ページが見つかりません') ||
-                (html.match(/<title>[^<]*該当する商品は削除されています[^<]*<\/title>/i))
-            );
+            // DOMから詳細な情報を取得
+            const domInfo = await page.evaluate(() => {
+                const bodyText = document.body.innerText || '';
+                const isDeletedText = (
+                    bodyText.includes('該当する商品は削除されています') ||
+                    bodyText.includes('この商品は削除されました')
+                );
 
-            if (isMercariDeleted) {
-                await page.close();
-                return { title: '欠品（削除済み）', price: '', isClosed: true, isDeleted: true, statusText: '欠品', page: null };
-            }
-
-            let basicData = await page.evaluate(() => {
                 const titleEl = document.querySelector('h1') || document.querySelector('[data-testid="item-name"]');
                 const title = titleEl ? titleEl.textContent.trim() : '';
 
@@ -189,10 +182,7 @@ async function getItemDataSingleAttempt(browser, url, waitMs = 2500) {
                     const cleanDigits = rawPrice.replace(/[^0-9]/g, '');
                     if (cleanDigits) price = parseInt(cleanDigits, 10).toLocaleString('ja-JP') + '円';
                 }
-                return { title, price };
-            });
 
-            const signals = await page.evaluate(() => {
                 const soldBadge = document.querySelector('[data-testid="item-sold-out-badge"]') || document.querySelector('div[aria-label*="売り切れ"]');
                 const hasSoldBadge = Boolean(soldBadge);
 
@@ -202,10 +192,18 @@ async function getItemDataSingleAttempt(browser, url, waitMs = 2500) {
                 const isBtnSold = checkoutBtn ? (isBtnDisabled && (btnText.includes('売り切れ') || btnText.includes('売り切れました'))) : false;
                 const isBtnActive = checkoutBtn ? (!isBtnDisabled && btnText.includes('購入手続きへ')) : false;
 
-                return { hasSoldBadge, isBtnSold, isBtnActive, btnText };
+                return { isDeletedText, title, price, hasSoldBadge, isBtnSold, isBtnActive, btnText };
             });
 
+            // 削除メッセージが明確に表示されている場合
+            if (domInfo.isDeletedText) {
+                await page.close();
+                return { title: '欠品（削除済み）', price: '', isClosed: true, isDeleted: true, statusText: '欠品', page: null };
+            }
+
             let jsonStatus = null;
+            let jsonTitle = '';
+            let jsonPrice = '';
             const nextDataMatch = html.match(/<script id="__NEXT_DATA__" type="application\/json">(.*?)<\/script>/);
             if (nextDataMatch) {
                 try {
@@ -217,40 +215,30 @@ async function getItemDataSingleAttempt(browser, url, waitMs = 2500) {
                     const itemObj = (nextJson.props && nextJson.props.pageProps && (nextJson.props.pageProps.item || (nextJson.props.pageProps.initialState && nextJson.props.pageProps.initialState.item))) || null;
                     if (itemObj) {
                         jsonStatus = itemObj.status;
-                        if (itemObj.name) basicData.title = itemObj.name;
-                        if (itemObj.price) basicData.price = parseInt(itemObj.price, 10).toLocaleString('ja-JP') + '円';
+                        if (itemObj.name) jsonTitle = itemObj.name;
+                        if (itemObj.price) jsonPrice = parseInt(itemObj.price, 10).toLocaleString('ja-JP') + '円';
                     }
                 } catch (e) {}
             }
 
-            let saleCount = 0;
-            let soldCount = 0;
-
-            if (!signals.hasSoldBadge) saleCount++; else soldCount++;
-            if (signals.isBtnActive) saleCount++;
-            if (signals.isBtnSold) soldCount++;
-            if (jsonStatus === 'ITEM_STATUS_ON_SALE') saleCount++;
-            if (jsonStatus === 'ITEM_STATUS_SOLDOUT' || jsonStatus === 'ITEM_STATUS_TRADING') soldCount++;
-
-            const isContradictory = (saleCount > 0 && soldCount > 0);
-
-            if (!isContradictory && saleCount > 0 && soldCount === 0) {
-                await page.close();
-                return { title: basicData.title, price: basicData.price, isClosed: false, statusText: '販売中', page: null };
-            }
-
-            if (!isContradictory && soldCount > 0 && saleCount === 0) {
-                await page.close();
-                return { title: basicData.title, price: basicData.price, isClosed: true, statusText: '欠品', page: null };
-            }
-
-            if (signals.isBtnActive || jsonStatus === 'ITEM_STATUS_ON_SALE') {
-                await page.close();
-                return { title: basicData.title, price: basicData.price, isClosed: false, statusText: '販売中', page: null };
-            }
+            const finalTitle = domInfo.title || jsonTitle;
+            const finalPrice = domInfo.price || jsonPrice;
 
             await page.close();
-            return { title: basicData.title, price: basicData.price, isClosed: true, statusText: '欠品', page: null };
+
+            // 販売中判定（「購入手続きへ」ボタンが有効、またはJSONがON_SALEで売り切れバッジなし）
+            if (domInfo.isBtnActive || (jsonStatus === 'ITEM_STATUS_ON_SALE' && !domInfo.hasSoldBadge)) {
+                return { title: finalTitle, price: finalPrice, isClosed: false, statusText: '販売中', page: null };
+            }
+
+            // 売り切れ判定
+            if (domInfo.hasSoldBadge || domInfo.isBtnSold || jsonStatus === 'ITEM_STATUS_SOLDOUT' || jsonStatus === 'ITEM_STATUS_TRADING') {
+                return { title: finalTitle, price: finalPrice, isClosed: true, statusText: '欠品', page: null };
+            }
+
+            // フォールバック
+            const isClosed = !domInfo.isBtnActive;
+            return { title: finalTitle, price: finalPrice, isClosed, statusText: isClosed ? '欠品' : '販売中', page: null };
 
         // 2. Yahoo!フリマ（PayPayフリマ）の場合：【完全学習＆堅牢Schema抽出】
         } else if (url.includes('paypayfleamarket') || url.includes('fleamarket.yahoo.co.jp')) {
@@ -262,7 +250,6 @@ async function getItemDataSingleAttempt(browser, url, waitMs = 2500) {
             const isNotFound = (
                 html.includes('この商品は存在しません') ||
                 html.includes('公開が停止されました') ||
-                html.includes('ページが見つかりません') ||
                 (html.match(/<title>[^<]*存在しません[^<]*<\/title>/i))
             );
 
