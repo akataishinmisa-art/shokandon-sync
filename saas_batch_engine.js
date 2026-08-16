@@ -115,10 +115,8 @@ const parseNum = (val) => {
     return cleaned ? parseInt(cleaned, 10) : null;
 };
 
-// 3. Multi-Stage Guard Verification Engine for Mercari & Other Sites
-// ユーザー様ご提案: 
-// [1回目]: 全体判定を実施。もし「欠品」などの疑い結果が出た場合
-// [2回目以降]: メルカリ画面上の「SOLD」バッジ文字、購入ボタン活性状態、JSON構造体などの「異なる判定方法」でクロス検証し、販売中の誤判定を二重ガードで救済
+// 3. Multi-Stage Guard Verification Engine with Discrepancy/Contradiction Check
+// ユーザー様ご提案: 「販売中」と「欠品」の要素が少しでも混在・食い違っている場合は、即座に決定せず2回目・3回目の慎重なクロス判定を実行する
 async function getItemDataMultiAngle(browser, url) {
     let page = null;
     try {
@@ -185,77 +183,89 @@ async function getItemDataMultiAngle(browser, url) {
             return { title, price };
         }, url);
 
-        // メルカリの場合：【ユーザー様ご提案の「1回目全体判定 ➔ 疑い時のみ別角度精密判定」二重ガード構造】
+        // メルカリの場合：【ユーザー様ご提案：シグナル混在・食い違い検出＋段階的慎重検証アルゴリズム】
         if (url.includes('mercari')) {
-            // [1回目の判定]: ページ全体からの概観チェック
-            const firstStageIsClosed = await page.evaluate(() => {
-                const soldBadge = document.querySelector('[data-testid="item-sold-out-badge"]') ||
-                                  document.querySelector('div[aria-label*="売り切れ"]');
+            // [全体判定]: 3つの異なる要素シグナルを同時に収集
+            const signals = await page.evaluate(() => {
+                // シグナルA: 画像上のSOLDバッジ
+                const soldBadge = document.querySelector('[data-testid="item-sold-out-badge"]') || document.querySelector('div[aria-label*="売り切れ"]');
+                const hasSoldBadge = Boolean(soldBadge);
+
+                // シグナルB: 購入手続きボタンの有無と状態
                 const checkoutBtn = document.querySelector('[data-testid="checkout-button"]');
                 const btnText = checkoutBtn ? checkoutBtn.textContent.trim() : '';
+                const isBtnDisabled = checkoutBtn ? checkoutBtn.disabled : false;
+                const isBtnSold = checkoutBtn ? (isBtnDisabled && (btnText.includes('売り切れ') || btnText.includes('売り切れました'))) : false;
+                const isBtnActive = checkoutBtn ? (!isBtnDisabled && btnText.includes('購入手続きへ')) : false;
 
-                // 画像上のSOLDバッジ、または購入ボタンがdisabledで「売り切れ」表示の場合
-                return Boolean(soldBadge || (checkoutBtn && checkoutBtn.disabled && (btnText.includes('売り切れ') || btnText.includes('売り切れました'))));
+                return { hasSoldBadge, isBtnSold, isBtnActive, btnText };
             });
 
-            console.log(`  [1回目全体判定]: ${firstStageIsClosed ? '⚠️ 欠品疑いあり' : '✅ 販売中'}`);
-
-            // 1回目の判定で「販売中」であれば、誤検知のリスクがないため即座に販売中確定！
-            if (!firstStageIsClosed) {
-                await page.close();
-                return { title: basicData.title, price: basicData.price, isClosed: false, statusText: '販売中' };
-            }
-
-            // =========================================================================
-            // [2回目判定 (1回目で「欠品疑い」が出た場合のセーフティネット精密検証)]:
-            // 販売中の誤判定（False Positive）を防ぐため、異なる複数の判定方法でクロス検証
-            // =========================================================================
-            console.log(`  [2回目精密検証]: 1回目で欠品疑いが出たため、販売中の誤判定を防ぐセーフティネット検証を開始します...`);
-
-            // 異なる検証A: 商品画像の実体上に「SOLD」文字/バッジが物理的に存在するか
-            const verificationA_SoldText = await page.evaluate(() => {
-                const soldBadge = document.querySelector('[data-testid="item-sold-out-badge"]');
-                if (soldBadge && (soldBadge.textContent.includes('SOLD') || soldBadge.textContent.includes('売り切れ'))) {
-                    return true;
-                }
-                return false;
-            });
-
-            // 異なる検証B: 「購入手続きへ」ボタンが【有効（クリック可能）】であるか
-            const verificationB_ButtonActive = await page.evaluate(() => {
-                const checkoutBtn = document.querySelector('[data-testid="checkout-button"]');
-                if (checkoutBtn && !checkoutBtn.disabled && checkoutBtn.textContent.includes('購入手続きへ')) {
-                    return true; // ボタンが押せる ＝ 実は販売中！
-                }
-                return false;
-            });
-
-            // 異なる検証C: メルカリの内部データ (__NEXT_DATA__) 内の「対象商品オブジェクト」のステータス
-            let verificationC_JsonStatus = null;
+            // シグナルC: JSON内対象商品ステータス
+            let jsonStatus = null;
             const nextDataMatch = html.match(/<script id="__NEXT_DATA__" type="application\/json">(.*?)<\/script>/);
             if (nextDataMatch) {
                 try {
                     const nextJson = JSON.parse(nextDataMatch[1]);
                     const itemObj = (nextJson.props && nextJson.props.pageProps && (nextJson.props.pageProps.item || (nextJson.props.pageProps.initialState && nextJson.props.pageProps.initialState.item))) || null;
                     if (itemObj) {
-                        verificationC_JsonStatus = itemObj.status; // 'ITEM_STATUS_ON_SALE' or 'ITEM_STATUS_SOLDOUT'
+                        jsonStatus = itemObj.status; // 'ITEM_STATUS_ON_SALE' or 'ITEM_STATUS_SOLDOUT'
                         if (itemObj.name) basicData.title = itemObj.name;
                         if (itemObj.price) basicData.price = parseInt(itemObj.price, 10).toLocaleString('ja-JP') + '円';
                     }
                 } catch (e) {}
             }
 
-            console.log(`  [精密検証ログ] 検証A(SOLD文字存在): ${verificationA_SoldText}, 検証B(購入ボタン活性): ${verificationB_ButtonActive}, 検証C(JSONステータス): ${verificationC_JsonStatus}`);
+            // 各シグナルの判定結果をカウント
+            let saleCount = 0;
+            let soldCount = 0;
 
-            // 救済判定: 「購入ボタンが有効（検証B＝true）」または「JSONステータスがON_SALE（検証C＝ITEM_STATUS_ON_SALE）」の場合、
-            // 1回目の欠品疑いを覆して『販売中』として安全に救済・確定！
-            if (verificationB_ButtonActive || verificationC_JsonStatus === 'ITEM_STATUS_ON_SALE') {
-                console.log(`  🎉 [販売中救済ガード成功]: 1回目の欠品疑いを覆し、実体データに基づき『販売中』と安全に確定しました。`);
+            if (!signals.hasSoldBadge) saleCount++; else soldCount++;
+            if (signals.isBtnActive) saleCount++;
+            if (signals.isBtnSold) soldCount++;
+            if (jsonStatus === 'ITEM_STATUS_ON_SALE') saleCount++;
+            if (jsonStatus === 'ITEM_STATUS_SOLDOUT' || jsonStatus === 'ITEM_STATUS_TRADING') soldCount++;
+
+            const isContradictory = (saleCount > 0 && soldCount > 0);
+
+            console.log(`  [全体判定シグナル収集]: 販売中示唆=${saleCount}, 欠品示唆=${soldCount} (混在・食い違い=${isContradictory ? '⚠️ あり' : 'なし'})`);
+
+            // 【ユーザー様ご指摘ルール】:
+            // 混在・食い違いがなく、100%完全一致で販売中の場合のみ即座に確定！
+            if (!isContradictory && saleCount > 0 && soldCount === 0) {
+                console.log(`  ✅ 100%全要素一致で「販売中」のため確定しました。`);
                 await page.close();
                 return { title: basicData.title, price: basicData.price, isClosed: false, statusText: '販売中' };
             }
 
-            // すべての精密検証（A, B, C）でも欠品であることが裏付けられた場合のみ「欠品」確定
+            // 混在・食い違いがなく、100%完全一致で欠品の場合
+            if (!isContradictory && soldCount > 0 && saleCount === 0) {
+                console.log(`  🚨 100%全要素一致で「欠品」のため確定しました。`);
+                await page.close();
+                return { title: basicData.title, price: basicData.price, isClosed: true, statusText: '欠品' };
+            }
+
+            // =========================================================================
+            // 【混在・食い違い発生時の2回目・3回目 段階的慎重検証】
+            // 「販売中」と「欠品」の要素が1つでも衝突・混在している場合は、絶対に早合点せず
+            // 最も信頼できる実体データ（①購入ボタンの実際の活性度 ➔ ②JSON本体ステータス）で慎重判定
+            // =========================================================================
+            console.log(`  🔍 [要素の混在・食い違いを検出]: 2回目・3回目の慎重クロス検証を実行します...`);
+
+            // 2回目判定: 「実際の購入ボタンが押せるか」を最優先で確認
+            if (signals.isBtnActive) {
+                console.log(`  🎉 [2回目慎重検証結果]: 購入ボタンが有効（クリック可能）のため、最終結果『販売中』として安全に確定。`);
+                await page.close();
+                return { title: basicData.title, price: basicData.price, isClosed: false, statusText: '販売中' };
+            }
+
+            // 3回目判定: JSON本体のステータスを確認
+            if (jsonStatus === 'ITEM_STATUS_ON_SALE') {
+                console.log(`  🎉 [3回目慎重検証結果]: JSON本体ステータスが ON_SALE のため、最終結果『販売中』として安全に確定。`);
+                await page.close();
+                return { title: basicData.title, price: basicData.price, isClosed: false, statusText: '販売中' };
+            }
+
             await page.close();
             return { title: basicData.title, price: basicData.price, isClosed: true, statusText: '欠品' };
         } else {
@@ -512,7 +522,7 @@ function sendLineNotificationForUser(user, message) {
 
                         if (numScraped !== null && numD !== null && numScraped !== numD) {
                             newE = currentDValue;
-                            newD = itemD.price;
+                            newD = itemData.price;
                             const gCell = (rowObj.values.length > 6 ? rowObj.values[6] : {}) || {};
                             let gValue = gCell.hyperlink || (gCell.userEnteredValue && gCell.userEnteredValue.formulaValue) || gCell.formattedValue || '';
                             if (numScraped > numD) {
