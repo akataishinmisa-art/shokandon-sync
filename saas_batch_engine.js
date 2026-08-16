@@ -29,16 +29,37 @@ const executablePath = getExecutablePath();
 const USERS_CONFIG_PATH = path.join(__dirname, 'users_config.json');
 const LOCK_FILE = path.join(__dirname, 'batch_sync.lock');
 
-// 2. Single Instance Lock Management
+// 2. Smart Single Instance Lock with Stale Process & 15-Min TTL Auto-Recovery
 if (fs.existsSync(LOCK_FILE)) {
     try {
+        const lockContent = fs.readFileSync(LOCK_FILE, 'utf8').trim();
+        const lockPid = parseInt(lockContent, 10);
         const stats = fs.statSync(LOCK_FILE);
         const now = Date.now();
-        if (now - stats.mtimeMs < 30 * 60 * 1000) {
-            console.log('⚠️ [Single Instance Lock]: 他の同期処理が実行中のため、重複起動を防止して終了します。');
+        const ageMinutes = (now - stats.mtimeMs) / (1000 * 60);
+
+        let isProcessAlive = false;
+        if (!isNaN(lockPid) && lockPid > 0) {
+            try {
+                // process.kill(pid, 0) checks if the process ID is currently running
+                process.kill(lockPid, 0);
+                isProcessAlive = true;
+            } catch (e) {
+                isProcessAlive = false;
+            }
+        }
+
+        // If the locked process is no longer running OR lock is older than 15 minutes, remove stale lock
+        if (!isProcessAlive || ageMinutes >= 15) {
+            console.log(`🧹 [Lock Auto-Cleanup]: 古いまたは異常終了したロックファイルを検出しました (PID: ${lockPid}, 経過: ${ageMinutes.toFixed(1)}分)。自動解除して処理を開始します。`);
+            try { fs.unlinkSync(LOCK_FILE); } catch (e) {}
+        } else {
+            console.log(`⚠️ [Single Instance Lock]: 実行中の同期処理が存在します (PID: ${lockPid}, 経過: ${ageMinutes.toFixed(1)}分)。重複起動を防止して終了します。`);
             process.exit(0);
         }
-    } catch (e) {}
+    } catch (e) {
+        try { fs.unlinkSync(LOCK_FILE); } catch (e) {}
+    }
 }
 
 try {
