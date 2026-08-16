@@ -470,12 +470,22 @@ function sendLineNotificationForUser(user, message) {
             });
 
             const rowValues = sheetData.data.sheets[0].data[0].rowData || [];
-            console.log(`User [${user.name}] Sheet: Found ${rowValues.length} total rows.`);
+            console.log(`User [${user.name}] Sheet: Found ${rowValues.length} total rows in sheet range.`);
 
             let activeRows = [];
+            let consecutiveEmptyRows = 0;
+
             for (let r = 2; r <= Math.min(rowValues.length, 1000); r++) {
                 const rowObj = rowValues[r - 1];
-                if (!rowObj || !rowObj.values || rowObj.values.length < 2) continue;
+                if (!rowObj || !rowObj.values || rowObj.values.length < 2) {
+                    consecutiveEmptyRows++;
+                    // 空白行が 3行以上 連続したらメインデータの終端と判断してスキャンを終了
+                    if (consecutiveEmptyRows >= 3) {
+                        console.log(`[Data End Detection]: Row ${r} で連続空白行を検出したため、メインデータの終端と判断してスキャンを終了しました。`);
+                        break;
+                    }
+                    continue;
+                }
 
                 const bCell = rowObj.values[1] || {};
                 const bFormatted = bCell.formattedValue || '';
@@ -502,12 +512,21 @@ function sendLineNotificationForUser(user, message) {
                     targetUrl = bFormatted;
                 }
 
-                if (!targetUrl || !targetUrl.includes('http')) continue;
+                if (!targetUrl || !targetUrl.includes('http')) {
+                    consecutiveEmptyRows++;
+                    if (consecutiveEmptyRows >= 3) {
+                        console.log(`[Data End Detection]: Row ${r} で連続非URL行を検出したため、メインデータの終端と判断してスキャンを終了しました。`);
+                        break;
+                    }
+                    continue;
+                }
 
+                // 有効なURL行を発見したため連続空白カウンターをリセット
+                consecutiveEmptyRows = 0;
                 activeRows.push({ r, rowObj, targetUrl, bFormatted });
             }
 
-            console.log(`User [${user.name}]: ${activeRows.length} active rows to process.`);
+            console.log(`User [${user.name}]: ${activeRows.length} active rows to process (Ending cleanly at Row ${activeRows.length > 0 ? activeRows[activeRows.length - 1].r : 0}).`);
 
             let missingItemsList = [];
             let priceChangedItemsList = [];
