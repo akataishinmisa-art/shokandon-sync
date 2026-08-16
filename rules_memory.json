@@ -1,0 +1,19 @@
+{
+  "project": "商管どん (Shokandon)",
+  "vpsIp": "160.248.0.236",
+  "vpsUser": "ubuntu",
+  "keyPath": "C:\\Users\\akata\\.gemini\\antigravity\\scratch\\shokandon.pem",
+  "criticalRules": {
+    "outOfStockHandling": {
+      "ColumnC_Title": "DO NOT OVERWRITE! Keep original title untouched.",
+      "ColumnD_NewPrice": "Set to blank string ('')",
+      "ColumnE_OldPrice": "Keep previous price history",
+      "ColumnF_Status": "Set to '欠品'",
+      "LineNotification": "MUST trigger LINE push alert (🚨 欠品検知) for any soldout/deleted/withdrawn/timeout item."
+    },
+    "columnG_Protection": "NEVER touch, write, or overwrite Column G. Column G belongs to user notes/custom data.",
+    "stopOnBlankRule": "Stop processing immediately (break) as soon as Column B is empty.",
+    "dualEnvironmentRule": "Keep both local PC environment and WebArena VPS running in parallel. Do not stop or kill local node server.",
+    "truthfulVerificationDirective": "NEVER report 'perfect' without empirical log & DOM verification. Always verify exact sold-out badges and button disabled text."
+  }
+}
