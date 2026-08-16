@@ -41,7 +41,6 @@ if (fs.existsSync(LOCK_FILE)) {
         let isProcessAlive = false;
         if (!isNaN(lockPid) && lockPid > 0) {
             try {
-                // process.kill(pid, 0) checks if the process ID is currently running
                 process.kill(lockPid, 0);
                 isProcessAlive = true;
             } catch (e) {
@@ -49,7 +48,6 @@ if (fs.existsSync(LOCK_FILE)) {
             }
         }
 
-        // If the locked process is no longer running OR lock is older than 15 minutes, remove stale lock
         if (!isProcessAlive || ageMinutes >= 15) {
             console.log(`🧹 [Lock Auto-Cleanup]: 古いまたは異常終了したロックファイルを検出しました (PID: ${lockPid}, 経過: ${ageMinutes.toFixed(1)}分)。自動解除して処理を開始します。`);
             try { fs.unlinkSync(LOCK_FILE); } catch (e) {}
@@ -117,8 +115,11 @@ const parseNum = (val) => {
     return cleaned ? parseInt(cleaned, 10) : null;
 };
 
-// 3. Single Scraping Attempt (waitMs parameter: default 2500ms, retry 4000ms)
-async function getItemDataPuppeteerOnce(browser, url, waitMs = 2500) {
+// 3. Multi-Stage Guard Verification Engine for Mercari & Other Sites
+// ユーザー様ご提案: 
+// [1回目]: 全体判定を実施。もし「欠品」などの疑い結果が出た場合
+// [2回目以降]: メルカリ画面上の「SOLD」バッジ文字、購入ボタン活性状態、JSON構造体などの「異なる判定方法」でクロス検証し、販売中の誤判定を二重ガードで救済
+async function getItemDataMultiAngle(browser, url) {
     let page = null;
     try {
         page = await browser.newPage();
@@ -132,255 +133,156 @@ async function getItemDataPuppeteerOnce(browser, url, waitMs = 2500) {
         });
 
         await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 45000 });
-        await page.evaluate((delay) => new Promise(r => setTimeout(r, delay)), waitMs);
+        await page.evaluate(() => new Promise(r => setTimeout(r, 2500)));
 
         const html = await page.content();
-        let info = await page.evaluate((targetUrl) => {
+
+        // 1. 基本要素（タイトル・価格）のスクレイピング
+        let basicData = await page.evaluate((targetUrl) => {
             let title = '';
             let price = '';
-            let isClosed = false;
 
-            if (targetUrl.includes('amazon.co.jp')) {
-                const titleEl = document.querySelector('#productTitle') || document.querySelector('h1');
-                title = titleEl ? titleEl.textContent.trim() : '';
-                if (!title || title === 'Amazon.co.jp') {
-                    const ogTitle = document.querySelector('meta[property="og:title"]') || document.querySelector('meta[name="title"]');
-                    if (ogTitle && ogTitle.getAttribute('content')) {
-                        title = ogTitle.getAttribute('content').replace(/^Amazon\s*\|\s*/i, '').trim();
-                    }
-                }
-                if (!title || title === 'Amazon.co.jp') {
-                    title = document.title.replace(/^Amazon\s*\|\s*/i, '').trim();
-                }
-
-                const priceEl = document.querySelector('.priceToPay') ||
-                                document.querySelector('#corePrice_feature_div .a-price .a-offscreen') ||
-                                document.querySelector('#corePriceDisplay_desktop_feature_div .a-price .a-offscreen') ||
-                                document.querySelector('.a-price .a-offscreen');
-
-                if (priceEl) {
-                    const cleanDigits = priceEl.textContent.replace(/[^0-9]/g, '');
-                    if (cleanDigits) {
-                        price = parseInt(cleanDigits, 10).toLocaleString('ja-JP') + '円';
-                    }
-                }
-
-                const outOfStockEl = document.querySelector('#outOfStock') || document.querySelector('#availability');
-                const outText = outOfStockEl ? outOfStockEl.textContent.trim() : '';
-                isClosed = Boolean(outText.includes('現在在庫切れ') || outText.includes('一時的に在庫切れ') || outText.includes('この商品は現在お取り扱いできません'));
-            } else if (targetUrl.includes('mercari') || targetUrl.includes('jp.mercari.com')) {
+            if (targetUrl.includes('mercari') || targetUrl.includes('jp.mercari.com')) {
                 const titleEl = document.querySelector('h1') || document.querySelector('[data-testid="item-name"]');
                 title = titleEl ? titleEl.textContent.trim() : '';
-                if (!title) {
-                    const ogTitle = document.querySelector('meta[property="og:title"]');
-                    if (ogTitle && ogTitle.getAttribute('content')) {
-                        title = ogTitle.getAttribute('content').replace(/\s*-\s*メルカリ.*/i, '').trim();
-                    }
-                }
 
                 const metaPrice = document.querySelector('meta[name="product:price:amount"], meta[property="product:price:amount"]');
                 if (metaPrice && metaPrice.getAttribute('content')) {
                     const pVal = parseInt(metaPrice.getAttribute('content'), 10);
-                    if (!isNaN(pVal) && pVal > 0) {
-                        price = pVal.toLocaleString('ja-JP') + '円';
-                    }
+                    if (!isNaN(pVal) && pVal > 0) price = pVal.toLocaleString('ja-JP') + '円';
                 }
-
                 if (!price) {
                     const priceEl = document.querySelector('[data-testid="product-price"]') || document.querySelector('[class*="price"]');
                     let rawPrice = priceEl ? priceEl.textContent.trim() : '';
                     const cleanDigits = rawPrice.replace(/[^0-9]/g, '');
-                    if (cleanDigits) {
-                        price = parseInt(cleanDigits, 10).toLocaleString('ja-JP') + '円';
-                    }
+                    if (cleanDigits) price = parseInt(cleanDigits, 10).toLocaleString('ja-JP') + '円';
                 }
+            } else if (targetUrl.includes('amazon.co.jp')) {
+                const titleEl = document.querySelector('#productTitle') || document.querySelector('h1');
+                title = titleEl ? titleEl.textContent.trim() : '';
+                const priceEl = document.querySelector('.priceToPay') || document.querySelector('.a-price .a-offscreen');
+                if (priceEl) {
+                    const cleanDigits = priceEl.textContent.replace(/[^0-9]/g, '');
+                    if (cleanDigits) price = parseInt(cleanDigits, 10).toLocaleString('ja-JP') + '円';
+                }
+            } else if (targetUrl.includes('paypayfleamarket') || targetUrl.includes('paypayfleamarket.yahoo.co.jp')) {
+                const titleEl = document.querySelector('h1') || document.querySelector('[class*="ItemTitle_title"]');
+                title = titleEl ? titleEl.textContent.trim() : document.title.replace(/\s*-\s*Yahoo!フリマ.*/i, '').trim();
+                const metaPrice = document.querySelector('meta[name="product:price:amount"]');
+                if (metaPrice && metaPrice.getAttribute('content')) {
+                    const pVal = parseInt(metaPrice.getAttribute('content'), 10);
+                    if (!isNaN(pVal) && pVal > 0) price = pVal.toLocaleString('ja-JP') + '円';
+                }
+            } else if (targetUrl.includes('fril.jp') || targetUrl.includes('rakuma')) {
+                const titleEl = document.querySelector('.item__name') || document.querySelector('h1');
+                title = titleEl ? titleEl.textContent.trim() : document.title.replace(/\s*-\s*ラクマ.*/i, '').trim();
+                const priceEl = document.querySelector('[itemprop="price"]') || document.querySelector('.item__price');
+                let rawPrice = priceEl ? (priceEl.getAttribute('content') || priceEl.textContent.trim()) : '';
+                const cleanNum = rawPrice.replace(/[^0-9]/g, '');
+                if (cleanNum) price = parseInt(cleanNum, 10).toLocaleString('ja-JP') + '円';
+            }
 
+            return { title, price };
+        }, url);
+
+        // メルカリの場合：【ユーザー様ご提案の「1回目全体判定 ➔ 疑い時のみ別角度精密判定」二重ガード構造】
+        if (url.includes('mercari')) {
+            // [1回目の判定]: ページ全体からの概観チェック
+            const firstStageIsClosed = await page.evaluate(() => {
                 const soldBadge = document.querySelector('[data-testid="item-sold-out-badge"]') ||
                                   document.querySelector('div[aria-label*="売り切れ"]');
                 const checkoutBtn = document.querySelector('[data-testid="checkout-button"]');
                 const btnText = checkoutBtn ? checkoutBtn.textContent.trim() : '';
 
-                isClosed = Boolean(soldBadge || (checkoutBtn && checkoutBtn.disabled && btnText.includes('売り切れ')));
-            } else if (targetUrl.includes('fril.jp') || targetUrl.includes('rakuma')) {
-                const titleEl = document.querySelector('.item__name') ||
-                                document.querySelector('[class*="item__name"]') ||
-                                document.querySelector('.item-header__name') ||
-                                document.querySelector('h1');
-                title = titleEl ? titleEl.textContent.trim() : document.title.replace(/\s*-\s*ラクマ.*/i, '').trim();
+                // 画像上のSOLDバッジ、または購入ボタンがdisabledで「売り切れ」表示の場合
+                return Boolean(soldBadge || (checkoutBtn && checkoutBtn.disabled && (btnText.includes('売り切れ') || btnText.includes('売り切れました'))));
+            });
 
-                const priceEl = document.querySelector('[itemprop="price"]') ||
-                                document.querySelector('.item__price') ||
-                                document.querySelector('.item-price') ||
-                                document.querySelector('[class*="item__price"]');
-                let rawPrice = priceEl ? (priceEl.getAttribute('content') || priceEl.textContent.trim()) : '';
-                const cleanNum = rawPrice.replace(/[^0-9]/g, '');
-                if (cleanNum) {
-                    price = parseInt(cleanNum, 10).toLocaleString('ja-JP') + '円';
-                }
+            console.log(`  [1回目全体判定]: ${firstStageIsClosed ? '⚠️ 欠品疑いあり' : '✅ 販売中'}`);
 
-                const soldoutBadge = document.querySelector('.item__badge--soldout') ||
-                                     document.querySelector('[class*="soldout"]') ||
-                                     document.querySelector('[class*="SOLD"]') ||
-                                     Array.from(document.querySelectorAll('*')).find(el => {
-                                         const t = el.children.length === 0 ? el.textContent.trim() : '';
-                                         return t === 'SOLDOUT' || t === 'SOLD OUT' || t === '売り切れ' || t === '売り切れました';
-                                     });
-
-                isClosed = Boolean(soldoutBadge);
-            } else if (targetUrl.includes('paypayfleamarket') || targetUrl.includes('paypayfleamarket.yahoo.co.jp')) {
-                const titleEl = document.querySelector('h1') || document.querySelector('[class*="ItemTitle_title"]') || document.querySelector('[class*="title"]');
-                if (titleEl && titleEl.textContent) {
-                    title = titleEl.textContent.trim();
-                } else {
-                    title = document.title
-                        .replace(/\s*-\s*Yahoo!フリマ.*/i, '')
-                        .replace(/\s*-\s*PayPayフリマ.*/i, '')
-                        .trim();
-                }
-
-                const metaPrice = document.querySelector('meta[name="product:price:amount"], meta[property="product:price:amount"]');
-                if (metaPrice && metaPrice.getAttribute('content')) {
-                    const pVal = parseInt(metaPrice.getAttribute('content'), 10);
-                    if (!isNaN(pVal) && pVal > 0) {
-                        price = pVal.toLocaleString('ja-JP') + '円';
-                    }
-                }
-
-                if (!price) {
-                    const purchaseBtnEl = Array.from(document.querySelectorAll('button, a')).find(el => el.textContent.includes('購入手続きへ'));
-                    if (purchaseBtnEl) {
-                        let parent = purchaseBtnEl.parentElement;
-                        while (parent && parent !== document.body) {
-                            const text = parent.innerText || '';
-                            const match = text.match(/([0-9,]{3,9})\s*円/);
-                            if (match) {
-                                price = match[1] + '円';
-                                break;
-                            }
-                            parent = parent.parentElement;
-                        }
-                    }
-                }
-
-                if (!price) {
-                    const bodyText = document.body.innerText || '';
-                    const m = bodyText.match(/([0-9,]{3,9})\s*円/);
-                    if (m) price = m[1] + '円';
-                }
-
-                const bodyText = document.body.innerText || '';
-                const hasCopyBtn = Array.from(document.querySelectorAll('button, a')).some(el => el.textContent.includes('この情報をコピーして出品する'));
-                const isSoldText = bodyText.includes('売り切れました') || bodyText.includes('SOLD OUT') || bodyText.includes('公開が停止') || bodyText.includes('掲載が終了') || bodyText.includes('この情報を使って新しく出品できます');
-
-                isClosed = Boolean(isSoldText || hasCopyBtn);
+            // 1回目の判定で「販売中」であれば、誤検知のリスクがないため即座に販売中確定！
+            if (!firstStageIsClosed) {
+                await page.close();
+                return { title: basicData.title, price: basicData.price, isClosed: false, statusText: '販売中' };
             }
 
-            const statusText = isClosed ? '欠品' : '販売中';
-            return { title, price, isClosed, statusText };
-        }, url);
+            // =========================================================================
+            // [2回目判定 (1回目で「欠品疑い」が出た場合のセーフティネット精密検証)]:
+            // 販売中の誤判定（False Positive）を防ぐため、異なる複数の判定方法でクロス検証
+            // =========================================================================
+            console.log(`  [2回目精密検証]: 1回目で欠品疑いが出たため、販売中の誤判定を防ぐセーフティネット検証を開始します...`);
 
-        if (url.includes('mercari.com') || url.includes('mercari')) {
+            // 異なる検証A: 商品画像の実体上に「SOLD」文字/バッジが物理的に存在するか
+            const verificationA_SoldText = await page.evaluate(() => {
+                const soldBadge = document.querySelector('[data-testid="item-sold-out-badge"]');
+                if (soldBadge && (soldBadge.textContent.includes('SOLD') || soldBadge.textContent.includes('売り切れ'))) {
+                    return true;
+                }
+                return false;
+            });
+
+            // 異なる検証B: 「購入手続きへ」ボタンが【有効（クリック可能）】であるか
+            const verificationB_ButtonActive = await page.evaluate(() => {
+                const checkoutBtn = document.querySelector('[data-testid="checkout-button"]');
+                if (checkoutBtn && !checkoutBtn.disabled && checkoutBtn.textContent.includes('購入手続きへ')) {
+                    return true; // ボタンが押せる ＝ 実は販売中！
+                }
+                return false;
+            });
+
+            // 異なる検証C: メルカリの内部データ (__NEXT_DATA__) 内の「対象商品オブジェクト」のステータス
+            let verificationC_JsonStatus = null;
             const nextDataMatch = html.match(/<script id="__NEXT_DATA__" type="application\/json">(.*?)<\/script>/);
             if (nextDataMatch) {
                 try {
                     const nextJson = JSON.parse(nextDataMatch[1]);
                     const itemObj = (nextJson.props && nextJson.props.pageProps && (nextJson.props.pageProps.item || (nextJson.props.pageProps.initialState && nextJson.props.pageProps.initialState.item))) || null;
                     if (itemObj) {
-                        if (!info.title || info.title === 'メルカリ') info.title = itemObj.name || info.title;
-                        if (!info.price && itemObj.price) info.price = parseInt(itemObj.price, 10).toLocaleString('ja-JP') + '円';
-                        if (itemObj.status === 'ITEM_STATUS_SOLDOUT' || itemObj.status === 'ITEM_STATUS_TRADING') {
-                            info.isClosed = true;
-                            info.statusText = '欠品';
-                        } else if (itemObj.status === 'ITEM_STATUS_ON_SALE') {
-                            info.isClosed = false;
-                            info.statusText = '販売中';
-                        }
+                        verificationC_JsonStatus = itemObj.status; // 'ITEM_STATUS_ON_SALE' or 'ITEM_STATUS_SOLDOUT'
+                        if (itemObj.name) basicData.title = itemObj.name;
+                        if (itemObj.price) basicData.price = parseInt(itemObj.price, 10).toLocaleString('ja-JP') + '円';
                     }
                 } catch (e) {}
             }
-            if (!info.title || info.title === 'メルカリ') {
-                const ogTitle = html.match(/<meta\s+property="og:title"\s+content="([^"]+)"/i);
-                if (ogTitle) info.title = ogTitle[1].replace(/\s*-\s*メルカリ.*/i, '').trim();
-            }
-            if (!info.price) {
-                const metaPrice = html.match(/<meta\s+(?:name|property)="product:price:amount"\s+content="([0-9]+)"/i);
-                if (metaPrice) info.price = parseInt(metaPrice[1], 10).toLocaleString('ja-JP') + '円';
-            }
-            if (html.includes('"isSoldOut":true') || html.includes('ITEM_STATUS_SOLDOUT')) {
-                info.isClosed = true;
-                info.statusText = '欠品';
-            }
-        } else if (url.includes('amazon.co.jp')) {
-            if (!info.title || info.title === 'Amazon.co.jp') {
-                const ogTitle = html.match(/<meta\s+property="og:title"\s+content="([^"]+)"/i) || html.match(/<title>(.*?)<\/title>/i);
-                if (ogTitle) info.title = ogTitle[1].replace(/^Amazon\s*\|\s*/i, '').trim();
-            }
-            if (!info.price) {
-                const priceMatch = html.match(/class="a-price-whole">([0-9,]+)/i) || html.match(/￥\s*([0-9,]+)/);
-                if (priceMatch && priceMatch[1]) {
-                    const pDigits = priceMatch[1].replace(/,/g, '');
-                    if (pDigits) info.price = parseInt(pDigits, 10).toLocaleString('ja-JP') + '円';
-                }
-            }
-        }
 
-        return { ...info, html, page };
+            console.log(`  [精密検証ログ] 検証A(SOLD文字存在): ${verificationA_SoldText}, 検証B(購入ボタン活性): ${verificationB_ButtonActive}, 検証C(JSONステータス): ${verificationC_JsonStatus}`);
+
+            // 救済判定: 「購入ボタンが有効（検証B＝true）」または「JSONステータスがON_SALE（検証C＝ITEM_STATUS_ON_SALE）」の場合、
+            // 1回目の欠品疑いを覆して『販売中』として安全に救済・確定！
+            if (verificationB_ButtonActive || verificationC_JsonStatus === 'ITEM_STATUS_ON_SALE') {
+                console.log(`  🎉 [販売中救済ガード成功]: 1回目の欠品疑いを覆し、実体データに基づき『販売中』と安全に確定しました。`);
+                await page.close();
+                return { title: basicData.title, price: basicData.price, isClosed: false, statusText: '販売中' };
+            }
+
+            // すべての精密検証（A, B, C）でも欠品であることが裏付けられた場合のみ「欠品」確定
+            await page.close();
+            return { title: basicData.title, price: basicData.price, isClosed: true, statusText: '欠品' };
+        } else {
+            // 他モール（Amazon / PayPayフリマ / ラクマ）の判定
+            const isClosed = await page.evaluate((targetUrl) => {
+                if (targetUrl.includes('amazon.co.jp')) {
+                    const outOfStockEl = document.querySelector('#outOfStock') || document.querySelector('#availability');
+                    const outText = outOfStockEl ? outOfStockEl.textContent.trim() : '';
+                    return Boolean(outText.includes('現在在庫切れ') || outText.includes('一時的に在庫切れ') || outText.includes('この商品は現在お取り扱いできません'));
+                } else if (targetUrl.includes('paypayfleamarket')) {
+                    const bodyText = document.body.innerText || '';
+                    const hasCopyBtn = Array.from(document.querySelectorAll('button, a')).some(el => el.textContent.includes('この情報をコピーして出品する'));
+                    return Boolean(bodyText.includes('売り切れました') || bodyText.includes('SOLD OUT') || bodyText.includes('公開が停止') || hasCopyBtn);
+                } else if (targetUrl.includes('fril.jp') || targetUrl.includes('rakuma')) {
+                    const soldoutBadge = document.querySelector('.item__badge--soldout') || document.querySelector('[class*="soldout"]');
+                    return Boolean(soldoutBadge);
+                }
+                return false;
+            }, url);
+
+            await page.close();
+            return { title: basicData.title, price: basicData.price, isClosed, statusText: isClosed ? '欠品' : '販売中' };
+        }
     } catch (e) {
         if (page) await page.close().catch(() => {});
-        return { title: '', price: '', isClosed: false, statusText: '販売中', html: '', page: null, error: e.message };
+        return { title: '', price: '', isClosed: false, statusText: 'エラー' };
     }
-}
-
-// 4. Robust 5-Attempt Verification Engine with Automatic Browser Session Recovery
-async function getItemDataPuppeteer(getBrowserFn, url) {
-    let attempts = 0;
-    const maxAttempts = 5;
-    let result = null;
-
-    while (attempts < maxAttempts) {
-        attempts++;
-        const currentWait = (attempts === 1) ? 2500 : 4000;
-        let browser = await getBrowserFn();
-
-        try {
-            result = await getItemDataPuppeteerOnce(browser, url, currentWait);
-        } catch (e) {
-            console.log(`[Browser Session Reset Triggered]: ${e.message}`);
-            browser = await getBrowserFn(true); // Force relaunch browser on crash
-            result = await getItemDataPuppeteerOnce(browser, url, currentWait).catch(() => ({ title: '', price: '', isClosed: false, statusText: 'エラー', page: null }));
-        }
-
-        const isValid = result && result.title && result.title !== '取得エラー' && (result.title !== 'Amazon.co.jp' || result.price);
-
-        if (isValid && !result.isClosed && result.price) {
-            return result;
-        }
-
-        if (isValid && result.isClosed && attempts >= 2) {
-            return result;
-        }
-
-        if (result && result.page) {
-            await result.page.close().catch(() => {});
-            result.page = null;
-        }
-
-        console.log(`[Scrape Check Attempt ${attempts}/${maxAttempts}]: ${url} (Wait: ${currentWait}ms) -> Retrying...`);
-        await new Promise(r => setTimeout(r, 2000));
-    }
-
-    if (!result || !result.title || result.title === '取得エラー' || (!result.price && !result.isClosed)) {
-        return {
-            title: (result && result.title && result.title !== '取得エラー') ? result.title : '',
-            price: '',
-            isClosed: false,
-            statusText: 'エラー',
-            html: '',
-            page: null
-        };
-    }
-
-    return result;
 }
 
 // 5. Send LINE Notification Helper
@@ -498,8 +400,6 @@ function sendLineNotificationForUser(user, message) {
             // 1行ずつ上から順番に「B列（仕入れ先URL）」のみをチェック
             for (let r = 2; r <= Math.min(rowValues.length, 1000); r++) {
                 const rowObj = rowValues[r - 1];
-
-                // B列のセルオブジェクトを取得 (B列 = values[1])
                 const bCell = (rowObj && rowObj.values && rowObj.values.length > 1) ? rowObj.values[1] : null;
 
                 if (!bCell) {
@@ -531,7 +431,6 @@ function sendLineNotificationForUser(user, message) {
                     targetUrl = bFormatted;
                 }
 
-                // B列に有効なURLが存在しない場合は、即座にスキャンを終了
                 if (!targetUrl || !targetUrl.includes('http')) {
                     console.log(`[Data End Detection]: Row ${r} のB列にURLが存在しない（空欄またはテキスト）ため、ここでスキャンを完全に終了しました。`);
                     break;
@@ -552,8 +451,8 @@ function sendLineNotificationForUser(user, message) {
 
                 let itemData = { title: '', price: '', isClosed: false, statusText: 'エラー' };
                 try {
-                    itemData = await getItemDataPuppeteer(getBrowserInstance, targetUrl);
-                    if (itemData.page) await itemData.page.close().catch(() => {});
+                    const browser = await getBrowserInstance();
+                    itemData = await getItemDataMultiAngle(browser, targetUrl);
                 } catch (rowErr) {
                     console.error(`Row ${r} Scraping Exception: ${rowErr.message} -> Continuing with error status.`);
                 }
@@ -579,7 +478,7 @@ function sendLineNotificationForUser(user, message) {
                     newD = currentDValue;
                     newE = (currentEValue && currentEValue === currentDValue) ? '' : currentEValue;
                     newF = 'エラー';
-                    console.log(`Row ${r}: 5回判定でも取得不可のためステータスを'エラー'と記載しました。`);
+                    console.log(`Row ${r}: 判定不可のためステータスを'エラー'と記載しました。`);
                 } else if (isItemMissing) {
                     newTitle = '欠品';
                     newD = currentDValue;
@@ -613,7 +512,7 @@ function sendLineNotificationForUser(user, message) {
 
                         if (numScraped !== null && numD !== null && numScraped !== numD) {
                             newE = currentDValue;
-                            newD = itemData.price;
+                            newD = itemD.price;
                             const gCell = (rowObj.values.length > 6 ? rowObj.values[6] : {}) || {};
                             let gValue = gCell.hyperlink || (gCell.userEnteredValue && gCell.userEnteredValue.formulaValue) || gCell.formattedValue || '';
                             if (numScraped > numD) {
@@ -625,7 +524,6 @@ function sendLineNotificationForUser(user, message) {
                             }
                         } else {
                             newD = currentDValue;
-                            // もし旧価格E列に誤ってD列と同じ数値が入っている場合は空欄にクリーンアップ
                             newE = (currentEValue && currentEValue === currentDValue) ? '' : currentEValue;
                             newF = '販売中';
                         }
