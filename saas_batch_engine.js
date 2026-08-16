@@ -157,19 +157,22 @@ async function getItemDataSingleAttempt(browser, url, waitMs = 2500) {
 
         const html = await page.content();
 
-        // 1. メルカリの場合：【高精度判定】
+        // 1. メルカリの場合：【削除高精度検知 ＋ オークション対応 ＋ SOLD帯厳格判定】
         if (url.includes('mercari') || url.includes('jp.mercari.com')) {
-            // DOMから詳細な情報を取得
             const domInfo = await page.evaluate(() => {
                 const bodyText = document.body.innerText || '';
+
+                // A. 削除判定（超高精度）
                 const isDeletedText = (
                     bodyText.includes('該当する商品は削除されています') ||
                     bodyText.includes('この商品は削除されました')
                 );
 
+                // タイトル取得
                 const titleEl = document.querySelector('h1') || document.querySelector('[data-testid="item-name"]');
                 const title = titleEl ? titleEl.textContent.trim() : '';
 
+                // 価格取得（通常 ＋ オークション「現在 ¥5,000」）
                 let price = '';
                 const metaPrice = document.querySelector('meta[name="product:price:amount"], meta[property="product:price:amount"]');
                 if (metaPrice && metaPrice.getAttribute('content')) {
@@ -182,17 +185,44 @@ async function getItemDataSingleAttempt(browser, url, waitMs = 2500) {
                     const cleanDigits = rawPrice.replace(/[^0-9]/g, '');
                     if (cleanDigits) price = parseInt(cleanDigits, 10).toLocaleString('ja-JP') + '円';
                 }
+                if (!price) {
+                    const matchAuctionPrice = bodyText.match(/(?:現在|価格)\s*[¥￥]\s*([0-9,]+)/);
+                    if (matchAuctionPrice) {
+                        const cleanDigits = matchAuctionPrice[1].replace(/[^0-9]/g, '');
+                        if (cleanDigits) price = parseInt(cleanDigits, 10).toLocaleString('ja-JP') + '円';
+                    }
+                }
 
+                // SOLDの帯・バッジ検知（商品画像にかかっているSOLD帯）
                 const soldBadge = document.querySelector('[data-testid="item-sold-out-badge"]') || document.querySelector('div[aria-label*="売り切れ"]');
-                const hasSoldBadge = Boolean(soldBadge);
+                let hasSoldBadge = Boolean(soldBadge);
+                if (!hasSoldBadge) {
+                    const allDivs = Array.from(document.querySelectorAll('div, span'));
+                    hasSoldBadge = allDivs.some(el => {
+                        const aria = el.getAttribute('aria-label') || '';
+                        const txt = el.textContent.trim();
+                        return aria.includes('売り切れ') || txt === 'SOLD';
+                    });
+                }
 
-                const checkoutBtn = document.querySelector('[data-testid="checkout-button"]');
-                const btnText = checkoutBtn ? checkoutBtn.textContent.trim() : '';
-                const isBtnDisabled = checkoutBtn ? checkoutBtn.disabled : false;
-                const isBtnSold = checkoutBtn ? (isBtnDisabled && (btnText.includes('売り切れ') || btnText.includes('売り切れました'))) : false;
-                const isBtnActive = checkoutBtn ? (!isBtnDisabled && btnText.includes('購入手続きへ')) : false;
+                // ボタン判定（通常購入「購入手続きへ」＋オークション「入札する」）
+                const allButtons = Array.from(document.querySelectorAll('button, a'));
+                const hasActiveBuyButton = allButtons.some(b => {
+                    const txt = b.textContent.trim();
+                    return (txt === '購入手続きへ' || txt.includes('購入手続きへ')) && !b.disabled;
+                });
+                const hasActiveBidButton = allButtons.some(b => {
+                    const txt = b.textContent.trim();
+                    return (txt === '入札する' || txt.includes('入札する')) && !b.disabled;
+                });
+                const isBtnSold = allButtons.some(b => {
+                    const txt = b.textContent.trim();
+                    return (b.disabled && (txt.includes('売り切れ') || txt.includes('終了') || txt.includes('オークションは終了')));
+                });
 
-                return { isDeletedText, title, price, hasSoldBadge, isBtnSold, isBtnActive, btnText };
+                const isAuction = bodyText.includes('オークション商品') || bodyText.includes('最初の入札をしませんか');
+
+                return { isDeletedText, title, price, hasSoldBadge, hasActiveBuyButton, hasActiveBidButton, isBtnSold, isAuction };
             });
 
             // 削除メッセージが明確に表示されている場合
@@ -226,18 +256,18 @@ async function getItemDataSingleAttempt(browser, url, waitMs = 2500) {
 
             await page.close();
 
-            // 販売中判定（「購入手続きへ」ボタンが有効、またはJSONがON_SALEで売り切れバッジなし）
-            if (domInfo.isBtnActive || (jsonStatus === 'ITEM_STATUS_ON_SALE' && !domInfo.hasSoldBadge)) {
-                return { title: finalTitle, price: finalPrice, isClosed: false, statusText: '販売中', page: null };
-            }
-
-            // 売り切れ判定
+            // SOLDの帯がかかっている、または売り切れボタンがある場合は確実に「欠品」
             if (domInfo.hasSoldBadge || domInfo.isBtnSold || jsonStatus === 'ITEM_STATUS_SOLDOUT' || jsonStatus === 'ITEM_STATUS_TRADING') {
                 return { title: finalTitle, price: finalPrice, isClosed: true, statusText: '欠品', page: null };
             }
 
+            // 販売中判定（「購入手続きへ」またはオークションの「入札する」が有効）
+            if (domInfo.hasActiveBuyButton || domInfo.hasActiveBidButton || (domInfo.isAuction && !domInfo.hasSoldBadge) || jsonStatus === 'ITEM_STATUS_ON_SALE') {
+                return { title: finalTitle, price: finalPrice, isClosed: false, statusText: '販売中', page: null };
+            }
+
             // フォールバック
-            const isClosed = !domInfo.isBtnActive;
+            const isClosed = !domInfo.hasActiveBuyButton && !domInfo.hasActiveBidButton;
             return { title: finalTitle, price: finalPrice, isClosed, statusText: isClosed ? '欠品' : '販売中', page: null };
 
         // 2. Yahoo!フリマ（PayPayフリマ）の場合：【完全学習＆堅牢Schema抽出】
