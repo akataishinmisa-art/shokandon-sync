@@ -30,10 +30,6 @@ const USERS_CONFIG_PATH = path.join(__dirname, 'users_config.json');
 const LOCK_FILE = path.join(__dirname, 'batch_sync.lock');
 
 // 2. Smart Single Instance Lock (PID Strict Life Check)
-// ユーザー様ご質問への回答:
-// 1. 現在実行中のプロセスが途中で殺される(Kill)ことは絶対にありません (確認のみ行うため)。
-// 2. 1000行などの大量処理で15分以上かかる場合でも、PIDが生存中(isProcessAlive=true)である限り、何時間経過してもロックは解除されず、重複起動を100%ブロックして安全に完走させます。
-// 3. プロセスが完全に死んだ(異常終了した)場合のみ、ロックを解いて次回起動を即座に可能にします。
 if (fs.existsSync(LOCK_FILE)) {
     try {
         const lockContent = fs.readFileSync(LOCK_FILE, 'utf8').trim();
@@ -45,7 +41,6 @@ if (fs.existsSync(LOCK_FILE)) {
         let isProcessAlive = false;
         if (!isNaN(lockPid) && lockPid > 0) {
             try {
-                // process.kill(pid, 0) はプロセスの生存確認のみを行い、殺すことはありません
                 process.kill(lockPid, 0);
                 isProcessAlive = true;
             } catch (e) {
@@ -54,11 +49,9 @@ if (fs.existsSync(LOCK_FILE)) {
         }
 
         if (!isProcessAlive) {
-            // プロセスが完全に停止(死んでいる)場合のみ、孤立ロックとして自動破棄
             console.log(`🧹 [Lock Auto-Cleanup]: 異常終了したプロセスのロックファイルを検出しました (PID: ${lockPid})。自動解除して処理を開始します。`);
             try { fs.unlinkSync(LOCK_FILE); } catch (e) {}
         } else {
-            // プロセスが実際に生きている限り、15分を超えて何時間かかっても重複起動を100%防止
             console.log(`⚠️ [Single Instance Lock]: 実行中の同期処理が存在します (PID: ${lockPid}, 経過: ${ageMinutes.toFixed(1)}分)。重複起動を防止して終了します。`);
             process.exit(0);
         }
@@ -80,7 +73,6 @@ process.on('exit', removeLock);
 process.on('SIGINT', () => { removeLock(); process.exit(0); });
 process.on('uncaughtException', (err) => { removeLock(); console.error(err); process.exit(1); });
 
-// Periodic lock touch timer to update lock file timestamp during long-running tasks
 const lockTouchInterval = setInterval(() => {
     try {
         if (fs.existsSync(LOCK_FILE)) {
@@ -88,7 +80,7 @@ const lockTouchInterval = setInterval(() => {
             fs.utimesSync(LOCK_FILE, time, time);
         }
     } catch (e) {}
-}, 5 * 60 * 1000); // 5分ごとにロックタイムスタンプを自動更新
+}, 5 * 60 * 1000);
 lockTouchInterval.unref();
 
 // Parse Command Line Arguments (--mode=line_transfer, --mode=standard, --mode=soldout_g)
@@ -111,18 +103,31 @@ function loadUsersConfig() {
 
 function getGoogleAuth() {
     if (process.env.GOOGLE_SERVICE_ACCOUNT_JSON) {
-        const credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON);
-        return new google.auth.GoogleAuth({
-            credentials,
-            scopes: ['https://www.googleapis.com/auth/spreadsheets'],
-        });
+        try {
+            const credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON);
+            if (credentials.private_key) credentials.private_key = credentials.private_key.replace(/\\n/g, '\n');
+            return new google.auth.GoogleAuth({
+                credentials,
+                scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+            });
+        } catch (e) {}
     }
     const keyPath = path.join(__dirname, 'google_service_account.json');
     if (fs.existsSync(keyPath)) {
-        return new google.auth.GoogleAuth({
-            keyFile: keyPath,
-            scopes: ['https://www.googleapis.com/auth/spreadsheets'],
-        });
+        try {
+            const keyRaw = fs.readFileSync(keyPath, 'utf8');
+            const credentials = JSON.parse(keyRaw);
+            if (credentials.private_key) credentials.private_key = credentials.private_key.replace(/\\n/g, '\n');
+            return new google.auth.GoogleAuth({
+                credentials,
+                scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+            });
+        } catch (e) {
+            return new google.auth.GoogleAuth({
+                keyFile: keyPath,
+                scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+            });
+        }
     }
     throw new Error('Google Service Account credentials not found!');
 }
@@ -180,13 +185,19 @@ async function getItemDataSingleAttempt(browser, url, waitMs = 2500) {
                     const cleanDigits = priceEl.textContent.replace(/[^0-9]/g, '');
                     if (cleanDigits) price = parseInt(cleanDigits, 10).toLocaleString('ja-JP') + '円';
                 }
-            } else if (targetUrl.includes('paypayfleamarket') || targetUrl.includes('paypayfleamarket.yahoo.co.jp')) {
-                const titleEl = document.querySelector('h1') || document.querySelector('[class*="ItemTitle_title"]');
+            } else if (targetUrl.includes('paypayfleamarket') || targetUrl.includes('paypayfleamarket.yahoo.co.jp') || targetUrl.includes('fleamarket.yahoo.co.jp')) {
+                const titleEl = document.querySelector('h1') || document.querySelector('[class*="ItemTitle_title"]') || document.querySelector('[class*="itemTitle"]');
                 title = titleEl ? titleEl.textContent.trim() : document.title.replace(/\s*-\s*Yahoo!フリマ.*/i, '').trim();
-                const metaPrice = document.querySelector('meta[name="product:price:amount"]');
+                const metaPrice = document.querySelector('meta[name="product:price:amount"], meta[property="product:price:amount"]');
                 if (metaPrice && metaPrice.getAttribute('content')) {
                     const pVal = parseInt(metaPrice.getAttribute('content'), 10);
                     if (!isNaN(pVal) && pVal > 0) price = pVal.toLocaleString('ja-JP') + '円';
+                }
+                if (!price) {
+                    const priceEl = document.querySelector('[class*="Price_value"]') || document.querySelector('[class*="price"]');
+                    let rawPrice = priceEl ? priceEl.textContent.trim() : '';
+                    const cleanDigits = rawPrice.replace(/[^0-9]/g, '');
+                    if (cleanDigits) price = parseInt(cleanDigits, 10).toLocaleString('ja-JP') + '円';
                 }
             } else if (targetUrl.includes('fril.jp') || targetUrl.includes('rakuma')) {
                 const titleEl = document.querySelector('.item__name') || document.querySelector('h1');
@@ -200,7 +211,7 @@ async function getItemDataSingleAttempt(browser, url, waitMs = 2500) {
             return { title, price };
         }, url);
 
-        // メルカリの場合：【二重ガード＆食い違い自動検出アルゴリズム】
+        // 1. メルカリの場合：【二重ガード＆食い違い自動検出アルゴリズム】
         if (url.includes('mercari')) {
             const signals = await page.evaluate(() => {
                 const soldBadge = document.querySelector('[data-testid="item-sold-out-badge"]') || document.querySelector('div[aria-label*="売り切れ"]');
@@ -250,30 +261,81 @@ async function getItemDataSingleAttempt(browser, url, waitMs = 2500) {
                 return { title: basicData.title, price: basicData.price, isClosed: true, statusText: '欠品', page: null };
             }
 
-            // 混在・食い違い発生時の2回目・3回目慎重クロス検証
-            if (signals.isBtnActive) {
-                await page.close();
-                return { title: basicData.title, price: basicData.price, isClosed: false, statusText: '販売中', page: null };
-            }
-
-            if (jsonStatus === 'ITEM_STATUS_ON_SALE') {
+            if (signals.isBtnActive || jsonStatus === 'ITEM_STATUS_ON_SALE') {
                 await page.close();
                 return { title: basicData.title, price: basicData.price, isClosed: false, statusText: '販売中', page: null };
             }
 
             await page.close();
             return { title: basicData.title, price: basicData.price, isClosed: true, statusText: '欠品', page: null };
+
+        // 2. Yahoo!フリマ（PayPayフリマ）の場合：【ユーザー様ご提示画像に基づく完全学習判定】
+        } else if (url.includes('paypayfleamarket') || url.includes('fleamarket.yahoo.co.jp')) {
+            const ySignals = await page.evaluate(() => {
+                const bodyText = document.body.innerText || '';
+
+                // 画像3枚目：商品が存在しない/削除された状態
+                const isNotFound = Boolean(
+                    bodyText.includes('この商品は存在しません') ||
+                    bodyText.includes('公開が停止されました') ||
+                    bodyText.includes('ページが見つかりません') ||
+                    document.title.includes('存在しません')
+                );
+
+                // 画像1枚目：赤い「購入手続きへ」ボタン（販売中）
+                const allButtons = Array.from(document.querySelectorAll('button, a'));
+                const hasBuyButton = allButtons.some(el => {
+                    const txt = el.textContent.trim();
+                    return (txt === '購入手続きへ' || txt.includes('購入手続きへ')) && !el.disabled;
+                });
+
+                // 画像2枚目：「この情報をコピーして出品する」ボタン（売り切れ・欠品）
+                const hasCopyListingButton = allButtons.some(el => el.textContent.includes('この情報をコピーして出品する'));
+
+                // 画像2枚目：メイン商品画像上のSOLDバッジ
+                // （※おすすめ欄のSOLDと混同しないよう、メイン画像コンテナ内をチェック）
+                const mainItemContainer = document.querySelector('[class*="ItemMain_main"]') || document.querySelector('[class*="item-main"]') || document.querySelector('main') || document.body;
+                const soldBadges = Array.from(mainItemContainer.querySelectorAll('[class*="SoldBadge"], [class*="sold"], [aria-label*="SOLD"], div, span'));
+                const hasMainSoldBadge = soldBadges.some(el => {
+                    const isInsideRecommend = el.closest('[class*="Recommend"], [class*="recommend"], [class*="suggestion"]');
+                    if (isInsideRecommend) return false; // オススメ欄は無視
+                    return el.textContent.trim() === 'SOLD' || el.classList.contains('sold') || (el.getAttribute('aria-label') || '').includes('売り切れ');
+                });
+
+                // 「この商品は○日で売れました」告知
+                const hasSoldNotice = bodyText.includes('で売れました') || bodyText.includes('売り切れました');
+
+                return { isNotFound, hasBuyButton, hasCopyListingButton, hasMainSoldBadge, hasSoldNotice };
+            });
+
+            await page.close();
+
+            // 判定実行
+            if (ySignals.isNotFound) {
+                return { title: '欠品（存在しません）', price: '', isClosed: true, statusText: '欠品', page: null };
+            }
+
+            // 購入ボタンが存在し、コピー出品ボタンやメインSOLDがない場合は確実に「販売中」
+            if (ySignals.hasBuyButton && !ySignals.hasCopyListingButton && !ySignals.hasMainSoldBadge) {
+                return { title: basicData.title, price: basicData.price, isClosed: false, statusText: '販売中', page: null };
+            }
+
+            // コピー出品ボタン、メイン画像SOLDバッジ、売れました告知がある場合は「欠品」
+            if (ySignals.hasCopyListingButton || ySignals.hasMainSoldBadge || ySignals.hasSoldNotice) {
+                return { title: basicData.title, price: basicData.price, isClosed: true, statusText: '欠品', page: null };
+            }
+
+            // 購入ボタンがあれば販売中として安全救済
+            const isClosed = !ySignals.hasBuyButton;
+            return { title: basicData.title, price: basicData.price, isClosed, statusText: isClosed ? '欠品' : '販売中', page: null };
+
+        // 3. 他モール（Amazon / ラクマ）
         } else {
-            // 他モール（Amazon / PayPayフリマ / ララクマ）
             const isClosed = await page.evaluate((targetUrl) => {
                 if (targetUrl.includes('amazon.co.jp')) {
                     const outOfStockEl = document.querySelector('#outOfStock') || document.querySelector('#availability');
                     const outText = outOfStockEl ? outOfStockEl.textContent.trim() : '';
                     return Boolean(outText.includes('現在在庫切れ') || outText.includes('一時的に在庫切れ') || outText.includes('この商品は現在お取り扱いできません'));
-                } else if (targetUrl.includes('paypayfleamarket')) {
-                    const bodyText = document.body.innerText || '';
-                    const hasCopyBtn = Array.from(document.querySelectorAll('button, a')).some(el => el.textContent.includes('この情報をコピーして出品する'));
-                    return Boolean(bodyText.includes('売り切れました') || bodyText.includes('SOLD OUT') || bodyText.includes('公開が停止') || hasCopyBtn);
                 } else if (targetUrl.includes('fril.jp') || targetUrl.includes('rakuma')) {
                     const soldoutBadge = document.querySelector('.item__badge--soldout') || document.querySelector('[class*="soldout"]');
                     return Boolean(soldoutBadge);
