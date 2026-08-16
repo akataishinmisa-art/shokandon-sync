@@ -116,7 +116,6 @@ const parseNum = (val) => {
 };
 
 // 3. Multi-Stage Guard Verification Engine with Discrepancy/Contradiction Check
-// ユーザー様ご提案: 「販売中」と「欠品」の要素が少しでも混在・食い違っている場合は、即座に決定せず2回目・3回目の慎重なクロス判定を実行する
 async function getItemDataMultiAngle(browser, url) {
     let page = null;
     try {
@@ -187,11 +186,9 @@ async function getItemDataMultiAngle(browser, url) {
         if (url.includes('mercari')) {
             // [全体判定]: 3つの異なる要素シグナルを同時に収集
             const signals = await page.evaluate(() => {
-                // シグナルA: 画像上のSOLDバッジ
                 const soldBadge = document.querySelector('[data-testid="item-sold-out-badge"]') || document.querySelector('div[aria-label*="売り切れ"]');
                 const hasSoldBadge = Boolean(soldBadge);
 
-                // シグナルB: 購入手続きボタンの有無と状態
                 const checkoutBtn = document.querySelector('[data-testid="checkout-button"]');
                 const btnText = checkoutBtn ? checkoutBtn.textContent.trim() : '';
                 const isBtnDisabled = checkoutBtn ? checkoutBtn.disabled : false;
@@ -201,7 +198,6 @@ async function getItemDataMultiAngle(browser, url) {
                 return { hasSoldBadge, isBtnSold, isBtnActive, btnText };
             });
 
-            // シグナルC: JSON内対象商品ステータス
             let jsonStatus = null;
             const nextDataMatch = html.match(/<script id="__NEXT_DATA__" type="application\/json">(.*?)<\/script>/);
             if (nextDataMatch) {
@@ -216,7 +212,6 @@ async function getItemDataMultiAngle(browser, url) {
                 } catch (e) {}
             }
 
-            // 各シグナルの判定結果をカウント
             let saleCount = 0;
             let soldCount = 0;
 
@@ -230,36 +225,26 @@ async function getItemDataMultiAngle(browser, url) {
 
             console.log(`  [全体判定シグナル収集]: 販売中示唆=${saleCount}, 欠品示唆=${soldCount} (混在・食い違い=${isContradictory ? '⚠️ あり' : 'なし'})`);
 
-            // 【ユーザー様ご指摘ルール】:
-            // 混在・食い違いがなく、100%完全一致で販売中の場合のみ即座に確定！
             if (!isContradictory && saleCount > 0 && soldCount === 0) {
                 console.log(`  ✅ 100%全要素一致で「販売中」のため確定しました。`);
                 await page.close();
                 return { title: basicData.title, price: basicData.price, isClosed: false, statusText: '販売中' };
             }
 
-            // 混在・食い違いがなく、100%完全一致で欠品の場合
             if (!isContradictory && soldCount > 0 && saleCount === 0) {
                 console.log(`  🚨 100%全要素一致で「欠品」のため確定しました。`);
                 await page.close();
                 return { title: basicData.title, price: basicData.price, isClosed: true, statusText: '欠品' };
             }
 
-            // =========================================================================
-            // 【混在・食い違い発生時の2回目・3回目 段階的慎重検証】
-            // 「販売中」と「欠品」の要素が1つでも衝突・混在している場合は、絶対に早合点せず
-            // 最も信頼できる実体データ（①購入ボタンの実際の活性度 ➔ ②JSON本体ステータス）で慎重判定
-            // =========================================================================
             console.log(`  🔍 [要素の混在・食い違いを検出]: 2回目・3回目の慎重クロス検証を実行します...`);
 
-            // 2回目判定: 「実際の購入ボタンが押せるか」を最優先で確認
             if (signals.isBtnActive) {
                 console.log(`  🎉 [2回目慎重検証結果]: 購入ボタンが有効（クリック可能）のため、最終結果『販売中』として安全に確定。`);
                 await page.close();
                 return { title: basicData.title, price: basicData.price, isClosed: false, statusText: '販売中' };
             }
 
-            // 3回目判定: JSON本体のステータスを確認
             if (jsonStatus === 'ITEM_STATUS_ON_SALE') {
                 console.log(`  🎉 [3回目慎重検証結果]: JSON本体ステータスが ON_SALE のため、最終結果『販売中』として安全に確定。`);
                 await page.close();
@@ -269,7 +254,6 @@ async function getItemDataMultiAngle(browser, url) {
             await page.close();
             return { title: basicData.title, price: basicData.price, isClosed: true, statusText: '欠品' };
         } else {
-            // 他モール（Amazon / PayPayフリマ / ラクマ）の判定
             const isClosed = await page.evaluate((targetUrl) => {
                 if (targetUrl.includes('amazon.co.jp')) {
                     const outOfStockEl = document.querySelector('#outOfStock') || document.querySelector('#availability');
@@ -392,6 +376,7 @@ function sendLineNotificationForUser(user, message) {
     }
 
     for (const user of activeUsers) {
+        // CLIで明確に--modeが指定された場合はそれを絶対優先
         const effectiveMode = cliModeOverride || user.mode || 'line_transfer';
         console.log(`\n================ Processing User: ${user.name} (${user.spreadsheetId}) [Mode: ${effectiveMode}] ================`);
 
@@ -407,7 +392,6 @@ function sendLineNotificationForUser(user, message) {
 
             let activeRows = [];
 
-            // 1行ずつ上から順番に「B列（仕入れ先URL）」のみをチェック
             for (let r = 2; r <= Math.min(rowValues.length, 1000); r++) {
                 const rowObj = rowValues[r - 1];
                 const bCell = (rowObj && rowObj.values && rowObj.values.length > 1) ? rowObj.values[1] : null;
@@ -583,8 +567,12 @@ function sendLineNotificationForUser(user, message) {
                 globalBrowser = null;
             }
 
-            // 7. Send LINE Notification (only if effectiveMode === 'line_transfer' or user configured LINE)
-            const shouldSendLine = (effectiveMode === 'line_transfer' || user.mode === 'line_transfer') && (missingItemsList.length > 0 || priceChangedItemsList.length > 0);
+            // 7. Send LINE Notification (Strict Mode Enforced)
+            // CLI引数 `--mode=standard` または `--mode=soldout_g` が指定されている場合は LINE 通知は 100% 遮断
+            const isExplicitlyNoLineMode = (cliModeOverride === 'standard' || cliModeOverride === 'soldout_g');
+            const isLineModeActive = !isExplicitlyNoLineMode && (effectiveMode === 'line_transfer');
+            const shouldSendLine = isLineModeActive && (missingItemsList.length > 0 || priceChangedItemsList.length > 0);
+
             if (shouldSendLine) {
                 let lineBatchMsg = `【商管どん 自動同期アラート (${user.name})】\n`;
                 if (missingItemsList.length > 0) {
@@ -603,7 +591,7 @@ function sendLineNotificationForUser(user, message) {
                 console.log(`\n📲 Sending Unified LINE Notification to ${user.name}...`);
                 await sendLineNotificationForUser(user, lineBatchMsg);
             } else {
-                console.log(`[Mode: ${effectiveMode}] LINE通知送信スキップ (LINEモードオフ または 変更通知なし)`);
+                console.log(`[Mode: ${effectiveMode}] LINE通知送信スキップ (LINEモードオフ [isExplicitlyNoLineMode=${isExplicitlyNoLineMode}] または 変更通知なし)`);
             }
 
             user.lastSyncTime = new Date().toLocaleString('ja-JP');
