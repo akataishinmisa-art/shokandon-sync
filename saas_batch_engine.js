@@ -115,8 +115,8 @@ const parseNum = (val) => {
     return cleaned ? parseInt(cleaned, 10) : null;
 };
 
-// 3. Multi-Stage Guard Verification Engine with Discrepancy/Contradiction Check
-async function getItemDataMultiAngle(browser, url) {
+// 3. Single Scraping Attempt with Multi-Angle Verification
+async function getItemDataSingleAttempt(browser, url, waitMs = 2500) {
     let page = null;
     try {
         page = await browser.newPage();
@@ -130,11 +130,11 @@ async function getItemDataMultiAngle(browser, url) {
         });
 
         await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 45000 });
-        await page.evaluate(() => new Promise(r => setTimeout(r, 2500)));
+        await page.evaluate((delay) => new Promise(r => setTimeout(r, delay)), waitMs);
 
         const html = await page.content();
 
-        // 1. 基本要素（タイトル・価格）のスクレイピング
+        // 基本要素（タイトル・価格）のスクレイピング
         let basicData = await page.evaluate((targetUrl) => {
             let title = '';
             let price = '';
@@ -182,9 +182,8 @@ async function getItemDataMultiAngle(browser, url) {
             return { title, price };
         }, url);
 
-        // メルカリの場合：【ユーザー様ご提案：シグナル混在・食い違い検出＋段階的慎重検証アルゴリズム】
+        // メルカリの場合：【二重ガード＆食い違い自動検出アルゴリズム】
         if (url.includes('mercari')) {
-            // [全体判定]: 3つの異なる要素シグナルを同時に収集
             const signals = await page.evaluate(() => {
                 const soldBadge = document.querySelector('[data-testid="item-sold-out-badge"]') || document.querySelector('div[aria-label*="売り切れ"]');
                 const hasSoldBadge = Boolean(soldBadge);
@@ -205,7 +204,7 @@ async function getItemDataMultiAngle(browser, url) {
                     const nextJson = JSON.parse(nextDataMatch[1]);
                     const itemObj = (nextJson.props && nextJson.props.pageProps && (nextJson.props.pageProps.item || (nextJson.props.pageProps.initialState && nextJson.props.pageProps.initialState.item))) || null;
                     if (itemObj) {
-                        jsonStatus = itemObj.status; // 'ITEM_STATUS_ON_SALE' or 'ITEM_STATUS_SOLDOUT'
+                        jsonStatus = itemObj.status;
                         if (itemObj.name) basicData.title = itemObj.name;
                         if (itemObj.price) basicData.price = parseInt(itemObj.price, 10).toLocaleString('ja-JP') + '円';
                     }
@@ -223,37 +222,31 @@ async function getItemDataMultiAngle(browser, url) {
 
             const isContradictory = (saleCount > 0 && soldCount > 0);
 
-            console.log(`  [全体判定シグナル収集]: 販売中示唆=${saleCount}, 欠品示唆=${soldCount} (混在・食い違い=${isContradictory ? '⚠️ あり' : 'なし'})`);
-
             if (!isContradictory && saleCount > 0 && soldCount === 0) {
-                console.log(`  ✅ 100%全要素一致で「販売中」のため確定しました。`);
                 await page.close();
-                return { title: basicData.title, price: basicData.price, isClosed: false, statusText: '販売中' };
+                return { title: basicData.title, price: basicData.price, isClosed: false, statusText: '販売中', page: null };
             }
 
             if (!isContradictory && soldCount > 0 && saleCount === 0) {
-                console.log(`  🚨 100%全要素一致で「欠品」のため確定しました。`);
                 await page.close();
-                return { title: basicData.title, price: basicData.price, isClosed: true, statusText: '欠品' };
+                return { title: basicData.title, price: basicData.price, isClosed: true, statusText: '欠品', page: null };
             }
 
-            console.log(`  🔍 [要素の混在・食い違いを検出]: 2回目・3回目の慎重クロス検証を実行します...`);
-
+            // 混在・食い違い発生時の2回目・3回目慎重クロス検証
             if (signals.isBtnActive) {
-                console.log(`  🎉 [2回目慎重検証結果]: 購入ボタンが有効（クリック可能）のため、最終結果『販売中』として安全に確定。`);
                 await page.close();
-                return { title: basicData.title, price: basicData.price, isClosed: false, statusText: '販売中' };
+                return { title: basicData.title, price: basicData.price, isClosed: false, statusText: '販売中', page: null };
             }
 
             if (jsonStatus === 'ITEM_STATUS_ON_SALE') {
-                console.log(`  🎉 [3回目慎重検証結果]: JSON本体ステータスが ON_SALE のため、最終結果『販売中』として安全に確定。`);
                 await page.close();
-                return { title: basicData.title, price: basicData.price, isClosed: false, statusText: '販売中' };
+                return { title: basicData.title, price: basicData.price, isClosed: false, statusText: '販売中', page: null };
             }
 
             await page.close();
-            return { title: basicData.title, price: basicData.price, isClosed: true, statusText: '欠品' };
+            return { title: basicData.title, price: basicData.price, isClosed: true, statusText: '欠品', page: null };
         } else {
+            // 他モール（Amazon / PayPayフリマ / ラクマ）
             const isClosed = await page.evaluate((targetUrl) => {
                 if (targetUrl.includes('amazon.co.jp')) {
                     const outOfStockEl = document.querySelector('#outOfStock') || document.querySelector('#availability');
@@ -271,12 +264,60 @@ async function getItemDataMultiAngle(browser, url) {
             }, url);
 
             await page.close();
-            return { title: basicData.title, price: basicData.price, isClosed, statusText: isClosed ? '欠品' : '販売中' };
+            return { title: basicData.title, price: basicData.price, isClosed, statusText: isClosed ? '欠品' : '販売中', page: null };
         }
     } catch (e) {
         if (page) await page.close().catch(() => {});
-        return { title: '', price: '', isClosed: false, statusText: 'エラー' };
+        return { title: '', price: '', isClosed: false, statusText: 'エラー', page: null, error: e.message };
     }
+}
+
+// 4. Robust 5-Attempt Verification Engine with 2.5s default / 4.0s retry & Session Recovery
+async function getItemDataPuppeteer(getBrowserFn, url) {
+    let attempts = 0;
+    const maxAttempts = 5;
+    let result = null;
+
+    while (attempts < maxAttempts) {
+        attempts++;
+        const currentWait = (attempts === 1) ? 2500 : 4000;
+        let browser = await getBrowserFn();
+
+        try {
+            result = await getItemDataSingleAttempt(browser, url, currentWait);
+        } catch (e) {
+            console.log(`[Browser Session Reset Triggered]: ${e.message}`);
+            browser = await getBrowserFn(true);
+            result = await getItemDataSingleAttempt(browser, url, currentWait).catch(() => ({ title: '', price: '', isClosed: false, statusText: 'エラー', page: null }));
+        }
+
+        const isValid = result && result.title && result.title !== '取得エラー' && (result.title !== 'Amazon.co.jp' || result.price);
+
+        // 正常に「販売中」が確定した場合、1即座に終了
+        if (isValid && !result.isClosed && result.price) {
+            return result;
+        }
+
+        // 欠品疑いまたはデータ不完全時、4.0秒待機で最大5回まで慎重判定を継続
+        if (isValid && result.isClosed && attempts >= 2) {
+            return result;
+        }
+
+        console.log(`[Scrape Check Attempt ${attempts}/${maxAttempts}]: ${url} (Wait: ${currentWait}ms) -> Retrying...`);
+        await new Promise(r => setTimeout(r, 2000));
+    }
+
+    if (!result || !result.title || result.title === '取得エラー' || (!result.price && !result.isClosed)) {
+        return {
+            title: (result && result.title && result.title !== '取得エラー') ? result.title : '',
+            price: '',
+            isClosed: false,
+            statusText: 'エラー',
+            page: null
+        };
+    }
+
+    return result;
 }
 
 // 5. Send LINE Notification Helper
@@ -376,7 +417,6 @@ function sendLineNotificationForUser(user, message) {
     }
 
     for (const user of activeUsers) {
-        // CLIで明確に--modeが指定された場合はそれを絶対優先
         const effectiveMode = cliModeOverride || user.mode || 'line_transfer';
         console.log(`\n================ Processing User: ${user.name} (${user.spreadsheetId}) [Mode: ${effectiveMode}] ================`);
 
@@ -392,6 +432,7 @@ function sendLineNotificationForUser(user, message) {
 
             let activeRows = [];
 
+            // 1行ずつ上から順番に「B列（仕入れ先URL）」のみをチェック
             for (let r = 2; r <= Math.min(rowValues.length, 1000); r++) {
                 const rowObj = rowValues[r - 1];
                 const bCell = (rowObj && rowObj.values && rowObj.values.length > 1) ? rowObj.values[1] : null;
@@ -445,8 +486,8 @@ function sendLineNotificationForUser(user, message) {
 
                 let itemData = { title: '', price: '', isClosed: false, statusText: 'エラー' };
                 try {
-                    const browser = await getBrowserInstance();
-                    itemData = await getItemDataMultiAngle(browser, targetUrl);
+                    itemData = await getItemDataPuppeteer(getBrowserInstance, targetUrl);
+                    if (itemData.page) await itemData.page.close().catch(() => {});
                 } catch (rowErr) {
                     console.error(`Row ${r} Scraping Exception: ${rowErr.message} -> Continuing with error status.`);
                 }
@@ -568,7 +609,6 @@ function sendLineNotificationForUser(user, message) {
             }
 
             // 7. Send LINE Notification (Strict Mode Enforced)
-            // CLI引数 `--mode=standard` または `--mode=soldout_g` が指定されている場合は LINE 通知は 100% 遮断
             const isExplicitlyNoLineMode = (cliModeOverride === 'standard' || cliModeOverride === 'soldout_g');
             const isLineModeActive = !isExplicitlyNoLineMode && (effectiveMode === 'line_transfer');
             const shouldSendLine = isLineModeActive && (missingItemsList.length > 0 || priceChangedItemsList.length > 0);
