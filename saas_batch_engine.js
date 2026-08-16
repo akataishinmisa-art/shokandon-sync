@@ -29,7 +29,11 @@ const executablePath = getExecutablePath();
 const USERS_CONFIG_PATH = path.join(__dirname, 'users_config.json');
 const LOCK_FILE = path.join(__dirname, 'batch_sync.lock');
 
-// 2. Smart Single Instance Lock with Stale Process & 15-Min TTL Auto-Recovery
+// 2. Smart Single Instance Lock (PID Strict Life Check)
+// ユーザー様ご質問への回答:
+// 1. 現在実行中のプロセスが途中で殺される(Kill)ことは絶対にありません (確認のみ行うため)。
+// 2. 1000行などの大量処理で15分以上かかる場合でも、PIDが生存中(isProcessAlive=true)である限り、何時間経過してもロックは解除されず、重複起動を100%ブロックして安全に完走させます。
+// 3. プロセスが完全に死んだ(異常終了した)場合のみ、ロックを解いて次回起動を即座に可能にします。
 if (fs.existsSync(LOCK_FILE)) {
     try {
         const lockContent = fs.readFileSync(LOCK_FILE, 'utf8').trim();
@@ -41,6 +45,7 @@ if (fs.existsSync(LOCK_FILE)) {
         let isProcessAlive = false;
         if (!isNaN(lockPid) && lockPid > 0) {
             try {
+                // process.kill(pid, 0) はプロセスの生存確認のみを行い、殺すことはありません
                 process.kill(lockPid, 0);
                 isProcessAlive = true;
             } catch (e) {
@@ -48,10 +53,12 @@ if (fs.existsSync(LOCK_FILE)) {
             }
         }
 
-        if (!isProcessAlive || ageMinutes >= 15) {
-            console.log(`🧹 [Lock Auto-Cleanup]: 古いまたは異常終了したロックファイルを検出しました (PID: ${lockPid}, 経過: ${ageMinutes.toFixed(1)}分)。自動解除して処理を開始します。`);
+        if (!isProcessAlive) {
+            // プロセスが完全に停止(死んでいる)場合のみ、孤立ロックとして自動破棄
+            console.log(`🧹 [Lock Auto-Cleanup]: 異常終了したプロセスのロックファイルを検出しました (PID: ${lockPid})。自動解除して処理を開始します。`);
             try { fs.unlinkSync(LOCK_FILE); } catch (e) {}
         } else {
+            // プロセスが実際に生きている限り、15分を超えて何時間かかっても重複起動を100%防止
             console.log(`⚠️ [Single Instance Lock]: 実行中の同期処理が存在します (PID: ${lockPid}, 経過: ${ageMinutes.toFixed(1)}分)。重複起動を防止して終了します。`);
             process.exit(0);
         }
@@ -72,6 +79,17 @@ function removeLock() {
 process.on('exit', removeLock);
 process.on('SIGINT', () => { removeLock(); process.exit(0); });
 process.on('uncaughtException', (err) => { removeLock(); console.error(err); process.exit(1); });
+
+// Periodic lock touch timer to update lock file timestamp during long-running tasks
+const lockTouchInterval = setInterval(() => {
+    try {
+        if (fs.existsSync(LOCK_FILE)) {
+            const time = new Date();
+            fs.utimesSync(LOCK_FILE, time, time);
+        }
+    } catch (e) {}
+}, 5 * 60 * 1000); // 5分ごとにロックタイムスタンプを自動更新
+lockTouchInterval.unref();
 
 // Parse Command Line Arguments (--mode=line_transfer, --mode=standard, --mode=soldout_g)
 const args = process.argv.slice(2);
@@ -246,7 +264,7 @@ async function getItemDataSingleAttempt(browser, url, waitMs = 2500) {
             await page.close();
             return { title: basicData.title, price: basicData.price, isClosed: true, statusText: '欠品', page: null };
         } else {
-            // 他モール（Amazon / PayPayフリマ / ラクマ）
+            // 他モール（Amazon / PayPayフリマ / ララクマ）
             const isClosed = await page.evaluate((targetUrl) => {
                 if (targetUrl.includes('amazon.co.jp')) {
                     const outOfStockEl = document.querySelector('#outOfStock') || document.querySelector('#availability');
@@ -293,12 +311,10 @@ async function getItemDataPuppeteer(getBrowserFn, url) {
 
         const isValid = result && result.title && result.title !== '取得エラー' && (result.title !== 'Amazon.co.jp' || result.price);
 
-        // 正常に「販売中」が確定した場合、1即座に終了
         if (isValid && !result.isClosed && result.price) {
             return result;
         }
 
-        // 欠品疑いまたはデータ不完全時、4.0秒待機で最大5回まで慎重判定を継続
         if (isValid && result.isClosed && attempts >= 2) {
             return result;
         }
