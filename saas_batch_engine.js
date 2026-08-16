@@ -595,8 +595,10 @@ function sendLineNotificationForUser(user, message) {
 
                 const dCell = rowObj.values[3] || {};
                 const eCell = rowObj.values[4] || {};
+                const fCell = rowObj.values[5] || {};
                 const currentDValue = (dCell.formattedValue || '').trim();
                 const currentEValue = (eCell.formattedValue || '').trim();
+                const currentFValue = (fCell.formattedValue || '').trim();
 
                 let newTitle = '';
                 let newD = '';
@@ -626,11 +628,10 @@ function sendLineNotificationForUser(user, message) {
                     missingItemsList.push({ row: r, bUrl: targetUrl, gUrl: gValue, title: newTitle });
                 } else if (!itemData.title || itemData.title === '取得エラー' || (itemData.title === 'Amazon.co.jp' && !itemData.price)) {
                     const cCell = rowObj.values[2] || {};
-                    const fCell = rowObj.values[5] || {};
                     newTitle = cCell.formattedValue || '';
                     newD = currentDValue;
                     newE = (currentEValue && currentEValue === currentDValue) ? '' : currentEValue;
-                    newF = fCell.formattedValue || '販売中';
+                    newF = currentFValue || '販売中';
                 } else {
                     newTitle = itemData.title || (rowObj.values[2] ? rowObj.values[2].formattedValue : '');
                     if (!itemData.price) {
@@ -666,15 +667,15 @@ function sendLineNotificationForUser(user, message) {
                 }
 
                 const cCell = rowObj.values[2] || {};
-                const fCell = rowObj.values[5] || {};
                 const currentCValue = (cCell.formattedValue || '').trim();
-                const currentFValue = (fCell.formattedValue || '').trim();
 
+                // F列が空欄(未入力)の場合は必ず「販売中」等で書き込む
                 const hasChanges = (
                     newTitle !== currentCValue ||
                     newD !== currentDValue ||
                     newE !== currentEValue ||
                     newF !== currentFValue ||
+                    !currentFValue ||
                     (effectiveMode === 'soldout_g' && newG !== ((rowObj.values.length > 6 && rowObj.values[6]) ? rowObj.values[6].formattedValue || '' : ''))
                 );
 
