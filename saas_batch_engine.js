@@ -157,8 +157,22 @@ async function getItemDataSingleAttempt(browser, url, waitMs = 2500) {
 
         const html = await page.content();
 
-        // 1. メルカリの場合：【二重ガード＆食い違い自動検出アルゴリズム】
+        // 1. メルカリの場合：【削除即時検知 ＋ 二重ガード＆食い違い自動検出】
         if (url.includes('mercari') || url.includes('jp.mercari.com')) {
+            // A. 削除・非存在ページの即時検知
+            const isMercariDeleted = (
+                html.includes('該当する商品は削除されています') ||
+                html.includes('この商品は削除されました') ||
+                html.includes('お探しの商品は見つかりませんでした') ||
+                html.includes('ページが見つかりません') ||
+                (html.match(/<title>[^<]*該当する商品は削除されています[^<]*<\/title>/i))
+            );
+
+            if (isMercariDeleted) {
+                await page.close();
+                return { title: '欠品（削除済み）', price: '', isClosed: true, isDeleted: true, statusText: '欠品', page: null };
+            }
+
             let basicData = await page.evaluate(() => {
                 const titleEl = document.querySelector('h1') || document.querySelector('[data-testid="item-name"]');
                 const title = titleEl ? titleEl.textContent.trim() : '';
@@ -196,6 +210,10 @@ async function getItemDataSingleAttempt(browser, url, waitMs = 2500) {
             if (nextDataMatch) {
                 try {
                     const nextJson = JSON.parse(nextDataMatch[1]);
+                    if (nextJson.props && nextJson.props.pageProps && nextJson.props.pageProps.statusCode === 404) {
+                        await page.close();
+                        return { title: '欠品（削除済み）', price: '', isClosed: true, isDeleted: true, statusText: '欠品', page: null };
+                    }
                     const itemObj = (nextJson.props && nextJson.props.pageProps && (nextJson.props.pageProps.item || (nextJson.props.pageProps.initialState && nextJson.props.pageProps.initialState.item))) || null;
                     if (itemObj) {
                         jsonStatus = itemObj.status;
@@ -602,7 +620,7 @@ function sendLineNotificationForUser(user, message) {
 
                 let newTitle = currentCValue;
                 let newD = currentDValue;
-                let newE = currentEValue; // デフォルトは既存のE列（旧価格または空欄）を完全維持
+                let newE = currentEValue; // 既存のE列（旧価格または空欄）を完全維持
                 let newF = '販売中';     // 毎回の実行結果で確実に上書き
                 let newG = (rowObj.values.length > 6 && rowObj.values[6] ? rowObj.values[6].formattedValue : '') || '';
 
@@ -615,7 +633,7 @@ function sendLineNotificationForUser(user, message) {
                     newF = 'エラー';
                     console.log(`Row ${r}: 判定不可のためステータスを'エラー'と記載しました。`);
                 } else if (isItemMissing) {
-                    newTitle = itemData.title && itemData.title !== '欠品（存在しません）' ? itemData.title : (currentCValue || '欠品');
+                    newTitle = itemData.title && !itemData.title.includes('欠品') ? itemData.title : (currentCValue || '欠品');
                     newD = currentDValue;
                     newE = currentEValue;
                     newF = '欠品';
@@ -664,7 +682,7 @@ function sendLineNotificationForUser(user, message) {
                     }
                 }
 
-                // 【指示遵守】ステータス（F列）および該当セルは毎回確実にスプレッドシートへ上書き更新
+                // ステータス（F列）および該当セルは毎回確実にスプレッドシートへ上書き更新
                 try {
                     if (effectiveMode === 'soldout_g') {
                         await sheets.spreadsheets.values.update({
