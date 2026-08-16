@@ -240,7 +240,7 @@ async function getItemDataSingleAttempt(browser, url, waitMs = 2500) {
             let price = '';
             let isClosed = false;
 
-            // A. 非存在・削除判定（画像3枚目の即時判定）
+            // A. 非存在・削除判定（即時判定）
             const isNotFound = (
                 html.includes('この商品は存在しません') ||
                 html.includes('公開が停止されました') ||
@@ -368,7 +368,7 @@ async function getItemDataSingleAttempt(browser, url, waitMs = 2500) {
     }
 }
 
-// 4. Robust 5-Attempt Verification Engine with 2.5s default / 4.0s retry & Session Recovery
+// 4. Robust 5-Attempt Verification Engine
 async function getItemDataPuppeteer(getBrowserFn, url) {
     let attempts = 0;
     const maxAttempts = 5;
@@ -580,7 +580,7 @@ function sendLineNotificationForUser(user, message) {
 
             for (let itemIdx = 0; itemIdx < activeRows.length; itemIdx++) {
                 const item = activeRows[itemIdx];
-                const { r, rowObj, targetUrl, bFormatted } = item;
+                const { r, rowObj, targetUrl } = item;
                 console.log(`[User: ${user.name}] Progress [${itemIdx + 1}/${activeRows.length}] Row ${r} Processing URL: ${targetUrl}`);
 
                 let itemData = { title: '', price: '', isClosed: false, statusText: 'エラー' };
@@ -593,33 +593,31 @@ function sendLineNotificationForUser(user, message) {
 
                 console.log(`Row ${r} Result:`, { title: itemData.title, price: itemData.price, isClosed: itemData.isClosed, statusText: itemData.statusText });
 
+                const cCell = rowObj.values[2] || {};
                 const dCell = rowObj.values[3] || {};
                 const eCell = rowObj.values[4] || {};
-                const fCell = rowObj.values[5] || {};
+                const currentCValue = (cCell.formattedValue || '').trim();
                 const currentDValue = (dCell.formattedValue || '').trim();
                 const currentEValue = (eCell.formattedValue || '').trim();
-                const currentFValue = (fCell.formattedValue || '').trim();
 
-                let newTitle = '';
-                let newD = '';
-                let newE = '';
-                let newF = '';
+                let newTitle = currentCValue;
+                let newD = currentDValue;
+                let newE = currentEValue; // デフォルトは既存のE列（旧価格または空欄）を完全維持
+                let newF = '販売中';     // 毎回の実行結果で確実に上書き
                 let newG = (rowObj.values.length > 6 && rowObj.values[6] ? rowObj.values[6].formattedValue : '') || '';
 
                 const isItemMissing = Boolean(itemData.isClosed || itemData.statusText === '欠品');
 
                 if (itemData.statusText === 'エラー') {
-                    const cCell = rowObj.values[2] || {};
-                    newTitle = cCell.formattedValue || '';
+                    newTitle = currentCValue;
                     newD = currentDValue;
-                    newE = (currentEValue && currentEValue === currentDValue) ? '' : currentEValue;
+                    newE = currentEValue;
                     newF = 'エラー';
                     console.log(`Row ${r}: 判定不可のためステータスを'エラー'と記載しました。`);
                 } else if (isItemMissing) {
-                    const cCell = rowObj.values[2] || {};
-                    newTitle = itemData.title && itemData.title !== '欠品（存在しません）' ? itemData.title : (cCell.formattedValue || '欠品');
+                    newTitle = itemData.title && itemData.title !== '欠品（存在しません）' ? itemData.title : (currentCValue || '欠品');
                     newD = currentDValue;
-                    newE = (currentEValue && currentEValue === currentDValue) ? '' : currentEValue;
+                    newE = currentEValue;
                     newF = '欠品';
                     if (effectiveMode === 'soldout_g') newG = '出品取り消し';
 
@@ -627,16 +625,15 @@ function sendLineNotificationForUser(user, message) {
                     let gValue = gCell.hyperlink || (gCell.userEnteredValue && gCell.userEnteredValue.formulaValue) || gCell.formattedValue || '';
                     missingItemsList.push({ row: r, bUrl: targetUrl, gUrl: gValue, title: newTitle });
                 } else if (!itemData.title || itemData.title === '取得エラー' || (itemData.title === 'Amazon.co.jp' && !itemData.price)) {
-                    const cCell = rowObj.values[2] || {};
-                    newTitle = cCell.formattedValue || '';
+                    newTitle = currentCValue;
                     newD = currentDValue;
-                    newE = (currentEValue && currentEValue === currentDValue) ? '' : currentEValue;
-                    newF = currentFValue || '販売中';
+                    newE = currentEValue;
+                    newF = '販売中';
                 } else {
-                    newTitle = itemData.title || (rowObj.values[2] ? rowObj.values[2].formattedValue : '');
+                    newTitle = itemData.title || currentCValue;
                     if (!itemData.price) {
                         newD = currentDValue;
-                        newE = (currentEValue && currentEValue === currentDValue) ? '' : currentEValue;
+                        newE = currentEValue;
                         newF = '販売中';
                     } else if (!currentDValue) {
                         newD = itemData.price;
@@ -647,8 +644,8 @@ function sendLineNotificationForUser(user, message) {
                         const numD = parseNum(currentDValue);
 
                         if (numScraped !== null && numD !== null && numScraped !== numD) {
-                            newE = currentDValue;
-                            newD = itemData.price;
+                            newE = currentDValue;  // 価格変更時のみ元D列をE列へ退避
+                            newD = itemData.price; // 新価格をD列へ更新
                             const gCell = (rowObj.values.length > 6 ? rowObj.values[6] : {}) || {};
                             let gValue = gCell.hyperlink || (gCell.userEnteredValue && gCell.userEnteredValue.formulaValue) || gCell.formattedValue || '';
                             if (numScraped > numD) {
@@ -659,48 +656,34 @@ function sendLineNotificationForUser(user, message) {
                                 priceChangedItemsList.push({ row: r, type: '↓下げ', oldPrice: currentDValue, newPrice: itemData.price, bUrl: targetUrl, gUrl: gValue, title: newTitle });
                             }
                         } else {
+                            // 価格同一（変動なし）：既存のE列（旧価格または空欄）をそのまま100%維持
                             newD = currentDValue;
-                            newE = (currentEValue && currentEValue === currentDValue) ? '' : currentEValue;
+                            newE = currentEValue;
                             newF = '販売中';
                         }
                     }
                 }
 
-                const cCell = rowObj.values[2] || {};
-                const currentCValue = (cCell.formattedValue || '').trim();
-
-                // F列が空欄(未入力)の場合は必ず「販売中」等で書き込む
-                const hasChanges = (
-                    newTitle !== currentCValue ||
-                    newD !== currentDValue ||
-                    newE !== currentEValue ||
-                    newF !== currentFValue ||
-                    !currentFValue ||
-                    (effectiveMode === 'soldout_g' && newG !== ((rowObj.values.length > 6 && rowObj.values[6]) ? rowObj.values[6].formattedValue || '' : ''))
-                );
-
-                if (!hasChanges) {
-                    console.log(`[User: ${user.name}] Row ${r}: 変更なしのためセル上書きをスキップしました (旧価格・初期価格をそのまま保持)`);
-                } else {
-                    try {
-                        if (effectiveMode === 'soldout_g') {
-                            await sheets.spreadsheets.values.update({
-                                spreadsheetId: user.spreadsheetId,
-                                range: `C${r}:G${r}`,
-                                valueInputOption: 'USER_ENTERED',
-                                requestBody: { values: [[ newTitle, newD, newE, newF, newG ]] }
-                            });
-                        } else {
-                            await sheets.spreadsheets.values.update({
-                                spreadsheetId: user.spreadsheetId,
-                                range: `C${r}:F${r}`,
-                                valueInputOption: 'USER_ENTERED',
-                                requestBody: { values: [[ newTitle, newD, newE, newF ]] }
-                            });
-                        }
-                    } catch (sheetErr) {
-                        console.error(`Row ${r} Sheet Update Error: ${sheetErr.message}`);
+                // 【指示遵守】ステータス（F列）および該当セルは毎回確実にスプレッドシートへ上書き更新
+                try {
+                    if (effectiveMode === 'soldout_g') {
+                        await sheets.spreadsheets.values.update({
+                            spreadsheetId: user.spreadsheetId,
+                            range: `C${r}:G${r}`,
+                            valueInputOption: 'USER_ENTERED',
+                            requestBody: { values: [[ newTitle, newD, newE, newF, newG ]] }
+                        });
+                    } else {
+                        await sheets.spreadsheets.values.update({
+                            spreadsheetId: user.spreadsheetId,
+                            range: `C${r}:F${r}`,
+                            valueInputOption: 'USER_ENTERED',
+                            requestBody: { values: [[ newTitle, newD, newE, newF ]] }
+                        });
                     }
+                    console.log(`[User: ${user.name}] Row ${r} 更新完了: F列=[${newF}] | D列=[${newD}] | E列=[${newE || '(保持)'}]`);
+                } catch (sheetErr) {
+                    console.error(`Row ${r} Sheet Update Error: ${sheetErr.message}`);
                 }
             }
 
