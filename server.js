@@ -1040,16 +1040,18 @@ function runHourlyScheduledSync(isForced = false) {
     });
 }
 
-// Check every 30 seconds for hourly schedule interval
+// Check every 20 seconds for hourly schedule interval (06:00 - 24:00)
 setInterval(() => {
     const now = new Date();
     const currentHour = now.getHours();
     const currentMinute = now.getMinutes();
 
-    if (currentMinute === 0 && currentHour !== lastScheduledHour) {
+    // 毎時 00分〜05分の間に、その時間帯の自動実行がまだ走っていない場合は確実に起動
+    if (currentMinute >= 0 && currentMinute <= 5 && currentHour !== lastScheduledHour) {
+        console.log(`⏰ [AutoSchedule Trigger]: ${currentHour}:00 定期実行タイマーを検知しました。`);
         runHourlyScheduledSync();
     }
-}, 30000);
+}, 20000);
 
 app.get('/api/schedule-status', (req, res) => {
     res.json({
