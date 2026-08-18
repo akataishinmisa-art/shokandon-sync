@@ -80,6 +80,56 @@ app.get('/ebay', (req, res) => {
     res.sendFile(path.join(__dirname, 'ebay-title-generator', 'index.html'));
 });
 
+// 🎯 仕入れ監視システム（ポート8000）の自動起動＆安全オープンAPI
+let stockMonitorProcess = null;
+
+app.get('/api/stock-monitor/launch', async (req, res) => {
+    // 1. ポート8000が既に生きているか確認
+    const checkAlive = () => {
+        return new Promise((resolve) => {
+            const request = http.get('http://127.0.0.1:8000/api/settings', { timeout: 1500 }, (r) => {
+                if (r.statusCode === 200) resolve(true);
+                else resolve(false);
+            });
+            request.on('error', () => resolve(false));
+            request.on('timeout', () => { request.destroy(); resolve(false); });
+        });
+    };
+
+    const isRunning = await checkAlive();
+    if (isRunning) {
+        return res.json({ status: 'running', url: 'http://127.0.0.1:8000', message: '既に稼働中です' });
+    }
+
+    // 2. 停止している場合は1つだけ新しくバックグラウンド起動（二重起動防止）
+    console.log('[StockMonitor] ポート8000のサーバーが停止しているため、自動起動を開始します...');
+    const monitorDir = path.join(__dirname, 'ebay-stock-monitor', 'backend');
+    
+    try {
+        const proc = spawn('python', ['-m', 'uvicorn', 'app:app', '--host', '127.0.0.1', '--port', '8000'], {
+            cwd: monitorDir,
+            detached: true,
+            stdio: 'ignore',
+            shell: true
+        });
+        proc.unref();
+        stockMonitorProcess = proc;
+
+        // 起動待機（最大5秒）
+        for (let i = 0; i < 10; i++) {
+            await new Promise(r => setTimeout(r, 500));
+            if (await checkAlive()) {
+                console.log('[StockMonitor] 自動起動が完了しました！');
+                return res.json({ status: 'started', url: 'http://127.0.0.1:8000', message: '起動完了' });
+            }
+        }
+    } catch (e) {
+        console.error('[StockMonitor] 起動エラー:', e);
+    }
+
+    return res.json({ status: 'ready', url: 'http://127.0.0.1:8000' });
+});
+
 // Load & Save Custom MPN Prices (PCH-2000, etc.)
 function loadCustomMpnPrices() {
     try {

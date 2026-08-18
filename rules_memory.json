@@ -14,6 +14,7 @@
     "columnG_Protection": "NEVER touch, write, or overwrite Column G. Column G belongs to user notes/custom data.",
     "stopOnBlankRule": "Stop processing immediately (break) as soon as Column B is empty.",
     "dualEnvironmentRule": "Keep both local PC environment and WebArena VPS running in parallel. Do not stop or kill local node server.",
-    "truthfulVerificationDirective": "NEVER report 'perfect' without empirical log & DOM verification. Always verify exact sold-out badges and button disabled text."
+    "truthfulVerificationDirective": "NEVER report 'perfect' without empirical log & DOM verification. Always verify exact sold-out badges and button disabled text.",
+    "specTableExtractionRule": "PERMANENT FIXED RULE: NEVER parse or infer condition/shipping from item description free text. ALWAYS extract condition and shipping strictly and directly from the official spec table ('商品の情報' table) of each platform (Yahoo Flea, Yahoo Auction, Mercari, Rakuma)."
   }
 }

@@ -358,7 +358,44 @@ async function getItemDataSingleAttempt(browser, url, waitMs = 2500) {
             isClosed = !domData.hasBuyButton;
             return { title, price, isClosed, statusText: isClosed ? '欠品' : '販売中', page: null };
 
-        // 3. 他モール（Amazon / ラクマ）
+        // 3. Yahoo!オークション (auctions.yahoo.co.jp) の場合
+        } else if (url.includes('auctions.yahoo.co.jp')) {
+            const domData = await page.evaluate(() => {
+                const bodyText = document.body.innerText || '';
+                const isNotFound = bodyText.includes('指定されたオークションは存在しません') || bodyText.includes('該当のオークションは見つかりません');
+                const isEnded = bodyText.includes('このオークションは終了しました') || bodyText.includes('オークションは終了') || bodyText.includes('落札されました');
+
+                const titleEl = document.querySelector('h1') || document.querySelector('.ProductTitle__text') || document.querySelector('[class*="ProductTitle"]');
+                let t = titleEl ? titleEl.textContent.trim() : document.title.replace(/^Yahoo!オークション\s*-\s*/i, '').trim();
+
+                let p = '';
+                const priceEl = document.querySelector('.Price__value') || document.querySelector('[class*="Price__value"]');
+                if (priceEl) {
+                    const clean = priceEl.textContent.replace(/[^0-9]/g, '');
+                    if (clean) p = parseInt(clean, 10).toLocaleString('ja-JP') + '円';
+                }
+                if (!p) {
+                    const mPrice = bodyText.match(/(?:現在|即決|価格)\s*[¥￥]?\s*([0-9,]+)\s*円/);
+                    if (mPrice) {
+                        const clean = mPrice[1].replace(/[^0-9]/g, '');
+                        if (clean) p = parseInt(clean, 10).toLocaleString('ja-JP') + '円';
+                    }
+                }
+
+                return { t, p, isNotFound, isEnded };
+            });
+
+            await page.close();
+
+            if (domData.isNotFound) {
+                return { title: '欠品（存在しません）', price: '', isClosed: true, isDeleted: true, statusText: '欠品', page: null };
+            }
+            if (domData.isEnded) {
+                return { title: domData.t, price: domData.p, isClosed: true, statusText: '欠品', page: null };
+            }
+            return { title: domData.t, price: domData.p, isClosed: false, statusText: '販売中', page: null };
+
+        // 4. 他モール（Amazon / ラクマ）
         } else {
             let basicData = await page.evaluate((targetUrl) => {
                 let title = '';
@@ -727,30 +764,32 @@ function sendLineNotificationForUser(user, message) {
                 globalBrowser = null;
             }
 
-            // 7. Send LINE Notification (Strict Mode Enforced)
+            // 7. Send LINE Notification (Strict Mode Enforced: 欠品と値上げのみ通知、値下げは通知不要)
             const isExplicitlyNoLineMode = (cliModeOverride === 'standard' || cliModeOverride === 'soldout_g');
             const isLineModeActive = !isExplicitlyNoLineMode && (effectiveMode === 'line_transfer');
-            const shouldSendLine = isLineModeActive && (missingItemsList.length > 0 || priceChangedItemsList.length > 0);
+            
+            const priceUpItems = priceChangedItemsList.filter(item => item.type === '値上げ');
+            const shouldSendLine = isLineModeActive && (missingItemsList.length > 0 || priceUpItems.length > 0);
 
             if (shouldSendLine) {
                 let lineBatchMsg = `【商管どん 自動同期アラート (${user.name})】\n`;
                 if (missingItemsList.length > 0) {
                     lineBatchMsg += `\n🚨 欠品検知 (${missingItemsList.length}件):\n`;
                     for (const item of missingItemsList) {
-                        lineBatchMsg += `・行${item.row}: ${item.title || '商品'} (URL: ${item.bUrl})\n`;
+                        lineBatchMsg += `・行${item.row}: ${item.title || '商品'}\n  URL: ${item.bUrl}\n`;
                     }
                 }
-                if (priceChangedItemsList.length > 0) {
-                    lineBatchMsg += `\n💰 価格変更検知 (${priceChangedItemsList.length}件):\n`;
-                    for (const item of priceChangedItemsList) {
-                        lineBatchMsg += `・行${item.row}: ${item.title} (${item.type})\n  旧価格: ${item.oldPrice} ➔ 新価格: ${item.newPrice}\n`;
+                if (priceUpItems.length > 0) {
+                    lineBatchMsg += `\n📈 値上げ検知 (${priceUpItems.length}件):\n`;
+                    for (const item of priceUpItems) {
+                        lineBatchMsg += `・行${item.row}: ${item.title}\n  旧価格: ${item.oldPrice} ➔ 新価格: ${item.newPrice}\n  URL: ${item.bUrl}\n`;
                     }
                 }
                 lineBatchMsg = lineBatchMsg.trim();
-                console.log(`\n📲 Sending Unified LINE Notification to ${user.name}...`);
+                console.log(`\n📲 Sending Unified LINE Notification (欠品/値上げのみ) to ${user.name}...`);
                 await sendLineNotificationForUser(user, lineBatchMsg);
             } else {
-                console.log(`[Mode: ${effectiveMode}] LINE通知送信スキップ (LINEモードオフ [isExplicitlyNoLineMode=${isExplicitlyNoLineMode}] または 変更通知なし)`);
+                console.log(`[Mode: ${effectiveMode}] LINE通知送信スキップ (LINEモードオフ [isExplicitlyNoLineMode=${isExplicitlyNoLineMode}] または 通知対象[欠品/値上げ]なし)`);
             }
 
             user.lastSyncTime = new Date().toLocaleString('ja-JP');

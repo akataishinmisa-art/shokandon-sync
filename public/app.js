@@ -372,4 +372,27 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     loadSaasUsers();
+
+    // 🎯 仕入れ監視システム: ボタンを押すだけで自動起動＆安全オープン（多重起動なし）
+    const btnOpenMonitor = document.getElementById('btnOpenStockMonitor');
+    if (btnOpenMonitor) {
+        btnOpenMonitor.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const originalHtml = btnOpenMonitor.innerHTML;
+            btnOpenMonitor.innerHTML = '⌛ サーバー起動中...';
+            btnOpenMonitor.style.pointerEvents = 'none';
+
+            try {
+                const res = await fetch('/api/stock-monitor/launch');
+                const data = await res.json();
+                window.open(data.url || 'http://127.0.0.1:8000', '_blank');
+            } catch (err) {
+                console.error('Launch error:', err);
+                window.open('http://127.0.0.1:8000', '_blank');
+            } finally {
+                btnOpenMonitor.innerHTML = originalHtml;
+                btnOpenMonitor.style.pointerEvents = 'auto';
+            }
+        });
+    }
 });
