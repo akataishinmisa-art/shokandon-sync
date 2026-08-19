@@ -1063,6 +1063,14 @@ function runHourlyScheduledSync(isForced = false) {
     const scriptPath = path.join(__dirname, 'saas_batch_engine.js');
     console.log(`⏰ [AutoSchedule]: SaaSマルチユーザー同期エンジンを起動しました (時刻: ${currentHour}:00)`);
 
+    const logDir = path.join(__dirname, 'logs');
+    if (!fs.existsSync(logDir)) {
+        try { fs.mkdirSync(logDir, { recursive: true }); } catch (e) {}
+    }
+    const historyLogPath = path.join(logDir, 'execution_history.log');
+    const startLogLine = `[${new Date().toLocaleString('ja-JP')}] ⏰ ${isForced ? '手動/外部トリガー' : '自動正時'}同期起動 (時刻: ${currentHour}:00)\n`;
+    try { fs.appendFileSync(historyLogPath, startLogLine, 'utf8'); } catch (e) {}
+
     activeProcessLog = [`⏰ [${now.toLocaleTimeString()}] 自動スケジュール同期起動 (全SaaSユーザー対象一括監視): saas_batch_engine.js`];
 
     activeProcess = spawn('node', [scriptPath], {
@@ -1086,19 +1094,21 @@ function runHourlyScheduledSync(isForced = false) {
         const endMsg = `\n✅ [${new Date().toLocaleTimeString()}] 自動スケジュール同期完了 (終了コード: ${code})\n`;
         activeProcessLog.push(endMsg);
         process.stdout.write(endMsg);
+        const finishLogLine = `[${new Date().toLocaleString('ja-JP')}] ✅ 同期完了 (コード: ${code})\n`;
+        try { fs.appendFileSync(historyLogPath, finishLogLine, 'utf8'); } catch (e) {}
         activeProcess = null;
     });
 }
 
-// Check every 20 seconds for hourly schedule interval (06:00 - 24:00)
+// Check every 20 seconds for hourly schedule interval & automatic catch-up (06:00 - 24:00)
 setInterval(() => {
     const now = new Date();
     const currentHour = now.getHours();
-    const currentMinute = now.getMinutes();
 
-    // 毎時 00分〜05分の間に、その時間帯の自動実行がまだ走っていない場合は確実に起動
-    if (currentMinute >= 0 && currentMinute <= 5 && currentHour !== lastScheduledHour) {
-        console.log(`⏰ [AutoSchedule Trigger]: ${currentHour}:00 定期実行タイマーを検知しました。`);
+    // 朝 6:00 〜 夜 24:00 の対象時間帯で、その時間帯の自動実行がまだ走っていない場合は即座に起動（遅延補填）
+    const isTargetHour = (currentHour >= 6 || currentHour === 0);
+    if (isTargetHour && lastScheduledHour !== currentHour && !activeProcess) {
+        console.log(`⏰ [AutoSchedule Catch-up Trigger]: ${currentHour}:00 台の同期が未完了のため即座に起動します。`);
         runHourlyScheduledSync();
     }
 }, 20000);
