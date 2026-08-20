@@ -412,6 +412,18 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // フォーカス時に全選択して簡単に書き換え・貼り付けできるようにする
+    if (ebayCertIdInput) {
+        ebayCertIdInput.addEventListener('focus', () => {
+            ebayCertIdInput.select();
+        });
+    }
+    if (ebayAppIdInput) {
+        ebayAppIdInput.addEventListener('focus', () => {
+            ebayAppIdInput.select();
+        });
+    }
+
     function loadEbayMainSettings() {
         fetch('/api/user-settings')
             .then(res => res.json())
