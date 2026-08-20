@@ -697,16 +697,14 @@ function sendLineNotificationForUser(user, message) {
                     let gValue = gCell.hyperlink || (gCell.userEnteredValue && gCell.userEnteredValue.formulaValue) || gCell.formattedValue || '';
                     missingItemsList.push({ row: r, bUrl: targetUrl, gUrl: gValue, title: newTitle });
 
-                    // 🌸 G列 (Index 6) または J列 (Index 9) から eBay Item ID を自動抽出して手動登録不要で即座にeBay自動取り下げ実行！
+                    // 🌸 J列 (Index 9) から eBay Item ID を自動抽出して手動登録不要で即座にeBay自動取り下げ実行！
                     const jCell = (rowObj.values.length > 9 ? rowObj.values[9] : {}) || {};
                     const jValue = (jCell.formattedValue || jCell.hyperlink || '').trim();
-                    
-                    // G列のURLやリンクテキスト、またはJ列の値から 10〜14桁の数字 (eBay Item ID) を優先検索
-                    const ebayItemIdMatch = (gValue || '').match(/\d{10,14}/) || jValue.match(/\d{10,14}/);
+                    const ebayItemIdMatch = jValue.match(/\d{10,14}/);
 
                     if (ebayItemIdMatch) {
                         const ebayItemId = ebayItemIdMatch[0];
-                        console.log(`\n📦 [G列/J列自動連動] Row ${r}: 欠品商品を検知！ G列/J列から eBay ItemID (${ebayItemId}) を自動検出しました。取り下げを直接実行します...`);
+                        console.log(`\n📦 [J列自動連動] Row ${r}: 欠品商品を検知！ J列から eBay ItemID (${ebayItemId}) を読み出しました。自動取り下げを直接実行します...`);
 
                         // eBay API 設定の読み込みと自動実行
                         try {
