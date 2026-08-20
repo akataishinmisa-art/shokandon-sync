@@ -1,0 +1,14 @@
+Testing YFlea URL: https://paypayfleamarket.yahoo.co.jp/item/z663324958
+YFlea JSON keys: ['props', 'page', 'query', 'buildId', 'assetPrefix', 'isFallback', 'isExperimentalCompile', 'gip', 'appGip', 'scriptLoader']
+pageProps keys: ['isSecure']
+
+Testing Rakuma URL: https://item.fril.jp/883fa91f12df8374b175be531b1ffdd4
+  Rakuma table: カテゴリ -> エンタメ/ホビー
+                     
+  Rakuma table: サイズ -> なし
+  Rakuma table: ブランド -> Nintendo Switch
+  Rakuma table: 商品の状態 -> 目立った傷や汚れなし
+  Rakuma table: 配送料の負担 -> 送料込
+  Rakuma table: 配送方法 -> かんたんラクマパック(日本郵便)
+  Rakuma table: 発送日の目安 -> 支払い後、1～2日で発送
+  Rakuma table: 発送元の地域 -> 栃木県

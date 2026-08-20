@@ -1,0 +1,5 @@
+[ヤフオク] https://auctions.yahoo.co.jp/jp/auction/o1240932106 -> Status: 200
+  -> Extracted: Cond='やや傷や汚れあり', Ship='1～2日で発送'
+[Yahoo!フリマ] https://paypayfleamarket.yahoo.co.jp/item/z472392430 -> Status: 200
+  -> Extracted: Cond='出品ページ参照', Ship='出品ページ参照'
+[ラクマ] https://item.fril.jp/02796e67dbd3923dbe0daeb1adfb57ea -> Status: 404

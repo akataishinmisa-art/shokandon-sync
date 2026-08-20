@@ -1,0 +1,129 @@
+Testing recent mode:
+
+--- Mercari URL (recent): https://jp.mercari.com/search?keyword=EX-ZR1800&status=on_sale&sort=created_time&order=desc ---
+Total raw items on page: 48
+Item: ¥ 35,800 【美品】 CASIO カシオ EXILIM EX-ZR1800GD ゴールド JS129-02396 | URL: https://jp.mercari.com/shops/product/2JVVL6FwnZFBrqf58bR9TN
+Item: ¥ 28,870 カシオ CASIO EXILIM EX-ZR1800 18X バッテリー付属 同梱無料 #ks855 | URL: https://jp.mercari.com/shops/product/2JTyntsG4VviQFbtyC5mGu
+Item: ¥ 37,200 【美品】CASIO EXILIM EX-ZR1800 本体・全付属品・ケース | URL: https://jp.mercari.com/item/m59428227002
+Item: ¥ 2,280 【メーカー入荷品】 カシオ NP-130A カメラ用 リチウムイオン電池 | URL: https://jp.mercari.com/shops/product/w2y4SdmEf2FGvR6mkNT24X
+Item: ¥ 1,040 BC-130L / NP-130 CASIO カシオ 互換USB充電器 | URL: https://jp.mercari.com/shops/product/u7yKp5TxJoZpe2tKnvcLh5
+Item: ¥ 2,280 【メーカー入荷品】 CASIO NP-130A カメラ用 リチウムイオン電池 | URL: https://jp.mercari.com/shops/product/6aNew6ontgN9KZoo3kUAWM
+Item: ¥ 35,990 ✅動作確認済 美品 CASIO EXILIM EX-ZR1800 ゴールド#44 | URL: https://jp.mercari.com/item/m44871226944
+Item: ¥ 4,380 メーカー入荷品 カシオ NP-130A カメラ用 リチウムイオン電池 2個 | URL: https://jp.mercari.com/shops/product/Kw4SzJ87g3dQrHLZnZPdbP
+Item: ¥ 98,700 ！希少限定品！《新品・未使用》CASIO EXILIM EX-ZR1800 | URL: https://jp.mercari.com/item/m20204802613
+Item: ¥ 26,999 CASIO EXILIM EX-ZR1800 デジタルカメラ　※訳あり | URL: https://jp.mercari.com/item/m34094888773
+Item: ¥ 64,590 【中古】CASIO デジタルカメラ EXILIM EX-ZR1800BK 自分撮り・みんな撮りが簡単 シャッターを押すだけでキレイに撮れる | URL: https://jp.mercari.com/shops/product/ozHHo3sp7TyJEYgR8iUk4c
+Item: ¥ 93,450 【中古】「非常に良い」CASIO デジタルカメラ EXILIM EX-ZR1800BE 自分撮り・みんな撮りが簡単 シャッターを押すだけでキレイに撮れる | URL: https://jp.mercari.com/shops/product/39gKcAeK84v9LDCiMbvTF6
+Item: ¥ 138,320 【中古】CASIO デジタルカメラ EXILIM EX-ZR1800BE 自分撮り・みんな撮りが簡単 シャッターを押すだけでキレイに撮れる | URL: https://jp.mercari.com/shops/product/m4CGwqk6heX8QipxYc29Bg
+Item: ¥ 70,890 【中古】（非常に良い）CASIO デジタルカメラ EXILIM EX-ZR1800BK 自分撮り・みんな撮りが簡単 シャッターを押すだけでキレイに撮れる | URL: https://jp.mercari.com/shops/product/dT6ewSDhj9FDPRM8cD5E74
+Item: ¥ 136,050 【中古】（非常に良い）CASIO デジタルカメラ EXILIM EX-ZR1800GD 自分撮り・みんな撮りが簡単 シャッターを押すだけでキレイに撮れる | URL: https://jp.mercari.com/shops/product/vcAUiU8L3Ngt5WBzNtYTVK
+Item:  | URL: 
+Item:  | URL: 
+Item:  | URL: 
+Item:  | URL: 
+Item:  | URL: 
+Item:  | URL: 
+Item:  | URL: 
+Item:  | URL: 
+Item:  | URL: 
+Item:  | URL: 
+Item:  | URL: 
+Item:  | URL: 
+Item:  | URL: 
+Item:  | URL: 
+Item:  | URL: 
+Item:  | URL: 
+Item:  | URL: 
+Item:  | URL: 
+Item:  | URL: 
+Item:  | URL: 
+Item:  | URL: 
+Item:  | URL: 
+Item:  | URL: 
+Item:  | URL: 
+Item:  | URL: 
+Item:  | URL: 
+Item:  | URL: 
+Item:  | URL: 
+Item:  | URL: 
+Item:  | URL: 
+Item:  | URL: 
+Item:  | URL: 
+Item:  | URL: 
+  >>> 34,225 item NOT found on this search.
+
+Testing all mode (price desc):
+
+--- Mercari URL (all): https://jp.mercari.com/search?keyword=EX-ZR1800&status=on_sale&sort=price&order=desc ---
+Total raw items on page: 44
+Item: ¥ 138,320 【中古】CASIO デジタルカメラ EXILIM EX-ZR1800BE 自分撮り・みんな撮りが簡単 シャッターを押すだけでキレイに撮れる | URL: https://jp.mercari.com/shops/product/m4CGwqk6heX8QipxYc29Bg
+Item: ¥ 136,050 【中古】（非常に良い）CASIO デジタルカメラ EXILIM EX-ZR1800GD 自分撮り・みんな撮りが簡単 シャッターを押すだけでキレイに撮れる | URL: https://jp.mercari.com/shops/product/vcAUiU8L3Ngt5WBzNtYTVK
+Item: ¥ 98,700 ！希少限定品！《新品・未使用》CASIO EXILIM EX-ZR1800 | URL: https://jp.mercari.com/item/m20204802613
+Item: ¥ 93,450 【中古】「非常に良い」CASIO デジタルカメラ EXILIM EX-ZR1800BE 自分撮り・みんな撮りが簡単 シャッターを押すだけでキレイに撮れる | URL: https://jp.mercari.com/shops/product/39gKcAeK84v9LDCiMbvTF6
+Item: ¥ 88,887 【中古】CASIO デジタルカメラ EXILIM EX-ZR1800BK 自分撮り・みんな撮りが簡単 | URL: https://jp.mercari.com/shops/product/6PoeD9dong7MD9fvD3Jkzb
+Item: ¥ 87,780 【中古】CASIO デジタルカメラ EXILIM EX-ZR1800BK 自分撮り・みんな撮りが簡単 シャッターを押すだけでキレイに撮れる dwos6rj | URL: https://jp.mercari.com/shops/product/WbvrcR5Gi6kBXw9ZgXk68K
+Item: ¥ 86,570 【中古】【非常に良い】CASIO デジタルカメラ EXILIM EX-ZR1800GD 自分撮り・みんな撮りが簡単 シャッターを押すだけでキレイに撮れる dwos6rj | URL: https://jp.mercari.com/shops/product/zxx43UtwpqQyELmMGs6R3b
+Item: ¥ 85,790 CASIO デジタルカメラ EXILIM EX-ZR1800BE 自分撮り・みんな撮りが簡単 シャッターを押すだけでキレイに撮れる(中古品) | URL: https://jp.mercari.com/shops/product/TedtA43ETgdPphFYz4CSPV
+Item: ¥ 84,600 【中古】【非常に良い】CASIO デジタルカメラ EXILIM EX-ZR1800BK 自分撮り・みんな撮りが簡単 シャッターを押すだけでキレイに撮れる dwos6rj | URL: https://jp.mercari.com/shops/product/WhQkKvNsebGEevgiATc7eB
+Item: ¥ 76,990 【中古】CASIO デジタルカメラ EXILIM EX-ZR1800GD 自分撮り・みんな撮りが簡単 シャッターを押すだけでキレイに撮れる dwos6rj | URL: https://jp.mercari.com/shops/product/SigSTqep2zBwcbzKhHiLrH
+Item: ¥ 76,832 【中古】(非常に良い)CASIO デジタルカメラ EXILIM EX-ZR1800BK 自分撮り・みんな撮りが簡単 | URL: https://jp.mercari.com/shops/product/DQVDUaSrmoJscoLUyWwA3o
+Item: ¥ 72,704 【中古】(非常に良い)CASIO デジタルカメラ EXILIM EX-ZR1800GD 自分撮り・みんな撮りが簡単 シャッターを押すだけでキレイに撮れる | URL: https://jp.mercari.com/shops/product/y4Q87AT3ELKF6Qi9kPt6eZ
+Item: ¥ 71,760 CASIO デジタルカメラ EXILIM EX-ZR1800BK 自分撮り・みんな撮りが簡単 シャッターを押すだけでキレイに撮れる(中古品) | URL: https://jp.mercari.com/shops/product/qaJENjcHE4rhW8P9QWqnAA
+Item: ¥ 70,890 【中古】（非常に良い）CASIO デジタルカメラ EXILIM EX-ZR1800BK 自分撮り・みんな撮りが簡単 シャッターを押すだけでキレイに撮れる | URL: https://jp.mercari.com/shops/product/dT6ewSDhj9FDPRM8cD5E74
+Item: ¥ 68,050 【中古】CASIO デジタルカメラ EXILIM EX-ZR1800GD 自分撮り・みんな撮りが簡単 シャッターを押すだけでキレイに撮れる | URL: https://jp.mercari.com/shops/product/tpkThEJTpterjMtWRxrnLT
+Item:  | URL: 
+Item:  | URL: 
+Item:  | URL: 
+Item:  | URL: 
+Item:  | URL: 
+Item:  | URL: 
+Item:  | URL: 
+Item:  | URL: 
+Item:  | URL: 
+Item:  | URL: 
+Item:  | URL: 
+Item:  | URL: 
+Item:  | URL: 
+Item:  | URL: 
+Item:  | URL: 
+Item:  | URL: 
+Item:  | URL: 
+Item:  | URL: 
+Item:  | URL: 
+Item:  | URL: 
+Item:  | URL: 
+Item:  | URL: 
+Item:  | URL: 
+Item:  | URL: 
+Item:  | URL: 
+Item:  | URL: 
+Item:  | URL: 
+Item:  | URL: 
+Item:  | URL: 
+  >>> 34,225 item NOT found on this search.
+
+Testing CASIO EX-ZR1800 recent mode:
+
+--- Mercari URL (recent): https://jp.mercari.com/search?keyword=CASIO%20EX-ZR1800&status=on_sale&sort=created_time&order=desc ---
+Total raw items on page: 20
+Item: ¥ 28,870 カシオ CASIO EXILIM EX-ZR1800 18X バッテリー付属 同梱無料 #ks855 | URL: https://jp.mercari.com/shops/product/2JTyntsG4VviQFbtyC5mGu
+Item: ¥ 37,200 【美品】CASIO EXILIM EX-ZR1800 本体・全付属品・ケース | URL: https://jp.mercari.com/item/m59428227002
+Item: ¥ 2,280 【メーカー入荷品】 カシオ NP-130A カメラ用 リチウムイオン電池 | URL: https://jp.mercari.com/shops/product/w2y4SdmEf2FGvR6mkNT24X
+Item: ¥ 1,040 BC-130L / NP-130 CASIO カシオ 互換USB充電器 | URL: https://jp.mercari.com/shops/product/u7yKp5TxJoZpe2tKnvcLh5
+Item: ¥ 2,280 【メーカー入荷品】 CASIO NP-130A カメラ用 リチウムイオン電池 | URL: https://jp.mercari.com/shops/product/6aNew6ontgN9KZoo3kUAWM
+Item: ¥ 35,990 ✅動作確認済 美品 CASIO EXILIM EX-ZR1800 ゴールド#44 | URL: https://jp.mercari.com/item/m44871226944
+Item: ¥ 4,380 メーカー入荷品 カシオ NP-130A カメラ用 リチウムイオン電池 2個 | URL: https://jp.mercari.com/shops/product/Kw4SzJ87g3dQrHLZnZPdbP
+Item: ¥ 98,700 ！希少限定品！《新品・未使用》CASIO EXILIM EX-ZR1800 | URL: https://jp.mercari.com/item/m20204802613
+Item: ¥ 26,999 CASIO EXILIM EX-ZR1800 デジタルカメラ　※訳あり | URL: https://jp.mercari.com/item/m34094888773
+Item: ¥ 918 マルチ充電器 CASIO対応 カシオ対応 NP-130 NP-130A 互換品 | URL: https://jp.mercari.com/shops/product/9jMJva8f4DqYcMJPCNeGbX
+Item: ¥ 700 CASIOケーブル CB-20USB CB-10USB 10447003 同等品 カシオ ケーブル エクシリム EXILIM デジタルカメラ カメラ 充電器 データ転送 転送ケーブル USB データ 充電ケーブル デジカメ カメラ 80304-131 | URL: https://jp.mercari.com/shops/product/2JKWMfuiECNUFRvhvcC2DP
+Item: ¥ 600 CASIOケーブル CB-20USB CB-10USB 10447003 同等品 カシオ EXILIM デジタルカメラ USB充電 データ転送 充電ケーブル EX-FR10 EX-FR100 EX-TR15 EX-ZR50 80816-188 | URL: https://jp.mercari.com/shops/product/PHMzBueVNCWrvShZe53Gng
+Item: ¥ 27,800 CASIO EX-ZR1800 　　26040437 | URL: https://jp.mercari.com/shops/product/2JQn6WJSsgPVJuALberCFL
+Item: ¥ 700 CASIOケーブル CB-20USB CB-10USB 10447003 同等品 カシオ ケーブル エクシリム EXILIM デジタルカメラ カメラ 充電器 データ転送 転送ケーブル USB データ 充電ケーブル デジカメ カメラ 01222-1220N | URL: https://jp.mercari.com/shops/product/2JJg34obcti7aQEzYb8fta
+Item: ¥ 700 CASIOケーブル CB-20USB CB-10USB 10447003 同等品 カシオ ケーブル エクシリム EXILIM デジタルカメラ カメラ 充電器 データ転送 転送ケーブル USB データ 充電ケーブル デジカメ カメラ 80402-980 | URL: https://jp.mercari.com/shops/product/2JKNXHJ9yJBssKPUNvu5Vi
+Item:  | URL: 
+Item:  | URL: 
+Item:  | URL: 
+Item:  | URL: 
+Item:  | URL: 
+  >>> 34,225 item NOT found on this search.

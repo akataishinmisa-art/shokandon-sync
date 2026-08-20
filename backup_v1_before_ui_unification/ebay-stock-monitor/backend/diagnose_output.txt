@@ -1,0 +1,26 @@
+Target: Nintendo Switch モンスターハンター, Keyword: モンスターハンターライズ スペシャルエディション, MaxPrice: 16556.0
+
+--- Testing Scrapers Individually ---
+Mercari: 8 items
+  Mercari sample: s*u様 Nintendo Switch モンスターハンター | 13100.0 | is_auction=False
+  Mercari sample: Nintendo Switch モンスターハンターライズ ス | 16000.0 | is_auction=False
+  Mercari sample: 【美品】②Switch ジョイコン　モンハンライズ　右R　任 | 3222.0 | is_auction=False
+Yahoo Fleamarket: 0 items
+Yahoo Auction: 8 items
+  Yahoo Auction sample: 0QO5◆SW 任天堂 Nintendo SWITCH モン | 1210 | is_auction=True
+  Yahoo Auction sample: 【1円スタート】任天堂 Nintendo Switch モン | 14518 | is_auction=True
+  Yahoo Auction sample: S) Nintendo Switch HAC-001 モンス | 10500 | is_auction=True
+Rakuma: 8 items
+
+--- Testing Full check_single_item ---
+Total confirmed items: 10
+  [メルカリ] 13100.0円: s*u様 Nintendo Switch モンスターハンターライズスペ (is_auction=0)
+  [メルカリ] 16000.0円: Nintendo Switch モンスターハンターライズ スペシャルエ (is_auction=0)
+  [メルカリ] 6480.0円: モンスターハンターライズ スペシャルエディション ドックのみ (is_auction=0)
+  [メルカリ] 6799.0円: Nintendo Switch ドック モンスターハンターライズ (is_auction=0)
+  [メルカリ] 8000.0円: モンスターハンターライズ　スペシャルエディション　ドック　dock (is_auction=0)
+  [ヤフオク] 14518円: 【1円スタート】任天堂 Nintendo Switch モンスターハン (is_auction=1)
+  [ヤフオク] 10500円: S) Nintendo Switch HAC-001 モンスターハンタ (is_auction=1)
+  [ヤフオク] 6222円: 【美品】①Switch ジョイコン　モンハンライズ　左右LR 　【任天 (is_auction=0)
+  [ヤフオク] 7528円: 中古ニンテンドースイッチハード Joy-Con(L/R)「モンスターハ (is_auction=0)
+  [ヤフオク] 15000円: Nintendo Switch ドック + ジョイコン モンスターハン (is_auction=1)

@@ -1,0 +1,16 @@
+=== Testing Rakuma ===
+Rakuma Status: 200, Length: 384814
+Rakuma div.item count: 293
+  item: link=False, price=False, title=False
+  item: link=True, price=True, title=True
+    title: 充電コード PS Vita用 USB充電ケーブル PS VITA ケーブル　め(その他)
+  item: link=True, price=True, title=True
+    title: 充電コード PS Vita用 USB充電ケーブル PS VITA ケーブル　め(その他)
+  item: link=True, price=False, title=True
+    title: 充電コード PS Vita用 USB充電ケーブル PS VITA ケーブル　め(その他)
+  item: link=False, price=False, title=False
+
+=== Testing Yahoo Fleamarket ===
+Yahoo Flea Status: 200, Length: 416449
+Yahoo Flea a[href*='/item/'] count: 100
+Yahoo Flea __NEXT_DATA__ present: True

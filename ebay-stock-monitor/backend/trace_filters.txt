@@ -1,0 +1,1112 @@
+
+========================================
+Target ID 10: CASIO EXILIM EX-ZR1800 | KW: EX-ZR1800
+MaxPrice: 25836.0, MinProfit: 0.0, Exclude: ジャンク,故障,不動,部品取り,箱のみ,写真のみ,現状渡し,訳あり
+  [RAW RESULTS] Y!Flea: 22件, Rakuma: 80件, Y!Auc: 19件
+    Y!Flea item: ¥35800 | 【美品】 CASIO カシオ EXILIM EX-ZR1800GD ボディ コン
+    Y!Flea item: ¥19990 | 【使用感極少 美品】SONY WX200 ゴールド コンデジ Wi-Fi転送 バ
+    Y!Flea item: ¥16800 | コンパクトデジタルカメラ　ジャンク　CASIO EXILIM EX-ZR1800
+    Rakuma item: ¥35800.0 | カシオ(CASIO)の美品 CASIO EX-ZR1800GD ゴールド ボディ
+    Rakuma item: ¥35800.0 | カシオ(CASIO)の美品 CASIO EX-ZR1800GD ゴールド ボディ
+    Rakuma item: ¥2027.0 | 【スタイル:バッテリー2個セット】NinoLite NP-130 NP-130A
+      [REJECT MAX_PRICE: 35800.0 > 25836.0] 【美品】 CASIO カシオ EXILIM EX-ZR180
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] 【使用感極少 美品】SONY WX200 ゴールド コンデジ
+      [REJECT EXCLUDE] コンパクトデジタルカメラ　ジャンク　CASIO EXILIM
+      [REJECT MAX_PRICE: 27800.0 > 25836.0] コンパクトデジタルカメラ　CASIO EX-ZR1800 　
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] NP-130A NP-130 CASIO カシオ 互換バッテ
+      [REJECT MIN_PRICE: 2099.0 < 3875.3999999999996] NP-130 NP-130A 新品 互換バッテリー 2個 純
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] ●NP-130A NP-130 CASIO カシオ 互換バッ
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] NP-130 NP-130A 新品 互換バッテリー 1個 +
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] NP-130 NP-130A 新品 互換バッテリー 2個 純
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] BC-130L NP-130A NP-130 CASIO カ
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] NP-130 NP-130A 新品 互換バッテリー 純正品と
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] ■★au 128GB二枚／4K速＼SDXCカードsoftba
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] NP-130 NP-130A 新品 互換バッテリー 純正品と
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] NP-130 NP-130A 新品 互換バッテリー 2個 +
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] NP-130A NP-130 CASIO カシオ 互換バッテ
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] NP-130 NP-130A 新品 互換バッテリー 1個 +
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] 【送込】 / CASIO ZR1600 ZR1700 ZR1
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] NP-130A NP-130 CASIO カシオ 互換バッテ
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] NP-130 NP-130A 新品 互換バッテリー 2個 +
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] BC-130L NP-130A NP-130 CASIO カ
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] ■★大手 64GB 32GB二枚microSDXC soft
+      [REJECT MAX_PRICE: 35800.0 > 25836.0] カシオ(CASIO)の美品 CASIO EX-ZR1800G
+      [REJECT MAX_PRICE: 35800.0 > 25836.0] カシオ(CASIO)の美品 CASIO EX-ZR1800G
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] 【スタイル:バッテリー2個セット】NinoLite NP-1
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] 【スタイル:バッテリー2個セット】NinoLite NP-1
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] カシオ(CASIO)の新品同様 EX-ZR1600 オレンジ
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] カシオ(CASIO)の新品同様 EX-ZR1600 オレンジ
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] ソニー(SONY)の【使用感極少 美品】SONY WX200
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] ソニー(SONY)の【使用感極少 美品】SONY WX200
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] カシオ(CASIO)のEX-ZR800 HIGH SPEED
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] カシオ(CASIO)のEX-ZR800 HIGH SPEED
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] カシオ(CASIO)のEX-ZR800 HIGH SPEED
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] カシオ(CASIO)のEX-ZR800 HIGH SPEED
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] ソニー(SONY)の美品✨SONY デジカメ DSC-WX2
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] ソニー(SONY)の美品✨SONY デジカメ DSC-WX2
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] カシオ(CASIO)の【美品】CASIO HIGH SPEE
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] カシオ(CASIO)の【美品】CASIO HIGH SPEE
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] カシオ(CASIO)の新品同様 EX-ZR200 ブラック 
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] カシオ(CASIO)の新品同様 EX-ZR200 ブラック 
+      [REJECT MAX_PRICE: 28570.0 > 25836.0] カシオ CASIO EXILIM EX-ZR1800 18X
+      [REJECT MAX_PRICE: 28570.0 > 25836.0] カシオ CASIO EXILIM EX-ZR1800 18X
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] CASIO カシオ EXILIM EX-ZR800 コンパク
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] CASIO カシオ EXILIM EX-ZR800 コンパク
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] 【美品・動作保証】 CASIO カシオ EXILIM EX-
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] 【美品・動作保証】 CASIO カシオ EXILIM EX-
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] NinoLite NP-130 NP-130A 互換 バッテ
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] NinoLite NP-130 NP-130A 互換 バッテ
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] 【動作保証】 カシオ CASIO EXILIM EX-ZR8
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] 【動作保証】 カシオ CASIO EXILIM EX-ZR8
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] カシオ(CASIO)の超美品 EX-ZR1600 オレンジ 
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] カシオ(CASIO)の超美品 EX-ZR1600 オレンジ 
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] NinoLite NP-130 NP-130A 互換 バッテ
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] NinoLite NP-130 NP-130A 互換 バッテ
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] CASIO カシオ EXILIM EX-ZR800 バッテリ
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] CASIO カシオ EXILIM EX-ZR800 バッテリ
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] アンドバイピーアンドディー(&byP&D)の【中古】 CAS
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] アンドバイピーアンドディー(&byP&D)の【中古】 CAS
+      [REJECT MAX_PRICE: 54000.0 > 25836.0] アンドバイピーアンドディー(&byP&D)の【中古】 CAS
+      [REJECT MAX_PRICE: 54000.0 > 25836.0] アンドバイピーアンドディー(&byP&D)の【中古】 CAS
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] 【数量限定】NinoLite NP-130 NP-130A 
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] 【数量限定】NinoLite NP-130 NP-130A 
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] 【在庫処分】NinoLite NP-130 NP-130A 
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] 【在庫処分】NinoLite NP-130 NP-130A 
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] 【数量限定】NinoLite NP-130 NP-130A 
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] 【数量限定】NinoLite NP-130 NP-130A 
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] カシオ(CASIO)のCASIO カシオ デジタルカメラ E
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] カシオ(CASIO)のCASIO カシオ デジタルカメラ E
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] 【数量限定】NinoLite NP-130 NP-130A 
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] 【数量限定】NinoLite NP-130 NP-130A 
+      [REJECT MAX_PRICE: 29800.0 > 25836.0] カシオ(CASIO)のCASIO EXILIM EX-ZR1
+      [REJECT MAX_PRICE: 29800.0 > 25836.0] カシオ(CASIO)のCASIO EXILIM EX-ZR1
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] 【数量限定】NinoLite NP-130 NP-130A 
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] 【数量限定】NinoLite NP-130 NP-130A 
+      [REJECT MAX_PRICE: 30980.0 > 25836.0] ＜良品＞ CASIO デジタルカメラ EXILIM EX-Z
+      [REJECT MAX_PRICE: 30980.0 > 25836.0] ＜良品＞ CASIO デジタルカメラ EXILIM EX-Z
+      [REJECT MAX_PRICE: 70890.0 > 25836.0] 【中古】（非常に良い）CASIO デジタルカメラ EXILI
+      [REJECT MAX_PRICE: 70890.0 > 25836.0] 【中古】（非常に良い）CASIO デジタルカメラ EXILI
+      [REJECT MAX_PRICE: 136050.0 > 25836.0] 【中古】（非常に良い）CASIO デジタルカメラ EXILI
+      [REJECT MAX_PRICE: 136050.0 > 25836.0] 【中古】（非常に良い）CASIO デジタルカメラ EXILI
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] 【中古】「非常に良い」CASIO EXILIM デジタルカメ
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] 【中古】「非常に良い」CASIO EXILIM デジタルカメ
+      [REJECT MAX_PRICE: 64590.0 > 25836.0] 【中古】CASIO デジタルカメラ EXILIM EX-ZR
+      [REJECT MAX_PRICE: 64590.0 > 25836.0] 【中古】CASIO デジタルカメラ EXILIM EX-ZR
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] 【中古】CASIO EXILIM デジタルカメラ ハイスピー
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] 【中古】CASIO EXILIM デジタルカメラ ハイスピー
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] CASIO デジタルカメラ EXILIM EXZR800BK
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] CASIO デジタルカメラ EXILIM EXZR800BK
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] CASIO デジタルカメラ EXILIM EXZR800WE
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] CASIO デジタルカメラ EXILIM EXZR800WE
+      [REJECT MAX_PRICE: 84600.0 > 25836.0] CASIO デジタルカメラ EXILIM EX-ZR1800
+      [REJECT MAX_PRICE: 84600.0 > 25836.0] CASIO デジタルカメラ EXILIM EX-ZR1800
+      [REJECT MAX_PRICE: 86574.0 > 25836.0] CASIO デジタルカメラ EXILIM EX-ZR1800
+      [REJECT MAX_PRICE: 86574.0 > 25836.0] CASIO デジタルカメラ EXILIM EX-ZR1800
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] CASIO デジタルカメラ EXILIM EX-ZR1600
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] CASIO デジタルカメラ EXILIM EX-ZR1600
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] CASIO デジタルカメラ EXILIM EX-ZR1600
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] CASIO デジタルカメラ EXILIM EX-ZR1600
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] CASIO デジタルカメラ EXILIM EXZR800BK
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] CASIO デジタルカメラ EXILIM EXZR800BK
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] CASIO デジタルカメラ EXILIM EXZR800WE
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] CASIO デジタルカメラ EXILIM EXZR800WE
+  [AFTER FILTER] Y!Flea: 1件, Rakuma: 0件
+
+========================================
+Target ID 9: EX-ZR1800 | KW: EX-ZR1800
+MaxPrice: 25836.0, MinProfit: 0.0, Exclude: ジャンク,故障,不動,部品取り,箱のみ,写真のみ,現状渡し,訳あり
+  [RAW RESULTS] Y!Flea: 23件, Rakuma: 80件, Y!Auc: 19件
+    Y!Flea item: ¥35800 | 【美品】 CASIO カシオ EXILIM EX-ZR1800GD ボディ コン
+    Y!Flea item: ¥19990 | 【使用感極少 美品】SONY WX200 ゴールド コンデジ Wi-Fi転送 バ
+    Y!Flea item: ¥16800 | コンパクトデジタルカメラ　ジャンク　CASIO EXILIM EX-ZR1800
+    Rakuma item: ¥35800.0 | カシオ(CASIO)の美品 CASIO EX-ZR1800GD ゴールド ボディ
+    Rakuma item: ¥35800.0 | カシオ(CASIO)の美品 CASIO EX-ZR1800GD ゴールド ボディ
+    Rakuma item: ¥2027.0 | 【スタイル:バッテリー2個セット】NinoLite NP-130 NP-130A
+      [REJECT MAX_PRICE: 35800.0 > 25836.0] 【美品】 CASIO カシオ EXILIM EX-ZR180
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] 【使用感極少 美品】SONY WX200 ゴールド コンデジ
+      [REJECT EXCLUDE] コンパクトデジタルカメラ　ジャンク　CASIO EXILIM
+      [REJECT MAX_PRICE: 27800.0 > 25836.0] コンパクトデジタルカメラ　CASIO EX-ZR1800 　
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] SONY DSC-WX200 シルバー Wi-Fi スマホ転
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] NP-130A NP-130 CASIO カシオ 互換バッテ
+      [REJECT MIN_PRICE: 2099.0 < 3875.3999999999996] NP-130 NP-130A 新品 互換バッテリー 2個 純
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] ●NP-130A NP-130 CASIO カシオ 互換バッ
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] NP-130 NP-130A 新品 互換バッテリー 1個 +
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] NP-130 NP-130A 新品 互換バッテリー 2個 純
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] BC-130L NP-130A NP-130 CASIO カ
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] NP-130 NP-130A 新品 互換バッテリー 純正品と
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] ■★au 128GB二枚／4K速＼SDXCカードsoftba
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] NP-130 NP-130A 新品 互換バッテリー 純正品と
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] NP-130 NP-130A 新品 互換バッテリー 2個 +
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] NP-130A NP-130 CASIO カシオ 互換バッテ
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] NP-130 NP-130A 新品 互換バッテリー 1個 +
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] 【送込】 / CASIO ZR1600 ZR1700 ZR1
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] NP-130A NP-130 CASIO カシオ 互換バッテ
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] NP-130 NP-130A 新品 互換バッテリー 2個 +
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] BC-130L NP-130A NP-130 CASIO カ
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] ■★大手 64GB 32GB二枚microSDXC soft
+      [REJECT MAX_PRICE: 35800.0 > 25836.0] カシオ(CASIO)の美品 CASIO EX-ZR1800G
+      [REJECT MAX_PRICE: 35800.0 > 25836.0] カシオ(CASIO)の美品 CASIO EX-ZR1800G
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] 【スタイル:バッテリー2個セット】NinoLite NP-1
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] 【スタイル:バッテリー2個セット】NinoLite NP-1
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] カシオ(CASIO)の新品同様 EX-ZR1600 オレンジ
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] カシオ(CASIO)の新品同様 EX-ZR1600 オレンジ
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] ソニー(SONY)の【使用感極少 美品】SONY WX200
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] ソニー(SONY)の【使用感極少 美品】SONY WX200
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] カシオ(CASIO)のEX-ZR800 HIGH SPEED
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] カシオ(CASIO)のEX-ZR800 HIGH SPEED
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] カシオ(CASIO)のEX-ZR800 HIGH SPEED
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] カシオ(CASIO)のEX-ZR800 HIGH SPEED
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] ソニー(SONY)の美品✨SONY デジカメ DSC-WX2
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] ソニー(SONY)の美品✨SONY デジカメ DSC-WX2
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] カシオ(CASIO)の【美品】CASIO HIGH SPEE
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] カシオ(CASIO)の【美品】CASIO HIGH SPEE
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] カシオ(CASIO)の新品同様 EX-ZR200 ブラック 
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] カシオ(CASIO)の新品同様 EX-ZR200 ブラック 
+      [REJECT MAX_PRICE: 28570.0 > 25836.0] カシオ CASIO EXILIM EX-ZR1800 18X
+      [REJECT MAX_PRICE: 28570.0 > 25836.0] カシオ CASIO EXILIM EX-ZR1800 18X
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] CASIO カシオ EXILIM EX-ZR800 コンパク
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] CASIO カシオ EXILIM EX-ZR800 コンパク
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] 【美品・動作保証】 CASIO カシオ EXILIM EX-
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] 【美品・動作保証】 CASIO カシオ EXILIM EX-
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] NinoLite NP-130 NP-130A 互換 バッテ
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] NinoLite NP-130 NP-130A 互換 バッテ
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] 【動作保証】 カシオ CASIO EXILIM EX-ZR8
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] 【動作保証】 カシオ CASIO EXILIM EX-ZR8
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] カシオ(CASIO)の超美品 EX-ZR1600 オレンジ 
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] カシオ(CASIO)の超美品 EX-ZR1600 オレンジ 
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] NinoLite NP-130 NP-130A 互換 バッテ
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] NinoLite NP-130 NP-130A 互換 バッテ
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] CASIO カシオ EXILIM EX-ZR800 バッテリ
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] CASIO カシオ EXILIM EX-ZR800 バッテリ
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] アンドバイピーアンドディー(&byP&D)の【中古】 CAS
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] アンドバイピーアンドディー(&byP&D)の【中古】 CAS
+      [REJECT MAX_PRICE: 54000.0 > 25836.0] アンドバイピーアンドディー(&byP&D)の【中古】 CAS
+      [REJECT MAX_PRICE: 54000.0 > 25836.0] アンドバイピーアンドディー(&byP&D)の【中古】 CAS
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] 【数量限定】NinoLite NP-130 NP-130A 
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] 【数量限定】NinoLite NP-130 NP-130A 
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] 【在庫処分】NinoLite NP-130 NP-130A 
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] 【在庫処分】NinoLite NP-130 NP-130A 
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] 【数量限定】NinoLite NP-130 NP-130A 
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] 【数量限定】NinoLite NP-130 NP-130A 
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] カシオ(CASIO)のCASIO カシオ デジタルカメラ E
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] カシオ(CASIO)のCASIO カシオ デジタルカメラ E
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] 【数量限定】NinoLite NP-130 NP-130A 
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] 【数量限定】NinoLite NP-130 NP-130A 
+      [REJECT MAX_PRICE: 29800.0 > 25836.0] カシオ(CASIO)のCASIO EXILIM EX-ZR1
+      [REJECT MAX_PRICE: 29800.0 > 25836.0] カシオ(CASIO)のCASIO EXILIM EX-ZR1
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] 【数量限定】NinoLite NP-130 NP-130A 
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] 【数量限定】NinoLite NP-130 NP-130A 
+      [REJECT MAX_PRICE: 30980.0 > 25836.0] ＜良品＞ CASIO デジタルカメラ EXILIM EX-Z
+      [REJECT MAX_PRICE: 30980.0 > 25836.0] ＜良品＞ CASIO デジタルカメラ EXILIM EX-Z
+      [REJECT MAX_PRICE: 70890.0 > 25836.0] 【中古】（非常に良い）CASIO デジタルカメラ EXILI
+      [REJECT MAX_PRICE: 70890.0 > 25836.0] 【中古】（非常に良い）CASIO デジタルカメラ EXILI
+      [REJECT MAX_PRICE: 136050.0 > 25836.0] 【中古】（非常に良い）CASIO デジタルカメラ EXILI
+      [REJECT MAX_PRICE: 136050.0 > 25836.0] 【中古】（非常に良い）CASIO デジタルカメラ EXILI
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] 【中古】「非常に良い」CASIO EXILIM デジタルカメ
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] 【中古】「非常に良い」CASIO EXILIM デジタルカメ
+      [REJECT MAX_PRICE: 64590.0 > 25836.0] 【中古】CASIO デジタルカメラ EXILIM EX-ZR
+      [REJECT MAX_PRICE: 64590.0 > 25836.0] 【中古】CASIO デジタルカメラ EXILIM EX-ZR
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] 【中古】CASIO EXILIM デジタルカメラ ハイスピー
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] 【中古】CASIO EXILIM デジタルカメラ ハイスピー
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] CASIO デジタルカメラ EXILIM EXZR800BK
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] CASIO デジタルカメラ EXILIM EXZR800BK
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] CASIO デジタルカメラ EXILIM EXZR800WE
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] CASIO デジタルカメラ EXILIM EXZR800WE
+      [REJECT MAX_PRICE: 84600.0 > 25836.0] CASIO デジタルカメラ EXILIM EX-ZR1800
+      [REJECT MAX_PRICE: 84600.0 > 25836.0] CASIO デジタルカメラ EXILIM EX-ZR1800
+      [REJECT MAX_PRICE: 86574.0 > 25836.0] CASIO デジタルカメラ EXILIM EX-ZR1800
+      [REJECT MAX_PRICE: 86574.0 > 25836.0] CASIO デジタルカメラ EXILIM EX-ZR1800
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] CASIO デジタルカメラ EXILIM EX-ZR1600
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] CASIO デジタルカメラ EXILIM EX-ZR1600
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] CASIO デジタルカメラ EXILIM EX-ZR1600
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] CASIO デジタルカメラ EXILIM EX-ZR1600
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] CASIO デジタルカメラ EXILIM EXZR800BK
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] CASIO デジタルカメラ EXILIM EXZR800BK
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] CASIO デジタルカメラ EXILIM EXZR800WE
+      [REJECT MODEL_TOKENS: ['ex-zr1800']] CASIO デジタルカメラ EXILIM EXZR800WE
+  [AFTER FILTER] Y!Flea: 1件, Rakuma: 0件
+
+========================================
+Target ID 8: CASIO EX-ZR300 | KW: CASIO EX-ZR300
+MaxPrice: 32376.0, MinProfit: 0.0, Exclude: ジャンク,故障,不動,部品取り,箱のみ,写真のみ,現状渡し,訳あり
+  [RAW RESULTS] Y!Flea: 24件, Rakuma: 80件, Y!Auc: 50件
+    Y!Flea item: ¥11000 | CASIO EXILIM　EX-ZR300 デジタルカメラ ゴールド 12.5x
+    Y!Flea item: ¥8800 | コンパクトデジタルカメラ　ジャンク　CASIO EXILIM EX-ZR300 
+    Y!Flea item: ¥11800 | コンパクトデジタルカメラ　ジャンク　CASIO EXILIM EX-ZR300　
+    Rakuma item: ¥26490.0 | カシオ(CASIO)のCASIO デジカメ バッテリーセット(コンパクトデジタル
+    Rakuma item: ¥26490.0 | カシオ(CASIO)のCASIO デジカメ バッテリーセット(コンパクトデジタル
+    Rakuma item: ¥16000.0 | 【中古】(カシオ) Casio EX-ZR400WE デジタルカメラ(コンパクト
+      [REJECT EXCLUDE] コンパクトデジタルカメラ　ジャンク　CASIO EXILIM
+      [REJECT EXCLUDE] コンパクトデジタルカメラ　ジャンク　CASIO EXILIM
+      [REJECT MIN_PRICE: 898.0 < 4856.4] 送料無料CASIO NP-130 EX-ZR410 EX-Z
+      [REJECT MODEL_TOKENS: ['ex-zr300']] 新品 カシオ Casio 12pin 互換USBケーブル
+      [REJECT EXCLUDE] コンパクトデジタルカメラ　ジャンク　CASIO EXILIM
+      [REJECT MODEL_TOKENS: ['ex-zr300']] NP-130A NP-130 CASIO カシオ 互換バッテ
+      [REJECT MODEL_TOKENS: ['ex-zr300']] 新品 Casio カシオ 12pin 互換USBケーブル
+      [REJECT MODEL_TOKENS: ['ex-zr300']] CASIO NP-130 EX-ZR410 USB 充電器 
+      [REJECT MODEL_TOKENS: ['ex-zr300']] 【互換品】CASIO カシオ EMC-6U USB接続ケーブ
+      [REJECT MODEL_TOKENS: ['ex-zr300']] NP-130A NP-130 CASIO カシオ 互換バッテ
+      [REJECT MODEL_TOKENS: ['ex-zr300']] ●NP-130A NP-130 CASIO カシオ 互換バッ
+      [REJECT MODEL_TOKENS: ['ex-zr300']] NP-130 NP-130A 新品 互換バッテリー 1個 +
+      [REJECT MODEL_TOKENS: ['ex-zr300']] NP-130 NP-130A 新品 互換バッテリー 2個 純
+      [REJECT MODEL_TOKENS: ['ex-zr300']] NP-130 NP-130A 新品 互換バッテリー 2個 +
+      [REJECT MIN_PRICE: 2099.0 < 4856.4] NP-130 NP-130A 新品 互換バッテリー 2個 純
+      [REJECT MODEL_TOKENS: ['ex-zr300']] NP-130 NP-130A 新品 互換バッテリー 1個 +
+      [REJECT MODEL_TOKENS: ['ex-zr300']] NP-130 NP-130A 新品 互換バッテリー 純正品と
+      [REJECT MODEL_TOKENS: ['ex-zr300']] BC-130L NP-130A NP-130 CASIO カ
+      [REJECT MODEL_TOKENS: ['ex-zr300']] NP-130 NP-130A 新品 互換バッテリー 純正品と
+      [REJECT MODEL_TOKENS: ['ex-zr300']] CASIO NP-130 EX-ZR410 USB 充電器 
+      [REJECT MODEL_TOKENS: ['ex-zr300']] NP-130 NP-130A 新品 互換バッテリー 2個 +
+      [REJECT MODEL_TOKENS: ['ex-zr300']] BC-130L NP-130A NP-130 CASIO カ
+      [REJECT MODEL_TOKENS: ['ex-zr300']] NP-130A NP-130 CASIO カシオ 互換バッテ
+      [REJECT MODEL_TOKENS: ['ex-zr300']] カシオ(CASIO)のCASIO デジカメ バッテリーセット
+      [REJECT MODEL_TOKENS: ['ex-zr300']] カシオ(CASIO)のCASIO デジカメ バッテリーセット
+      [REJECT MODEL_TOKENS: ['ex-zr300']] 【中古】(カシオ) Casio EX-ZR400WE デジタ
+      [REJECT MODEL_TOKENS: ['ex-zr300']] 【中古】(カシオ) Casio EX-ZR400WE デジタ
+      [REJECT MODEL_TOKENS: ['ex-zr300']] 【スタイル:バッテリー2個セット】NinoLite NP-1
+      [REJECT MODEL_TOKENS: ['ex-zr300']] 【スタイル:バッテリー2個セット】NinoLite NP-1
+      [REJECT MAX_PRICE: 34720.0 > 32376.0] カシオ CASIO EXILIM EX-ZR300 12.5
+      [REJECT MAX_PRICE: 34720.0 > 32376.0] カシオ CASIO EXILIM EX-ZR300 12.5
+      [REJECT MODEL_TOKENS: ['ex-zr300']] CASIO カシオ EX-ZR200 バッテリー&充電器付属
+      [REJECT MODEL_TOKENS: ['ex-zr300']] CASIO カシオ EX-ZR200 バッテリー&充電器付属
+      [REJECT MODEL_TOKENS: ['ex-zr300']] NinoLite NP-130 NP-130A 互換 バッテ
+      [REJECT MODEL_TOKENS: ['ex-zr300']] NinoLite NP-130 NP-130A 互換 バッテ
+      [REJECT MODEL_TOKENS: ['ex-zr300']] カシオ(CASIO)のカシオ Casio Exilim EX
+      [REJECT MODEL_TOKENS: ['ex-zr300']] カシオ(CASIO)のカシオ Casio Exilim EX
+      [REJECT MODEL_TOKENS: ['ex-zr300']] NinoLite NP-130 NP-130A 互換 バッテ
+      [REJECT MODEL_TOKENS: ['ex-zr300']] NinoLite NP-130 NP-130A 互換 バッテ
+      [REJECT MODEL_TOKENS: ['ex-zr300']] 難あり CASIO カシオ EXILIM EX-ZR310 
+      [REJECT MODEL_TOKENS: ['ex-zr300']] 難あり CASIO カシオ EXILIM EX-ZR310 
+      [REJECT MODEL_TOKENS: ['ex-zr300']] 【新着商品】オーディオファン Casio (カシオ)用 EM
+      [REJECT MODEL_TOKENS: ['ex-zr300']] 【新着商品】オーディオファン Casio (カシオ)用 EM
+      [REJECT MAX_PRICE: 38800.0 > 32376.0] アンドバイピーアンドディー(&byP&D)の【中古】 CAS
+      [REJECT MAX_PRICE: 38800.0 > 32376.0] アンドバイピーアンドディー(&byP&D)の【中古】 CAS
+      [REJECT MODEL_TOKENS: ['ex-zr300']] アンドバイピーアンドディー(&byP&D)の【中古】 CAS
+      [REJECT MODEL_TOKENS: ['ex-zr300']] アンドバイピーアンドディー(&byP&D)の【中古】 CAS
+      [REJECT MODEL_TOKENS: ['ex-zr300']] CASIO カシオ EXILIM EX-ZR800 バッテリ
+      [REJECT MODEL_TOKENS: ['ex-zr300']] CASIO カシオ EXILIM EX-ZR800 バッテリ
+      [REJECT MODEL_TOKENS: ['ex-zr300']] アンドバイピーアンドディー(&byP&D)の【中古】 EX-
+      [REJECT MODEL_TOKENS: ['ex-zr300']] アンドバイピーアンドディー(&byP&D)の【中古】 EX-
+      [REJECT MODEL_TOKENS: ['ex-zr300']] 【数量限定】NinoLite NP-130 NP-130A 
+      [REJECT MODEL_TOKENS: ['ex-zr300']] 【数量限定】NinoLite NP-130 NP-130A 
+      [REJECT MODEL_TOKENS: ['ex-zr300']] 【在庫処分】NinoLite NP-130 NP-130A 
+      [REJECT MODEL_TOKENS: ['ex-zr300']] 【在庫処分】NinoLite NP-130 NP-130A 
+      [REJECT MODEL_TOKENS: ['ex-zr300']] 【数量限定】NinoLite NP-130 NP-130A 
+      [REJECT MODEL_TOKENS: ['ex-zr300']] 【数量限定】NinoLite NP-130 NP-130A 
+      [REJECT MODEL_TOKENS: ['ex-zr300']] カシオ(CASIO)の極美品 CASIO EXILIM EX
+      [REJECT MODEL_TOKENS: ['ex-zr300']] カシオ(CASIO)の極美品 CASIO EXILIM EX
+      [REJECT MODEL_TOKENS: ['ex-zr300']] 【互換品】CASIO カシオ EMC-6U USB接続ケーブ
+      [REJECT MODEL_TOKENS: ['ex-zr300']] 【互換品】CASIO カシオ EMC-6U USB接続ケーブ
+      [REJECT MODEL_TOKENS: ['ex-zr300']] 新品 Casio カシオ 12pin 互換USBケーブル(そ
+      [REJECT MODEL_TOKENS: ['ex-zr300']] 新品 Casio カシオ 12pin 互換USBケーブル(そ
+      [REJECT MODEL_TOKENS: ['ex-zr300']] 【数量限定】NinoLite NP-130 NP-130A 
+      [REJECT MODEL_TOKENS: ['ex-zr300']] 【数量限定】NinoLite NP-130 NP-130A 
+      [REJECT MODEL_TOKENS: ['ex-zr300']] 【数量限定】NinoLite NP-130 NP-130A 
+      [REJECT MODEL_TOKENS: ['ex-zr300']] 【数量限定】NinoLite NP-130 NP-130A 
+      [REJECT MODEL_TOKENS: ['ex-zr300']] 【人気商品】オーディオファン Casio (カシオ)用 EM
+      [REJECT MODEL_TOKENS: ['ex-zr300']] 【人気商品】オーディオファン Casio (カシオ)用 EM
+      [REJECT MODEL_TOKENS: ['ex-zr300']] カシオ(CASIO)のCASIO デジタルカメラ EXILI
+      [REJECT MODEL_TOKENS: ['ex-zr300']] カシオ(CASIO)のCASIO デジタルカメラ EXILI
+      [REJECT MODEL_TOKENS: ['ex-zr300']] カシオ(CASIO)のCASIO EXILIM EX-300
+      [REJECT MODEL_TOKENS: ['ex-zr300']] カシオ(CASIO)のCASIO EXILIM EX-300
+      [REJECT MODEL_TOKENS: ['ex-zr300']] カシオ(CASIO)のCASIO 純正 ACアダプタ AD-
+      [REJECT MODEL_TOKENS: ['ex-zr300']] カシオ(CASIO)のCASIO 純正 ACアダプタ AD-
+      [REJECT MAX_PRICE: 59460.0 > 32376.0] 【中古】（非常に良い）CASIO カシオ デジタルカメラ E
+      [REJECT MAX_PRICE: 59460.0 > 32376.0] 【中古】（非常に良い）CASIO カシオ デジタルカメラ E
+      [REJECT MAX_PRICE: 45590.0 > 32376.0] 【中古】CASIO カシオ デジタルカメラ EXILIM E
+      [REJECT MAX_PRICE: 45590.0 > 32376.0] 【中古】CASIO カシオ デジタルカメラ EXILIM E
+      [REJECT MODEL_TOKENS: ['ex-zr300']] CASIO デジタルカメラ　液晶保護フィルム(その他)
+      [REJECT MODEL_TOKENS: ['ex-zr300']] CASIO デジタルカメラ　液晶保護フィルム(その他)
+      [REJECT MODEL_TOKENS: ['ex-zr300']] CASIO デジタルカメラ　液晶保護フィルム(その他)
+      [REJECT MODEL_TOKENS: ['ex-zr300']] CASIO デジタルカメラ　液晶保護フィルム(その他)
+      [REJECT MODEL_TOKENS: ['ex-zr300']] CASIO デジタルカメラ　液晶保護フィルム(その他)
+      [REJECT MODEL_TOKENS: ['ex-zr300']] CASIO デジタルカメラ　液晶保護フィルム(その他)
+      [REJECT MODEL_TOKENS: ['ex-zr300']] CASIO デジタルカメラ EXILIM HS EX-ZR3
+      [REJECT MODEL_TOKENS: ['ex-zr300']] CASIO デジタルカメラ EXILIM HS EX-ZR3
+  [AFTER FILTER] Y!Flea: 1件, Rakuma: 16件
+
+========================================
+Target ID 7: EXILIM EX-Z450 | KW: EXILIM EX-Z450
+MaxPrice: 8436.0, MinProfit: 0.0, Exclude: ジャンク,故障,不動,部品取り,箱のみ,写真のみ,現状渡し,訳あり
+  [RAW RESULTS] Y!Flea: 21件, Rakuma: 80件, Y!Auc: 49件
+    Y!Flea item: ¥9100 | 【動作確認済】CASIO EXILIM EX-Z450 12.1MEGA PIX
+    Y!Flea item: ¥7190 | 【動作未確認】CASIO EXILIM EX-Z450 ゴールド カシオ エクシ
+    Y!Flea item: ¥8500 | コンパクトデジタルカメラ　ジャンク　CASIO カシオ EXILIM EX-Z4
+    Rakuma item: ¥5760.0 | 難あり カシオ CASIO EXILIM EX-Z250 4X 同梱無料 #ks
+    Rakuma item: ¥5760.0 | 難あり カシオ CASIO EXILIM EX-Z250 4X 同梱無料 #ks
+    Rakuma item: ¥6120.0 | 難あり カシオ CASIO EXILIM EX-Z500 3x 同梱無料 #my
+      [REJECT MAX_PRICE: 9100.0 > 8436.0] 【動作確認済】CASIO EXILIM EX-Z450 12
+      [REJECT EXCLUDE] コンパクトデジタルカメラ　ジャンク　CASIO カシオ EX
+      [REJECT EXCLUDE] コンパクトデジタルカメラ　ジャンク　CASIO カシオ EX
+      [REJECT MAX_PRICE: 12000.0 > 8436.0] CASIO EXILIM EX-Z450 レッド 12.1メ
+      [REJECT MAX_PRICE: 9800.0 > 8436.0] CASIO EXILIM 12.1MEGA PIXELS デ
+      [REJECT MODEL_TOKENS: ['ex-z450']] 送料無料■中古■カシオ純正品■NP-40■バッテリー/電池パ
+      [REJECT MIN_PRICE: 990.0 < 1265.3999999999999] CNP-40 NP-40　 カシオ 互換バッテリー　1個　E
+      [REJECT MIN_PRICE: 898.0 < 1265.3999999999999] CASIO NP-40 BC-31L EX-Z450 Z40
+      [REJECT MODEL_TOKENS: ['ex-z450']] 新品未使用★カシオ AVケーブル　 J1100E010 デジ
+      [REJECT MODEL_TOKENS: ['ex-z450']] 【動作・容量確認済】CASIO NP-40 純正 リチウムイ
+      [REJECT MODEL_TOKENS: ['ex-z450']]  NP-40 CASIO カシオ 互換 バッテリー 1個と 
+      [REJECT MODEL_TOKENS: ['ex-z450']] Casio　CNP-40 NP-40 　互換バッテリー　1個
+      [REJECT MODEL_TOKENS: ['ex-z450']] CASIO　CNP-40 NP-40 互換バッテリーパック　
+      [REJECT MODEL_TOKENS: ['ex-z450']] CNP-40 NP-40　カシオ 互換バッテリー　2個と　互
+      [REJECT MODEL_TOKENS: ['ex-z450']]  NP-40 Casio 互換 バッテリー 2個と 互換 U
+      [REJECT MODEL_TOKENS: ['ex-z450']] CASIO　NP-40 CNP-40 互換バッテリー　1個　
+      [REJECT MODEL_TOKENS: ['ex-z450']] Casio カシオ【純正】充電器 BC-31L【通電確認済】
+      [REJECT MODEL_TOKENS: ['ex-z450']] 難あり カシオ CASIO EXILIM EX-Z250 4
+      [REJECT MODEL_TOKENS: ['ex-z450']] 難あり カシオ CASIO EXILIM EX-Z250 4
+      [REJECT MODEL_TOKENS: ['ex-z450']] 難あり カシオ CASIO EXILIM EX-Z500 3
+      [REJECT MODEL_TOKENS: ['ex-z450']] 難あり カシオ CASIO EXILIM EX-Z500 3
+      [REJECT MODEL_TOKENS: ['ex-z450']] 難あり カシオ CASIO EXILIM EX-Z250 4
+      [REJECT MODEL_TOKENS: ['ex-z450']] 難あり カシオ CASIO EXILIM EX-Z250 4
+      [REJECT MODEL_TOKENS: ['ex-z450']] 難あり カシオ CASIO EXILIM EX-Z400 4
+      [REJECT MODEL_TOKENS: ['ex-z450']] 難あり カシオ CASIO EXILIM EX-Z400 4
+      [REJECT MODEL_TOKENS: ['ex-z450']] カシオ(CASIO)のカシオ CASIO EXILIM EX
+      [REJECT MODEL_TOKENS: ['ex-z450']] カシオ(CASIO)のカシオ CASIO EXILIM EX
+      [REJECT MODEL_TOKENS: ['ex-z450']] カシオ(CASIO)のカシオ CASIO  CASIO EX
+      [REJECT MODEL_TOKENS: ['ex-z450']] カシオ(CASIO)のカシオ CASIO  CASIO EX
+      [REJECT MODEL_TOKENS: ['ex-z450']] カシオ(CASIO)のカシオ CASIO EXILIM EX
+      [REJECT MODEL_TOKENS: ['ex-z450']] カシオ(CASIO)のカシオ CASIO EXILIM EX
+      [REJECT MODEL_TOKENS: ['ex-z450']] カシオ(CASIO)のカシオ CASIO EXILIM EX
+      [REJECT MODEL_TOKENS: ['ex-z450']] カシオ(CASIO)のカシオ CASIO EXILIM EX
+      [REJECT MODEL_TOKENS: ['ex-z450']] カシオ(CASIO)のカシオ CASIO EXILIM EX
+      [REJECT MODEL_TOKENS: ['ex-z450']] カシオ(CASIO)のカシオ CASIO EXILIM EX
+      [REJECT MODEL_TOKENS: ['ex-z450']] カシオ(CASIO)の送料無料★カシオ純正 NP-40★電池
+      [REJECT MODEL_TOKENS: ['ex-z450']] カシオ(CASIO)の送料無料★カシオ純正 NP-40★電池
+      [REJECT MODEL_TOKENS: ['ex-z450']] カシオ(CASIO)の良品★カシオ CASIO EXILIM
+      [REJECT MODEL_TOKENS: ['ex-z450']] カシオ(CASIO)の良品★カシオ CASIO EXILIM
+      [REJECT MODEL_TOKENS: ['ex-z450']] カシオ(CASIO)の【返品保証】 カシオ　CASIO EX
+      [REJECT MODEL_TOKENS: ['ex-z450']] カシオ(CASIO)の【返品保証】 カシオ　CASIO EX
+      [REJECT MODEL_TOKENS: ['ex-z450']] 【動作保証】 カシオ CASIO EXILIM EX-Z25
+      [REJECT MODEL_TOKENS: ['ex-z450']] 【動作保証】 カシオ CASIO EXILIM EX-Z25
+      [REJECT MODEL_TOKENS: ['ex-z450']] カシオ(CASIO)のCASIO EXILIM EX-Z25
+      [REJECT MODEL_TOKENS: ['ex-z450']] カシオ(CASIO)のCASIO EXILIM EX-Z25
+      [REJECT MODEL_TOKENS: ['ex-z450']] カシオ(CASIO)のシャッターOK★CASIO カシオ E
+      [REJECT MODEL_TOKENS: ['ex-z450']] カシオ(CASIO)のシャッターOK★CASIO カシオ E
+      [REJECT MODEL_TOKENS: ['ex-z450']] CASIO カシオ EXILIM EX-Z400 デジタルカ
+      [REJECT MODEL_TOKENS: ['ex-z450']] CASIO カシオ EXILIM EX-Z400 デジタルカ
+      [REJECT MAX_PRICE: 11999.0 > 8436.0] CASIO カシオ EXILIM EX-Z450 コンパクト
+      [REJECT MAX_PRICE: 11999.0 > 8436.0] CASIO カシオ EXILIM EX-Z450 コンパクト
+      [REJECT MODEL_TOKENS: ['ex-z450']] CASIO EXILIM EX-Z500 コンパクト デジタ
+      [REJECT MODEL_TOKENS: ['ex-z450']] CASIO EXILIM EX-Z500 コンパクト デジタ
+      [REJECT MODEL_TOKENS: ['ex-z450']] カシオ CASIO EXILIM EX-Z400 4x バッ
+      [REJECT MODEL_TOKENS: ['ex-z450']] カシオ CASIO EXILIM EX-Z400 4x バッ
+      [REJECT MODEL_TOKENS: ['ex-z450']] カシオ CASIO EXILIM EX-Z2000 5x バ
+      [REJECT MODEL_TOKENS: ['ex-z450']] カシオ CASIO EXILIM EX-Z2000 5x バ
+      [REJECT MODEL_TOKENS: ['ex-z450']] 難あり カシオ CASIO EXILIM EX-Z400 4
+      [REJECT MODEL_TOKENS: ['ex-z450']] 難あり カシオ CASIO EXILIM EX-Z400 4
+      [REJECT MODEL_TOKENS: ['ex-z450']] カシオ CASIO EXILIM EX-Z250 4x 同梱
+      [REJECT MODEL_TOKENS: ['ex-z450']] カシオ CASIO EXILIM EX-Z250 4x 同梱
+      [REJECT MODEL_TOKENS: ['ex-z450']] カシオ(CASIO)の良品中古 EX-Z400 ゴールド (
+      [REJECT MODEL_TOKENS: ['ex-z450']] カシオ(CASIO)の良品中古 EX-Z400 ゴールド (
+      [REJECT MODEL_TOKENS: ['ex-z450']] カシオ CASIO EXILIM EX-Z400 4X バッ
+      [REJECT MODEL_TOKENS: ['ex-z450']] カシオ CASIO EXILIM EX-Z400 4X バッ
+      [REJECT MODEL_TOKENS: ['ex-z450']] 【中古】(カシオ) Casio EXILIM EX-Z500
+      [REJECT MODEL_TOKENS: ['ex-z450']] 【中古】(カシオ) Casio EXILIM EX-Z500
+      [REJECT MODEL_TOKENS: ['ex-z450']] 【中古】(カシオ) Casio EXILIM EX-Z550
+      [REJECT MODEL_TOKENS: ['ex-z450']] 【中古】(カシオ) Casio EXILIM EX-Z550
+      [REJECT MODEL_TOKENS: ['ex-z450']] カシオ(CASIO)の【美品】CASIO カシオ EXILI
+      [REJECT MODEL_TOKENS: ['ex-z450']] カシオ(CASIO)の【美品】CASIO カシオ EXILI
+      [REJECT MODEL_TOKENS: ['ex-z450']] カシオ CASIO EXILIM EX-Z250 4x バッ
+      [REJECT MODEL_TOKENS: ['ex-z450']] カシオ CASIO EXILIM EX-Z250 4x バッ
+      [REJECT MODEL_TOKENS: ['ex-z450']] カシオ CASIO EXILIM EX-Z400 4X バッ
+      [REJECT MODEL_TOKENS: ['ex-z450']] カシオ CASIO EXILIM EX-Z400 4X バッ
+      [REJECT MAX_PRICE: 20570.0 > 8436.0] カシオ CASIO EXILIM EX-Z450 4X 元箱
+      [REJECT MAX_PRICE: 20570.0 > 8436.0] カシオ CASIO EXILIM EX-Z450 4X 元箱
+      [REJECT MAX_PRICE: 12999.0 > 8436.0] Casio カシオ EXILIM EX-Z450 コンパクト
+      [REJECT MAX_PRICE: 12999.0 > 8436.0] Casio カシオ EXILIM EX-Z450 コンパクト
+      [REJECT MAX_PRICE: 11340.0 > 8436.0] 難あり カシオ CASIO EXILIM EX-Z450 4
+      [REJECT MAX_PRICE: 11340.0 > 8436.0] 難あり カシオ CASIO EXILIM EX-Z450 4
+      [REJECT MODEL_TOKENS: ['ex-z450']] カシオ CASIO EXILIM EX-Z400 4x バッ
+      [REJECT MODEL_TOKENS: ['ex-z450']] カシオ CASIO EXILIM EX-Z400 4x バッ
+      [REJECT MODEL_TOKENS: ['ex-z450']] CASIO カシオ EX-Z550 同梱無料 #i11284
+      [REJECT MODEL_TOKENS: ['ex-z450']] CASIO カシオ EX-Z550 同梱無料 #i11284
+      [REJECT MODEL_TOKENS: ['ex-z450']] カシオ(CASIO)の送料無料★CASIO BC-31L★バ
+      [REJECT MODEL_TOKENS: ['ex-z450']] カシオ(CASIO)の送料無料★CASIO BC-31L★バ
+      [REJECT MODEL_TOKENS: ['ex-z450']] 難あり CASIO カシオ EXILIM EX-Z550 同
+      [REJECT MODEL_TOKENS: ['ex-z450']] 難あり CASIO カシオ EXILIM EX-Z550 同
+      [REJECT MODEL_TOKENS: ['ex-z450']] 【動作保証】 CASIO カシオ EXILIM EX-Z50
+      [REJECT MODEL_TOKENS: ['ex-z450']] 【動作保証】 CASIO カシオ EXILIM EX-Z50
+      [REJECT MODEL_TOKENS: ['ex-z450']] CASIO カシオ EXILIM EX-Z250 バッテリー
+      [REJECT MODEL_TOKENS: ['ex-z450']] CASIO カシオ EXILIM EX-Z250 バッテリー
+      [REJECT MODEL_TOKENS: ['ex-z450']] CASIO カシオ EXILIM EX-Z250 コンパクト
+      [REJECT MODEL_TOKENS: ['ex-z450']] CASIO カシオ EXILIM EX-Z250 コンパクト
+  [AFTER FILTER] Y!Flea: 4件, Rakuma: 2件
+
+========================================
+Target ID 6: ビクター RC-W50 | KW: ビクター RC-W50
+MaxPrice: 9152.0, MinProfit: 0.0, Exclude: ジャンク,故障,不動,部品取り,箱のみ,写真のみ,現状渡し,訳あり
+  [RAW RESULTS] Y!Flea: 0件, Rakuma: 80件, Y!Auc: 0件
+    Rakuma item: ¥22800.0 | ビクター(Victor)の【純正リモコン付き】Victor K2搭載 CDプレー
+    Rakuma item: ¥22800.0 | ビクター(Victor)の【純正リモコン付き】Victor K2搭載 CDプレー
+    Rakuma item: ¥7500.0 | ビクター(Victor)の【Victor RC-B1 】バブルラジカセ　 ジャン
+      [REJECT MODEL_TOKENS: ['rc-w50']] ビクター(Victor)の【純正リモコン付き】Victor 
+      [REJECT MODEL_TOKENS: ['rc-w50']] ビクター(Victor)の【純正リモコン付き】Victor 
+      [REJECT EXCLUDE] ビクター(Victor)の【Victor RC-B1 】バブ
+      [REJECT EXCLUDE] ビクター(Victor)の【Victor RC-B1 】バブ
+      [REJECT MODEL_TOKENS: ['rc-w50']] ソニー(SONY)の必見！5連CDチェンジャー&ダビング録音
+      [REJECT MODEL_TOKENS: ['rc-w50']] ソニー(SONY)の必見！5連CDチェンジャー&ダビング録音
+      [REJECT MODEL_TOKENS: ['rc-w50']] ビクター(Victor)のビクター ビデオカメラ リモコン 
+      [REJECT MODEL_TOKENS: ['rc-w50']] ビクター(Victor)のビクター ビデオカメラ リモコン 
+      [REJECT MODEL_TOKENS: ['rc-w50']] ビクター(Victor)の★ビクターVictor大型ラジカセ
+      [REJECT MODEL_TOKENS: ['rc-w50']] ビクター(Victor)の★ビクターVictor大型ラジカセ
+      [REJECT MODEL_TOKENS: ['rc-w50']] ビクター(Victor)の★ビクター大型ラジカセ　メタルカセ
+      [REJECT MODEL_TOKENS: ['rc-w50']] ビクター(Victor)の★ビクター大型ラジカセ　メタルカセ
+      [REJECT MODEL_TOKENS: ['rc-w50']] ソニー(SONY)のリモ付5連CDチェンジャー&ダビング録音
+      [REJECT MODEL_TOKENS: ['rc-w50']] ソニー(SONY)のリモ付5連CDチェンジャー&ダビング録音
+      [REJECT MODEL_TOKENS: ['rc-w50']] ソニー(SONY)のリモ付5連CDチェンジャー&ダビング録音
+      [REJECT MODEL_TOKENS: ['rc-w50']] ソニー(SONY)のリモ付5連CDチェンジャー&ダビング録音
+      [REJECT MODEL_TOKENS: ['rc-w50']] ソニー(SONY)の必見！5連CDチェンジャー&ダビング録音
+      [REJECT MODEL_TOKENS: ['rc-w50']] ソニー(SONY)の必見！5連CDチェンジャー&ダビング録音
+      [REJECT MODEL_TOKENS: ['rc-w50']] ソニー(SONY)の必見！5連CDチェンジャー&ダビング録音
+      [REJECT MODEL_TOKENS: ['rc-w50']] ソニー(SONY)の必見！5連CDチェンジャー&ダビング録音
+      [REJECT MODEL_TOKENS: ['rc-w50']] victor ビクター　ラジカセ　RC-838(ラジオ)
+      [REJECT MODEL_TOKENS: ['rc-w50']] victor ビクター　ラジカセ　RC-838(ラジオ)
+      [REJECT MODEL_TOKENS: ['rc-w50']] Victor ビクター　RC-M50 ステレオラジオカセット
+      [REJECT MODEL_TOKENS: ['rc-w50']] Victor ビクター　RC-M50 ステレオラジオカセット
+      [REJECT MODEL_TOKENS: ['rc-w50']] ビクター(Victor)の★ビクターVictor大型ラジカセ
+      [REJECT MODEL_TOKENS: ['rc-w50']] ビクター(Victor)の★ビクターVictor大型ラジカセ
+      [REJECT MODEL_TOKENS: ['rc-w50']] ビクター(Victor)の希少美品　ビクター Victor 
+      [REJECT MODEL_TOKENS: ['rc-w50']] ビクター(Victor)の希少美品　ビクター Victor 
+      [REJECT MODEL_TOKENS: ['rc-w50']] ビクター(Victor)のVictor ビクター「RC-M7
+      [REJECT MODEL_TOKENS: ['rc-w50']] ビクター(Victor)のVictor ビクター「RC-M7
+      [REJECT EXCLUDE] ビクター(Victor)の【Victor RC-X80 】バ
+      [REJECT EXCLUDE] ビクター(Victor)の【Victor RC-X80 】バ
+      [REJECT MODEL_TOKENS: ['rc-w50']] アンドバイピーアンドディー(&byP&D)の【中古】 JVC
+      [REJECT MODEL_TOKENS: ['rc-w50']] アンドバイピーアンドディー(&byP&D)の【中古】 JVC
+      [REJECT MODEL_TOKENS: ['rc-w50']] ビクター(Victor)のビクター VICTOR テレビ リ
+      [REJECT MODEL_TOKENS: ['rc-w50']] ビクター(Victor)のビクター VICTOR テレビ リ
+      [REJECT MODEL_TOKENS: ['rc-w50']] アンドバイピーアンドディー(&byP&D)の【中古】 ビクタ
+      [REJECT MODEL_TOKENS: ['rc-w50']] アンドバイピーアンドディー(&byP&D)の【中古】 ビクタ
+      [REJECT MODEL_TOKENS: ['rc-w50']] アンドバイピーアンドディー(&byP&D)の【中古】 ビクタ
+      [REJECT MODEL_TOKENS: ['rc-w50']] アンドバイピーアンドディー(&byP&D)の【中古】 ビクタ
+      [REJECT MODEL_TOKENS: ['rc-w50']] アンドバイピーアンドディー(&byP&D)の【中古】 ビクタ
+      [REJECT MODEL_TOKENS: ['rc-w50']] アンドバイピーアンドディー(&byP&D)の【中古】 ビクタ
+      [REJECT MODEL_TOKENS: ['rc-w50']] アンドバイピーアンドディー(&byP&D)の【中古】 ビクタ
+      [REJECT MODEL_TOKENS: ['rc-w50']] アンドバイピーアンドディー(&byP&D)の【中古】 ビクタ
+      [REJECT MODEL_TOKENS: ['rc-w50']] アンドバイピーアンドディー(&byP&D)の【中古】 ビクタ
+      [REJECT MODEL_TOKENS: ['rc-w50']] アンドバイピーアンドディー(&byP&D)の【中古】 ビクタ
+      [REJECT MODEL_TOKENS: ['rc-w50']] アンドバイピーアンドディー(&byP&D)の【中古】 ビクタ
+      [REJECT MODEL_TOKENS: ['rc-w50']] アンドバイピーアンドディー(&byP&D)の【中古】 ビクタ
+      [REJECT MODEL_TOKENS: ['rc-w50']] アンドバイピーアンドディー(&byP&D)の【中古】 ビクタ
+      [REJECT MODEL_TOKENS: ['rc-w50']] アンドバイピーアンドディー(&byP&D)の【中古】 ビクタ
+      [REJECT MODEL_TOKENS: ['rc-w50']] アンドバイピーアンドディー(&byP&D)の【中古】 Vic
+      [REJECT MODEL_TOKENS: ['rc-w50']] アンドバイピーアンドディー(&byP&D)の【中古】 Vic
+      [REJECT MODEL_TOKENS: ['rc-w50']] アンドバイピーアンドディー(&byP&D)の【中古】 ビクタ
+      [REJECT MODEL_TOKENS: ['rc-w50']] アンドバイピーアンドディー(&byP&D)の【中古】 ビクタ
+      [REJECT MODEL_TOKENS: ['rc-w50']] アンドバイピーアンドディー(&byP&D)の【中古】 ビクタ
+      [REJECT MODEL_TOKENS: ['rc-w50']] アンドバイピーアンドディー(&byP&D)の【中古】 ビクタ
+      [REJECT MODEL_TOKENS: ['rc-w50']] アンドバイピーアンドディー(&byP&D)の【中古】 ビクタ
+      [REJECT MODEL_TOKENS: ['rc-w50']] アンドバイピーアンドディー(&byP&D)の【中古】 ビクタ
+      [REJECT MODEL_TOKENS: ['rc-w50']] アンドバイピーアンドディー(&byP&D)の【中古】 ビクタ
+      [REJECT MODEL_TOKENS: ['rc-w50']] アンドバイピーアンドディー(&byP&D)の【中古】 ビクタ
+      [REJECT MODEL_TOKENS: ['rc-w50']] アンドバイピーアンドディー(&byP&D)の【中古】 RCP
+      [REJECT MODEL_TOKENS: ['rc-w50']] アンドバイピーアンドディー(&byP&D)の【中古】 RCP
+      [REJECT MODEL_TOKENS: ['rc-w50']] ビクター(Victor)の★ビクターVictorメタルカセッ
+      [REJECT MODEL_TOKENS: ['rc-w50']] ビクター(Victor)の★ビクターVictorメタルカセッ
+      [REJECT MODEL_TOKENS: ['rc-w50']] 【中古】「非常に良い」ビクター オーディオリモコン RM-S
+      [REJECT MODEL_TOKENS: ['rc-w50']] 【中古】「非常に良い」ビクター オーディオリモコン RM-S
+      [REJECT MODEL_TOKENS: ['rc-w50']] ビクター(Victor)のVictor テレビ　リモコン R
+      [REJECT MODEL_TOKENS: ['rc-w50']] ビクター(Victor)のVictor テレビ　リモコン R
+      [REJECT MODEL_TOKENS: ['rc-w50']] ティアック(TEAC)のTEAC リモコン RC-481 C
+      [REJECT MODEL_TOKENS: ['rc-w50']] ティアック(TEAC)のTEAC リモコン RC-481 C
+      [REJECT EXCLUDE] ビクター(Victor)のジャンク品 Victor「HR-W
+      [REJECT EXCLUDE] ビクター(Victor)のジャンク品 Victor「HR-W
+      [REJECT MODEL_TOKENS: ['rc-w50']] ビクター(Victor)のビクター VICTOR リモコン 
+      [REJECT MODEL_TOKENS: ['rc-w50']] ビクター(Victor)のビクター VICTOR リモコン 
+      [REJECT MODEL_TOKENS: ['rc-w50']] ビクター(Victor)のビクター ビデオカメラ リモコン 
+      [REJECT MODEL_TOKENS: ['rc-w50']] ビクター(Victor)のビクター ビデオカメラ リモコン 
+      [REJECT MODEL_TOKENS: ['rc-w50']] ビクター(Victor)のビクター VICTOR テレビ リ
+      [REJECT MODEL_TOKENS: ['rc-w50']] ビクター(Victor)のビクター VICTOR テレビ リ
+      [REJECT MODEL_TOKENS: ['rc-w50']] ビクター(Victor)のビクター VICTOR テレビリモ
+      [REJECT MODEL_TOKENS: ['rc-w50']] ビクター(Victor)のビクター VICTOR テレビリモ
+  [AFTER FILTER] Y!Flea: 0件, Rakuma: 0件
+
+========================================
+Target ID 5: Nintendo Switch モンスターハンター | KW: モンスターハンターライズ スペシャルエディション
+MaxPrice: 16556.0, MinProfit: 0.0, Exclude: ジャンク,故障,不動,部品取り,箱のみ,写真のみ,現状渡し,訳あり
+  [RAW RESULTS] Y!Flea: 36件, Rakuma: 80件, Y!Auc: 28件
+    Y!Flea item: ¥22000 | Nintendo Switch モンスターハンターライズ スペシャルエディション
+    Y!Flea item: ¥21999 | Nintendo Switch モンスターハンターライズ スペシャルエディション
+    Y!Flea item: ¥21400 | Nintendo Switch モンスターハンターライズ スペシャルエディション
+    Rakuma item: ¥37100.0 | ニンテンドースイッチ(Nintendo Switch)の新品 Nintendo 
+    Rakuma item: ¥37100.0 | ニンテンドースイッチ(Nintendo Switch)の新品 Nintendo 
+    Rakuma item: ¥49500.0 | ニンテンドースイッチ(Nintendo Switch)の【新品未使用】Ninte
+      [REJECT MAX_PRICE: 22000.0 > 16556.0] Nintendo Switch モンスターハンターライズ ス
+      [REJECT MAX_PRICE: 21999.0 > 16556.0] Nintendo Switch モンスターハンターライズ ス
+      [REJECT MAX_PRICE: 21400.0 > 16556.0] Nintendo Switch モンスターハンターライズ ス
+      [REJECT MIN_PRICE: 2000.0 < 2483.4] Nintendo Switch ドック モンスターハンターラ
+      [REJECT MAX_PRICE: 26500.0 > 16556.0] ★再出品可★ Nintendo Switch モンスターハン
+      [REJECT MAX_PRICE: 25000.0 > 16556.0] Nintendo Switch モンスターハンターライズ ス
+      [REJECT MAX_PRICE: 23980.0 > 16556.0] Nintendo Switch モンスターハンターライズ ス
+      [REJECT MAX_PRICE: 34000.0 > 16556.0] Nintendo Switch モンスターハンターライズ ス
+      [REJECT MAX_PRICE: 33980.0 > 16556.0] 【新品未開封】モンスターハンターライズ スペシャルエディショ
+      [REJECT MAX_PRICE: 32000.0 > 16556.0] Nintendo Switch モンスターハンターライズ ス
+      [REJECT MAX_PRICE: 29800.0 > 16556.0] Nintendo Switch モンスターハンターライズエデ
+      [REJECT MAX_PRICE: 23000.0 > 16556.0] Switch(モンハンライズエディション)＋ソフト(ファミコ
+      [REJECT MAX_PRICE: 50000.0 > 16556.0] 2点♪新品未開封【本体1箱＋プロコン1箱】モンスターハンター
+      [REJECT MAX_PRICE: 31000.0 > 16556.0] Nintendo Switch モンスターハンターライズ ス
+      [REJECT MAX_PRICE: 38900.0 > 16556.0] Switch 本体　モンスターハンター　ライズ　新品未開封
+      [REJECT MAX_PRICE: 41500.0 > 16556.0] [新品未使用品]Nintendo Switch モンスターハ
+      [REJECT MAX_PRICE: 300000.0 > 16556.0] Nintendo Switch モンスターハンターライズ ス
+      [REJECT MAX_PRICE: 39800.0 > 16556.0] Nintendo Switch モンスターハンターライズ ス
+      [REJECT MAX_PRICE: 43900.0 > 16556.0] モンスターハンターライズ スペシャルエディション Ninte
+      [REJECT MAX_PRICE: 138000.0 > 16556.0] Nintendo Switch モンスターハンターライズ　ス
+      [REJECT MAX_PRICE: 38000.0 > 16556.0] Nintendo Switch モンスターハンターライズ ス
+      [REJECT MAX_PRICE: 46000.0 > 16556.0] 新品・未開封品 販売終了品 Nintendo Switch 
+      [REJECT MAX_PRICE: 48800.0 > 16556.0] Nintendo SWITCH モンスターハンターライズ ス
+      [REJECT MAX_PRICE: 50000.0 > 16556.0] ■■クーポン■新品 未開封 送料無料■Nintendo Sw
+      [REJECT MAX_PRICE: 55000.0 > 16556.0] Nintendo Switch モンスターハンターライズ ス
+      [REJECT MAX_PRICE: 52900.0 > 16556.0] NintendoSwitch ニンテンドースイッチ　モンスタ
+      [REJECT MAX_PRICE: 59800.0 > 16556.0] 【新品・未開封】モンスターハンターライズ　スペシャルエディシ
+      [REJECT MAX_PRICE: 111800.0 > 16556.0] 3台新品　未開封セット　モンスターハンターライズ Ninte
+      [REJECT MAX_PRICE: 37100.0 > 16556.0] ニンテンドースイッチ(Nintendo Switch)の新品
+      [REJECT MAX_PRICE: 37100.0 > 16556.0] ニンテンドースイッチ(Nintendo Switch)の新品
+      [REJECT MAX_PRICE: 49500.0 > 16556.0] ニンテンドースイッチ(Nintendo Switch)の【新
+      [REJECT MAX_PRICE: 49500.0 > 16556.0] ニンテンドースイッチ(Nintendo Switch)の【新
+      [REJECT MAX_PRICE: 53000.0 > 16556.0] ニンテンドースイッチ(Nintendo Switch)のモン
+      [REJECT MAX_PRICE: 53000.0 > 16556.0] ニンテンドースイッチ(Nintendo Switch)のモン
+      [REJECT MAX_PRICE: 23980.0 > 16556.0] Nintendo Switch モンスターハンターライズ ス
+      [REJECT MAX_PRICE: 23980.0 > 16556.0] Nintendo Switch モンスターハンターライズ ス
+      [REJECT MAX_PRICE: 27500.0 > 16556.0] switchモンハン限定版本体セット『モンスターハンターライ
+      [REJECT MAX_PRICE: 27500.0 > 16556.0] switchモンハン限定版本体セット『モンスターハンターライ
+      [REJECT MAX_PRICE: 35000.0 > 16556.0] Nintendo Switch モンスターハンターライズ ス
+      [REJECT MAX_PRICE: 35000.0 > 16556.0] Nintendo Switch モンスターハンターライズ ス
+      [REJECT MAX_PRICE: 26500.0 > 16556.0] ニンテンドースイッチ(Nintendo Switch)の任天
+      [REJECT MAX_PRICE: 26500.0 > 16556.0] ニンテンドースイッチ(Nintendo Switch)の任天
+      [REJECT MAX_PRICE: 40000.0 > 16556.0] Nintendo Switch モンスターハンターライズ ス
+      [REJECT MAX_PRICE: 40000.0 > 16556.0] Nintendo Switch モンスターハンターライズ ス
+      [REJECT MAX_PRICE: 44950.0 > 16556.0] Nintendo Switch モンスターハンターライズ ス
+      [REJECT MAX_PRICE: 44950.0 > 16556.0] Nintendo Switch モンスターハンターライズ ス
+      [REJECT MAX_PRICE: 49800.0 > 16556.0] ニンテンドースイッチ(Nintendo Switch)のNi
+      [REJECT MAX_PRICE: 49800.0 > 16556.0] ニンテンドースイッチ(Nintendo Switch)のNi
+      [REJECT MAX_PRICE: 29800.0 > 16556.0] ニンテンドースイッチ(Nintendo Switch)のsw
+      [REJECT MAX_PRICE: 29800.0 > 16556.0] ニンテンドースイッチ(Nintendo Switch)のsw
+      [REJECT MAX_PRICE: 159000.0 > 16556.0] モンスターハンターライズ　スペシャルエディション 4台セット
+      [REJECT MAX_PRICE: 159000.0 > 16556.0] モンスターハンターライズ　スペシャルエディション 4台セット
+      [REJECT MAX_PRICE: 40980.0 > 16556.0] ニンテンドースイッチ(Nintendo Switch)のイー
+      [REJECT MAX_PRICE: 40980.0 > 16556.0] ニンテンドースイッチ(Nintendo Switch)のイー
+      [REJECT MAX_PRICE: 43800.0 > 16556.0] ニンテンドースイッチ(Nintendo Switch)のNi
+      [REJECT MAX_PRICE: 43800.0 > 16556.0] ニンテンドースイッチ(Nintendo Switch)のNi
+      [REJECT MAX_PRICE: 71000.0 > 16556.0] ニンテンドースイッチ(Nintendo Switch)のニン
+      [REJECT MAX_PRICE: 71000.0 > 16556.0] ニンテンドースイッチ(Nintendo Switch)のニン
+      [REJECT MAX_PRICE: 29400.0 > 16556.0] ニンテンドースイッチ(Nintendo Switch)のNi
+      [REJECT MAX_PRICE: 29400.0 > 16556.0] ニンテンドースイッチ(Nintendo Switch)のNi
+      [REJECT MAX_PRICE: 40000.0 > 16556.0] Nintendo Switch  モンスターハンター本体&a
+      [REJECT MAX_PRICE: 40000.0 > 16556.0] Nintendo Switch  モンスターハンター本体&a
+      [REJECT MAX_PRICE: 43000.0 > 16556.0] ニンテンドースイッチ(Nintendo Switch)のSw
+      [REJECT MAX_PRICE: 43000.0 > 16556.0] ニンテンドースイッチ(Nintendo Switch)のSw
+      [REJECT MAX_PRICE: 450000.0 > 16556.0] ニンテンドウ(任天堂)のニンテンドースイッチ モンスターハン
+      [REJECT MAX_PRICE: 450000.0 > 16556.0] ニンテンドウ(任天堂)のニンテンドースイッチ モンスターハン
+      [REJECT MAX_PRICE: 68000.0 > 16556.0] ニンテンドウ(任天堂)のNintendo Switch モン
+      [REJECT MAX_PRICE: 68000.0 > 16556.0] ニンテンドウ(任天堂)のNintendo Switch モン
+      [REJECT MAX_PRICE: 46000.0 > 16556.0] Nintendo SWITCH モンスターハンターライズ ス
+      [REJECT MAX_PRICE: 46000.0 > 16556.0] Nintendo SWITCH モンスターハンターライズ ス
+      [REJECT MAX_PRICE: 47900.0 > 16556.0] ニンテンドースイッチ(Nintendo Switch)のモン
+      [REJECT MAX_PRICE: 47900.0 > 16556.0] ニンテンドースイッチ(Nintendo Switch)のモン
+      [REJECT MAX_PRICE: 39999.0 > 16556.0] ニンテンドースイッチ(Nintendo Switch)のSw
+      [REJECT MAX_PRICE: 39999.0 > 16556.0] ニンテンドースイッチ(Nintendo Switch)のSw
+      [REJECT MAX_PRICE: 51000.0 > 16556.0] ニンテンドースイッチ(Nintendo Switch)のSw
+      [REJECT MAX_PRICE: 51000.0 > 16556.0] ニンテンドースイッチ(Nintendo Switch)のSw
+      [REJECT MAX_PRICE: 45000.0 > 16556.0] ニンテンドウ(任天堂)のニンテンドースイッチ モンスターハン
+      [REJECT MAX_PRICE: 45000.0 > 16556.0] ニンテンドウ(任天堂)のニンテンドースイッチ モンスターハン
+      [REJECT MAX_PRICE: 41500.0 > 16556.0] ニンテンドースイッチ(Nintendo Switch)のNi
+      [REJECT MAX_PRICE: 41500.0 > 16556.0] ニンテンドースイッチ(Nintendo Switch)のNi
+      [REJECT MAX_PRICE: 40500.0 > 16556.0] ニンテンドースイッチ(Nintendo Switch)のNi
+      [REJECT MAX_PRICE: 40500.0 > 16556.0] ニンテンドースイッチ(Nintendo Switch)のNi
+      [REJECT MAX_PRICE: 335000.0 > 16556.0] Nintendo Switch モンスターハンターライズ　ス
+      [REJECT MAX_PRICE: 335000.0 > 16556.0] Nintendo Switch モンスターハンターライズ　ス
+      [REJECT MAX_PRICE: 475000.0 > 16556.0] 任天堂　Switch モンスターハンターライズ スペシャルエ
+      [REJECT MAX_PRICE: 475000.0 > 16556.0] 任天堂　Switch モンスターハンターライズ スペシャルエ
+      [REJECT MAX_PRICE: 48500.0 > 16556.0] Nintendo Switch モンスターハンターライズ ス
+      [REJECT MAX_PRICE: 48500.0 > 16556.0] Nintendo Switch モンスターハンターライズ ス
+      [REJECT MAX_PRICE: 48000.0 > 16556.0] 【新品・未開封】Switchモンスターハンターライズスペシャ
+      [REJECT MAX_PRICE: 48000.0 > 16556.0] 【新品・未開封】Switchモンスターハンターライズスペシャ
+      [REJECT MAX_PRICE: 576000.0 > 16556.0] 【新品・未開封】Switchモンスターハンターライズスペシャ
+      [REJECT MAX_PRICE: 576000.0 > 16556.0] 【新品・未開封】Switchモンスターハンターライズスペシャ
+      [REJECT MAX_PRICE: 48000.0 > 16556.0] 【新品・未開封】Switchモンスターハンターライズスペシャ
+      [REJECT MAX_PRICE: 48000.0 > 16556.0] 【新品・未開封】Switchモンスターハンターライズスペシャ
+      [REJECT MAX_PRICE: 41990.0 > 16556.0] ニンテンドウ(任天堂)の新品『モンスターハンターライズ　スペ
+      [REJECT MAX_PRICE: 41990.0 > 16556.0] ニンテンドウ(任天堂)の新品『モンスターハンターライズ　スペ
+      [REJECT MAX_PRICE: 47499.0 > 16556.0] 【新品未使用】モンスターハンター ライズと任天堂スイッチのセ
+      [REJECT MAX_PRICE: 47499.0 > 16556.0] 【新品未使用】モンスターハンター ライズと任天堂スイッチのセ
+      [REJECT MAX_PRICE: 47000.0 > 16556.0] ニンテンドースイッチ(Nintendo Switch)のモン
+      [REJECT MAX_PRICE: 47000.0 > 16556.0] ニンテンドースイッチ(Nintendo Switch)のモン
+  [AFTER FILTER] Y!Flea: 8件, Rakuma: 8件
+
+========================================
+Target ID 4: PCH-2000 | KW: PCH-2000
+MaxPrice: 18776.0, MinProfit: 0.0, Exclude: ジャンク,故障,不動,部品取り,箱のみ,写真のみ,現状渡し,訳あり
+  [RAW RESULTS] Y!Flea: 100件, Rakuma: 80件, Y!Auc: 50件
+    Y!Flea item: ¥18000 | SONY PlayStation Vita PCH-2000 ブラック 本体 M
+    Y!Flea item: ¥17000 | SONY PS Vita PCH-2000 ホワイト 本体 Jスターズ ビクトリ
+    Y!Flea item: ¥18300 | SONY PlayStation Vita PCH-2000 ブラック 本体
+    Rakuma item: ¥300.0 | 充電コード PS Vita用 USB充電ケーブル PS VITA ケーブル　め(
+    Rakuma item: ¥300.0 | 充電コード PS Vita用 USB充電ケーブル PS VITA ケーブル　め(
+    Rakuma item: ¥300.0 | 充電コード PS Vita用 USB充電ケーブル PS VITA ケーブル た(
+      [REJECT MAX_PRICE: 19000.0 > 18776.0] SONY PlayStation Vita PCH-2000
+      [REJECT MAX_PRICE: 19000.0 > 18776.0] 動作品 SONY PSVITA PCH-2000 ネオンオレ
+      [REJECT MAX_PRICE: 22600.0 > 18776.0] SONY PlayStation Vita PCH-2000
+      [REJECT MAX_PRICE: 19600.0 > 18776.0] SONY PlayStation Vita PCH-2000
+      [REJECT MAX_PRICE: 19800.0 > 18776.0] SONY PS Vita PCH-2000 ホワイト 本体 
+      [REJECT MAX_PRICE: 21600.0 > 18776.0] SONY PlayStation Vita PCH-2000
+      [REJECT MAX_PRICE: 21999.0 > 18776.0] SONY PlayStation Vita PCH-2000
+      [REJECT MAX_PRICE: 22000.0 > 18776.0] SONY PlayStation Vita PCH-2000
+      [REJECT EXCLUDE] SONY PSVITA PCH-2000 PCH-1100 
+      [REJECT MAX_PRICE: 23500.0 > 18776.0] SONY PSVita PCH-2000 ピンク/ブラック
+      [REJECT MAX_PRICE: 27500.0 > 18776.0] 美品　SONY PlayStation Vita PCH-2
+      [REJECT MAX_PRICE: 21000.0 > 18776.0] SONY PlayStation Vita PCH-2000
+      [REJECT MAX_PRICE: 21400.0 > 18776.0] SONY PS Vita PCH 2000 ブラック カーキ
+      [REJECT MAX_PRICE: 18980.0 > 18776.0] 【動作確認済】SONY PlayStation Vita P
+      [REJECT MAX_PRICE: 23000.0 > 18776.0] SONY PlayStation Vita PCH-2000
+      [REJECT EXCLUDE] 【ジャンク品】PlayStation Vita (Wi-Fi
+      [REJECT MAX_PRICE: 20860.0 > 18776.0] SONY PlayStation Vita PCH-2000
+      [REJECT MAX_PRICE: 57800.0 > 18776.0] PlayStation Vita PCH-2000 金色のコ
+      [REJECT MAX_PRICE: 21500.0 > 18776.0] PlayStation Vita （PCH-2000シリーズ
+      [REJECT MAX_PRICE: 29500.0 > 18776.0] 美品　PlayStation Vita Wi-Fiモデル ブ
+      [REJECT MAX_PRICE: 20500.0 > 18776.0] 美品SONY PlayStation Vita PCH-20
+      [REJECT MODEL_TOKENS: ['pch-2000']] SONY PSVITA ヴィータ ブラック　2000
+      [REJECT MAX_PRICE: 28000.0 > 18776.0] 【極美品】 PlayStation Vita PCH-200
+      [REJECT MAX_PRICE: 25500.0 > 18776.0] PS Vita PCH-2000 レッド ブラック 本体　美
+      [REJECT MAX_PRICE: 20800.0 > 18776.0] 【美品】SONY PlayStation Vita PCH-
+      [REJECT MAX_PRICE: 25800.0 > 18776.0] SONY PlayStation Vita PCH-2000
+      [REJECT MAX_PRICE: 21900.0 > 18776.0] PS Vita PCH-2000 ピンク/ブラック 箱付き 
+      [REJECT MAX_PRICE: 29780.0 > 18776.0] 【完品・美品】PSVita PCH-2000シルバー 本体 
+      [REJECT MAX_PRICE: 23980.0 > 18776.0] PSvita 2000 メタリック レッド 本体 PCH-2
+      [REJECT MAX_PRICE: 19850.0 > 18776.0] 毎日値下げ　SONY PlayStation Vita PC
+      [REJECT MAX_PRICE: 22980.0 > 18776.0] 【極美品】SONY PSVITA PCH-2000 ライムグ
+      [REJECT MAX_PRICE: 34000.0 > 18776.0] SONY PlayStation Vita PCH-2000
+      [REJECT MAX_PRICE: 22100.0 > 18776.0] SONY PlayStation Vita PCH-2000
+      [REJECT EXCLUDE] SONY PlayStation Vita ライムグリーン 
+      [REJECT MODEL_TOKENS: ['pch-2000']] SONY PlayStation Vita ブラック/ブルー
+      [REJECT MODEL_TOKENS: ['pch-2000']] 【479】 PS Vita Wi-Fiモデル アクアブルー
+      [REJECT MAX_PRICE: 22800.0 > 18776.0] SONY PS Vita PCH-2000 ブルー×ブラック
+      [REJECT MAX_PRICE: 29900.0 > 18776.0] 【液晶美品】PlayStation Vita PCH-200
+      [REJECT MAX_PRICE: 21800.0 > 18776.0] 【美品】PlayStation Vita PCH-2000 
+      [REJECT MAX_PRICE: 19800.0 > 18776.0] SONY PS Vita 本体 ライトブルー×ホワイト PC
+      [REJECT MAX_PRICE: 26800.0 > 18776.0] SONY PlayStation Vita PCH-2000
+      [REJECT MAX_PRICE: 22800.0 > 18776.0] 【美品】PCH-2000 ソニー SONY PSVITA V
+      [REJECT MAX_PRICE: 20000.0 > 18776.0] 【極美品】SONY PlayStation Vita PCH
+      [REJECT MAX_PRICE: 21800.0 > 18776.0] 【綺麗】PCH-2000 ブラック SONY ソニー Vit
+      [REJECT MODEL_TOKENS: ['pch-2000']] 【美品】PlayStation vita 本体 2000 メ
+      [REJECT MAX_PRICE: 63600.0 > 18776.0] 激レア 希少 PlayStation Vita PCH-20
+      [REJECT EXCLUDE] SONY PlayStation Vita PCH-1000
+      [REJECT MAX_PRICE: 19450.0 > 18776.0] SONY PlayStation Vita PCH-2000
+      [REJECT MAX_PRICE: 19990.0 > 18776.0] PS Vita PCH-2000 ZA14 ライトブルー/ホ
+      [REJECT EXCLUDE] PSVITA PCH-2000 FANTASY X-2 モデ
+      [REJECT MIN_PRICE: 889.0 < 2816.4] 【新品】PS Vita PCH-2000型専用 ACアダプタ
+      [REJECT MODEL_TOKENS: ['pch-2000']] ps vita psvita 　未使用　新品　展示品　アクア
+      [REJECT MAX_PRICE: 19400.0 > 18776.0] PlayStation Vita PCH-2000 PS V
+      [REJECT MAX_PRICE: 21500.0 > 18776.0] 【概ね美品】SONY PSVITA PCH-2000 ホワイ
+      [REJECT MAX_PRICE: 34000.0 > 18776.0] 美品　PlayStation Vita Wi-Fiモデル シ
+      [REJECT MAX_PRICE: 28999.0 > 18776.0] 美品SONY PlayStation Vita PCH-20
+      [REJECT MODEL_TOKENS: ['pch-2000']] psvita ブルーブラック　pch2000バリューパック　
+      [REJECT MAX_PRICE: 24000.0 > 18776.0] SONY PlayStation Vita PCH-2000
+      [REJECT MODEL_TOKENS: ['pch-2000']] 艦これ 刻印モデル SONY PSVITAグレイシャーホワイ
+      [REJECT MAX_PRICE: 27800.0 > 18776.0] 【綺麗】 ブラック レッド Vita psvita PCH-
+      [REJECT MODEL_TOKENS: ['pch-2000']] SONY PlayStation Vita ホワイト1000
+      [REJECT MAX_PRICE: 19900.0 > 18776.0] 【本日最終出品＆値引き済！】PS Vita PCH-2000
+      [REJECT MAX_PRICE: 20799.0 > 18776.0] 【美品】SONY PlayStation Vita PCH-
+      [REJECT MODEL_TOKENS: ['pch-2000']] SONY PlayStation Vita PCH-1100
+      [REJECT MAX_PRICE: 21980.0 > 18776.0] 美品 SONY PS Vita PCH-2000 ブラック 
+      [REJECT EXCLUDE] PSVITA PCH-2000 オレンジ　ジャンク　本体のみ
+      [REJECT MODEL_TOKENS: ['pch-2000']] 【478】 PS Vita Wi-Fiモデル アクアブルー
+      [REJECT MODEL_TOKENS: ['pch-2000']] ps vita psvita 　未使用　新品　ブラック　we
+      [REJECT MAX_PRICE: 25300.0 > 18776.0] PlayStation Vita PCH-2000 ホワイト
+      [REJECT MAX_PRICE: 19800.0 > 18776.0] 【美品】PCH2000/PCH-2000 Vita ビータ 
+      [REJECT MODEL_TOKENS: ['pch-2000']] 充電コード PS Vita用 USB充電ケーブル PS VI
+      [REJECT MODEL_TOKENS: ['pch-2000']] 充電コード PS Vita用 USB充電ケーブル PS VI
+      [REJECT MODEL_TOKENS: ['pch-2000']] 充電コード PS Vita用 USB充電ケーブル PS VI
+      [REJECT MODEL_TOKENS: ['pch-2000']] 充電コード PS Vita用 USB充電ケーブル PS VI
+      [REJECT MAX_PRICE: 30000.0 > 18776.0] ソニー(SONY)のPSVITA PCH-2000その他ソフ
+      [REJECT MAX_PRICE: 30000.0 > 18776.0] ソニー(SONY)のPSVITA PCH-2000その他ソフ
+      [REJECT MAX_PRICE: 19800.0 > 18776.0] プレイステーションヴィータ(PlayStation Vita
+      [REJECT MAX_PRICE: 19800.0 > 18776.0] プレイステーションヴィータ(PlayStation Vita
+      [REJECT MODEL_TOKENS: ['pch-2000']] 充電コード PS Vita用 USB充電ケーブル PS VI
+      [REJECT MODEL_TOKENS: ['pch-2000']] 充電コード PS Vita用 USB充電ケーブル PS VI
+      [REJECT MAX_PRICE: 22800.0 > 18776.0] プレイステーションヴィータ(PlayStation Vita
+      [REJECT MAX_PRICE: 22800.0 > 18776.0] プレイステーションヴィータ(PlayStation Vita
+      [REJECT MAX_PRICE: 29980.0 > 18776.0] 【美品・完品】PlayStation Vita PCH-20
+      [REJECT MAX_PRICE: 29980.0 > 18776.0] 【美品・完品】PlayStation Vita PCH-20
+      [REJECT MODEL_TOKENS: ['pch-2000']] psvita  ブルーブラック　pch2000バリューパック
+      [REJECT MODEL_TOKENS: ['pch-2000']] psvita  ブルーブラック　pch2000バリューパック
+      [REJECT MAX_PRICE: 29980.0 > 18776.0] プレイステーションヴィータ(PlayStation Vita
+      [REJECT MAX_PRICE: 29980.0 > 18776.0] プレイステーションヴィータ(PlayStation Vita
+      [REJECT MAX_PRICE: 28000.0 > 18776.0]  中古品 ゲーム PS Vita 本体 PCH-2000 ラ
+      [REJECT MAX_PRICE: 28000.0 > 18776.0]  中古品 ゲーム PS Vita 本体 PCH-2000 ラ
+      [REJECT MAX_PRICE: 31800.0 > 18776.0] プレイステーションヴィータ(PlayStation Vita
+      [REJECT MAX_PRICE: 31800.0 > 18776.0] プレイステーションヴィータ(PlayStation Vita
+      [REJECT MAX_PRICE: 24700.0 > 18776.0]  中古品 ゲーム PS Vita 本体 PCH-2000 ア
+      [REJECT MAX_PRICE: 24700.0 > 18776.0]  中古品 ゲーム PS Vita 本体 PCH-2000 ア
+      [REJECT MODEL_TOKENS: ['pch-2000']] 【新品未開封】デュアルショック4 3m充電ケーブル(PS4)
+      [REJECT MODEL_TOKENS: ['pch-2000']] 【新品未開封】デュアルショック4 3m充電ケーブル(PS4)
+      [REJECT MAX_PRICE: 29800.0 > 18776.0] ソニー(SONY)のPS Vita PCH-2000 ホワイ
+      [REJECT MAX_PRICE: 29800.0 > 18776.0] ソニー(SONY)のPS Vita PCH-2000 ホワイ
+      [REJECT MIN_PRICE: 989.0 < 2816.4] プレイステーションヴィータ(PlayStation Vita
+      [REJECT MIN_PRICE: 989.0 < 2816.4] プレイステーションヴィータ(PlayStation Vita
+      [REJECT MIN_PRICE: 1468.0 < 2816.4] 【人気商品】ASDEC アスデック PS VITA PCH-
+      [REJECT MIN_PRICE: 1468.0 < 2816.4] 【人気商品】ASDEC アスデック PS VITA PCH-
+      [REJECT MODEL_TOKENS: ['pch-2000']] psvita  ps vita　pch2000　ドラゴンクエ
+      [REJECT MODEL_TOKENS: ['pch-2000']] psvita  ps vita　pch2000　ドラゴンクエ
+      [REJECT MODEL_TOKENS: ['pch-2000']] VITA 咲-Saki-全国編／タイムトラベラーズ／ウイニン
+      [REJECT MODEL_TOKENS: ['pch-2000']] VITA 咲-Saki-全国編／タイムトラベラーズ／ウイニン
+      [REJECT MODEL_TOKENS: ['pch-2000']] PS VITA リライト／メモリーズオフ イノサンフィーユ(
+      [REJECT MODEL_TOKENS: ['pch-2000']] PS VITA リライト／メモリーズオフ イノサンフィーユ(
+      [REJECT MAX_PRICE: 29800.0 > 18776.0] ソニー(SONY)のSONY PS Vita PCH-200
+      [REJECT MAX_PRICE: 29800.0 > 18776.0] ソニー(SONY)のSONY PS Vita PCH-200
+      [REJECT MAX_PRICE: 29000.0 > 18776.0] プレイステーションヴィータ(PlayStation Vita
+      [REJECT MAX_PRICE: 29000.0 > 18776.0] プレイステーションヴィータ(PlayStation Vita
+      [REJECT MAX_PRICE: 27700.0 > 18776.0] プレイステーションヴィータ(PlayStation Vita
+      [REJECT MAX_PRICE: 27700.0 > 18776.0] プレイステーションヴィータ(PlayStation Vita
+      [REJECT MIN_PRICE: 989.0 < 2816.4] プレイステーションヴィータ(PlayStation Vita
+      [REJECT MIN_PRICE: 989.0 < 2816.4] プレイステーションヴィータ(PlayStation Vita
+      [REJECT MODEL_TOKENS: ['pch-2000']] 【479】 PS Vita Wi-Fiモデル アクアブルー(
+      [REJECT MODEL_TOKENS: ['pch-2000']] 【479】 PS Vita Wi-Fiモデル アクアブルー(
+      [REJECT MODEL_TOKENS: ['pch-2000']] 【478】 PS Vita Wi-Fiモデル アクアブルー(
+      [REJECT MODEL_TOKENS: ['pch-2000']] 【478】 PS Vita Wi-Fiモデル アクアブルー(
+      [REJECT MODEL_TOKENS: ['pch-2000']] 【477】 PS Vita Wi-Fiモデル グレイシャーホ
+      [REJECT MODEL_TOKENS: ['pch-2000']] 【477】 PS Vita Wi-Fiモデル グレイシャーホ
+      [REJECT MODEL_TOKENS: ['pch-2000']] 【A475】 PS Vita Wi-Fiモデル ネオンオレン
+      [REJECT MODEL_TOKENS: ['pch-2000']] 【A475】 PS Vita Wi-Fiモデル ネオンオレン
+      [REJECT MODEL_TOKENS: ['pch-2000']] 【A474】 PS Vita Wi-Fiモデル アクアブルー
+      [REJECT MODEL_TOKENS: ['pch-2000']] 【A474】 PS Vita Wi-Fiモデル アクアブルー
+      [REJECT MODEL_TOKENS: ['pch-2000']] 【A473】 PS Vita Wi-Fiモデル グレイシャー
+      [REJECT MODEL_TOKENS: ['pch-2000']] 【A473】 PS Vita Wi-Fiモデル グレイシャー
+      [REJECT MODEL_TOKENS: ['pch-2000']] 【A472】 PS Vita Wi-Fiモデル ブラック(携
+      [REJECT MODEL_TOKENS: ['pch-2000']] 【A472】 PS Vita Wi-Fiモデル ブラック(携
+      [REJECT MODEL_TOKENS: ['pch-2000']] 【A471】 PS Vita Wi-Fiモデル カーキ(携帯
+      [REJECT MODEL_TOKENS: ['pch-2000']] 【A471】 PS Vita Wi-Fiモデル カーキ(携帯
+      [REJECT MAX_PRICE: 23480.0 > 18776.0] ソニー(SONY)のPSvita 2000 メタリック レッ
+      [REJECT MAX_PRICE: 23480.0 > 18776.0] ソニー(SONY)のPSvita 2000 メタリック レッ
+      [REJECT MAX_PRICE: 21400.0 > 18776.0] ソニー(SONY)のPCH-2000 PS VITA ブラッ
+      [REJECT MAX_PRICE: 21400.0 > 18776.0] ソニー(SONY)のPCH-2000 PS VITA ブラッ
+      [REJECT MODEL_TOKENS: ['pch-2000']] psvita  ps vita　pch2000  バリューパ
+      [REJECT MODEL_TOKENS: ['pch-2000']] psvita  ps vita　pch2000  バリューパ
+      [REJECT MODEL_TOKENS: ['pch-2000']] psvita  ps vita　pch2000　スーパー バ
+      [REJECT MODEL_TOKENS: ['pch-2000']] psvita  ps vita　pch2000　スーパー バ
+      [REJECT MODEL_TOKENS: ['pch-2000']] ps vita  psvita 　未使用　新品　ブラック　w
+      [REJECT MODEL_TOKENS: ['pch-2000']] ps vita  psvita 　未使用　新品　ブラック　w
+      [REJECT MODEL_TOKENS: ['pch-2000']] プレイステーションヴィータ(PlayStation Vita
+      [REJECT MODEL_TOKENS: ['pch-2000']] プレイステーションヴィータ(PlayStation Vita
+  [AFTER FILTER] Y!Flea: 30件, Rakuma: 6件
+
+========================================
+Target ID 3: Panasonic DMC-TZ3 | KW: DMC-TZ3
+MaxPrice: 7333.0, MinProfit: 0.0, Exclude: ジャンク,故障,不動,部品取り,箱のみ,写真のみ,現状渡し,訳あり
+  [RAW RESULTS] Y!Flea: 17件, Rakuma: 80件, Y!Auc: 50件
+    Y!Flea item: ¥5000 | Panasonic/パナソニック コンパクトデジタルカメラ LUMIX ルミック
+    Y!Flea item: ¥6299 | Panasonic DMC-TZ3 Panasonic LUMIX コンパクトデ
+    Y!Flea item: ¥6100 | Panasonic LUMIX TZ DMC-TZ3-K デジカメ（管理番号YD
+    Rakuma item: ¥4160.0 | 難あり パナソニック Panasonic LUMIX DMC-TZ3 10x バ
+    Rakuma item: ¥4160.0 | 難あり パナソニック Panasonic LUMIX DMC-TZ3 10x バ
+    Rakuma item: ¥7250.0 | パナソニック Panasonic LUMIX DMC-TZ7 12x バッテリー
+      [REJECT EXCLUDE] 【動作確認済・訳あり】Panasonic LUMIX DMC
+      [REJECT MAX_PRICE: 7780.0 > 7333.0] 【付属品多数】パナソニック Panasonic LUMIX 
+      [REJECT MODEL_TOKENS: ['dmc-tz3']] 送料無料■中古■パナソニック純正品■DMW-BCD10■リチ
+      [REJECT MAX_PRICE: 9000.0 > 7333.0] 【動作確認済】Panasonic LUMIX DMC-TZ3
+      [REJECT EXCLUDE] Panasonic　LUMIX DMC-TZ3 デジカメ　ジ
+      [REJECT MAX_PRICE: 8480.0 > 7333.0] 【極美品 即発送】パナソニック Panasonic DMC-
+      [REJECT MAX_PRICE: 11100.0 > 7333.0] 【極美品】Panasonic LUMIX DMC-TZ3 ブ
+      [REJECT MODEL_TOKENS: ['dmc-tz3']] パナソニック LUMIX　TZ3用バッテリーチャージャー 充
+      [REJECT MAX_PRICE: 12600.0 > 7333.0] 【動作確認済・付属品有】Panasonic LUMIX DM
+      [REJECT MODEL_TOKENS: ['dmc-tz3']] パナソニック【純正】充電器　DE-A45　【充電確認済】
+      [REJECT MAX_PRICE: 11000.0 > 7333.0] 【値下げ】LUMIX DMC-TZ3　 コンパクトデジタルカ
+      [REJECT MODEL_TOKENS: ['dmc-tz3']] LUMIX ブラウン 本革 レザーカメラケース DMW-CT
+      [REJECT MODEL_TOKENS: ['dmc-tz3']] LUMIX DMC-FX37 シルバー マリンケース付き　水
+      [REJECT MODEL_TOKENS: ['dmc-tz3']] パナソニック Panasonic LUMIX DMC-TZ7
+      [REJECT MODEL_TOKENS: ['dmc-tz3']] パナソニック Panasonic LUMIX DMC-TZ7
+      [REJECT MAX_PRICE: 9390.0 > 7333.0] 【動作保証】 パナソニック Panasonic LUMIX 
+      [REJECT MAX_PRICE: 9390.0 > 7333.0] 【動作保証】 パナソニック Panasonic LUMIX 
+      [REJECT MAX_PRICE: 9680.0 > 7333.0] 難あり パナソニック Panasonic LUMIX DMC
+      [REJECT MAX_PRICE: 9680.0 > 7333.0] 難あり パナソニック Panasonic LUMIX DMC
+      [REJECT MAX_PRICE: 7780.0 > 7333.0] 難あり パナソニック Panasonic LUMIX DMC
+      [REJECT MAX_PRICE: 7780.0 > 7333.0] 難あり パナソニック Panasonic LUMIX DMC
+      [REJECT MODEL_TOKENS: ['dmc-tz3']] パナソニック Panasonic LUMIX DMC-TZ7
+      [REJECT MODEL_TOKENS: ['dmc-tz3']] パナソニック Panasonic LUMIX DMC-TZ7
+      [REJECT MODEL_TOKENS: ['dmc-tz3']] パナソニック Panasonic LUMIX DMC-TZ7
+      [REJECT MODEL_TOKENS: ['dmc-tz3']] パナソニック Panasonic LUMIX DMC-TZ7
+      [REJECT MODEL_TOKENS: ['dmc-tz3']] Panasonic パナソニック DMC-TZ10 同梱無料
+      [REJECT MODEL_TOKENS: ['dmc-tz3']] Panasonic パナソニック DMC-TZ10 同梱無料
+      [REJECT MAX_PRICE: 15999.0 > 7333.0] Panasonic LUMIX DMC-TZ30 コンパクト
+      [REJECT MAX_PRICE: 15999.0 > 7333.0] Panasonic LUMIX DMC-TZ30 コンパクト
+      [REJECT MAX_PRICE: 12999.0 > 7333.0] Panasonic LUMIX DMC-TZ30 コンパクト
+      [REJECT MAX_PRICE: 12999.0 > 7333.0] Panasonic LUMIX DMC-TZ30 コンパクト
+      [REJECT MAX_PRICE: 11300.0 > 7333.0] パナソニック(Panasonic)の中古 DMC-TZ35 
+      [REJECT MAX_PRICE: 11300.0 > 7333.0] パナソニック(Panasonic)の中古 DMC-TZ35 
+      [REJECT MODEL_TOKENS: ['dmc-tz3']] パナソニック(Panasonic)の中古 DMC-TZ7 レ
+      [REJECT MODEL_TOKENS: ['dmc-tz3']] パナソニック(Panasonic)の中古 DMC-TZ7 レ
+      [REJECT MODEL_TOKENS: ['dmc-tz3']] ルミックス(LUMIX)のLUMIX DMC-TZ7 ブラッ
+      [REJECT MODEL_TOKENS: ['dmc-tz3']] ルミックス(LUMIX)のLUMIX DMC-TZ7 ブラッ
+      [REJECT MAX_PRICE: 11300.0 > 7333.0] 【H2161】 Panasonic LUMIX DMC-TZ
+      [REJECT MAX_PRICE: 11300.0 > 7333.0] 【H2161】 Panasonic LUMIX DMC-TZ
+      [REJECT MAX_PRICE: 22800.0 > 7333.0] パナソニック(Panasonic)の【極美品・付属品完備】P
+      [REJECT MAX_PRICE: 22800.0 > 7333.0] パナソニック(Panasonic)の【極美品・付属品完備】P
+      [REJECT MODEL_TOKENS: ['dmc-tz3']] パナソニック(Panasonic)の【中古】(パナソニック)
+      [REJECT MODEL_TOKENS: ['dmc-tz3']] パナソニック(Panasonic)の【中古】(パナソニック)
+      [REJECT MAX_PRICE: 12980.0 > 7333.0] Panasonic パナソニック LUMIX DMC-TZ3
+      [REJECT MAX_PRICE: 12980.0 > 7333.0] Panasonic パナソニック LUMIX DMC-TZ3
+      [REJECT MAX_PRICE: 8500.0 > 7333.0] Panasonic LUMIX DMC-TZ3 シルバー 光
+      [REJECT MAX_PRICE: 8500.0 > 7333.0] Panasonic LUMIX DMC-TZ3 シルバー 光
+      [REJECT MODEL_TOKENS: ['dmc-tz3']] パナソニック(Panasonic)の送料無料★パナソニック純
+      [REJECT MODEL_TOKENS: ['dmc-tz3']] パナソニック(Panasonic)の送料無料★パナソニック純
+      [REJECT MODEL_TOKENS: ['dmc-tz3']] ＤＭＣ－ＴＺ７０(コンパクトデジタルカメラ)
+      [REJECT MODEL_TOKENS: ['dmc-tz3']] ＤＭＣ－ＴＺ７０(コンパクトデジタルカメラ)
+      [REJECT MAX_PRICE: 13500.0 > 7333.0] パナソニックデジカメLUMIX DMC-TZ30(コンパクト
+      [REJECT MAX_PRICE: 13500.0 > 7333.0] パナソニックデジカメLUMIX DMC-TZ30(コンパクト
+      [REJECT MAX_PRICE: 19240.0 > 7333.0] 【動作保証】 パナソニック Panasonic LUMIX 
+      [REJECT MAX_PRICE: 19240.0 > 7333.0] 【動作保証】 パナソニック Panasonic LUMIX 
+      [REJECT MAX_PRICE: 10110.0 > 7333.0] 難あり パナソニック Panasonic LUMIX DMC
+      [REJECT MAX_PRICE: 10110.0 > 7333.0] 難あり パナソニック Panasonic LUMIX DMC
+      [REJECT MODEL_TOKENS: ['dmc-tz3']] パナソニック(Panasonic)のDMC-TZ70 シルバ
+      [REJECT MODEL_TOKENS: ['dmc-tz3']] パナソニック(Panasonic)のDMC-TZ70 シルバ
+      [REJECT MAX_PRICE: 10500.0 > 7333.0] パナソニック(Panasonic)のDMC-TZ30 レッド
+      [REJECT MAX_PRICE: 10500.0 > 7333.0] パナソニック(Panasonic)のDMC-TZ30 レッド
+      [REJECT MODEL_TOKENS: ['dmc-tz3']] パナソニック(Panasonic)の超美品 DMC-TZ7 
+      [REJECT MODEL_TOKENS: ['dmc-tz3']] パナソニック(Panasonic)の超美品 DMC-TZ7 
+      [REJECT MODEL_TOKENS: ['dmc-tz3']] パナソニック(Panasonic)の良品中古 DMC-TZ7
+      [REJECT MODEL_TOKENS: ['dmc-tz3']] パナソニック(Panasonic)の良品中古 DMC-TZ7
+      [REJECT MODEL_TOKENS: ['dmc-tz3']] 難あり パナソニック Panasonic LUMIX DMC
+      [REJECT MODEL_TOKENS: ['dmc-tz3']] 難あり パナソニック Panasonic LUMIX DMC
+      [REJECT MODEL_TOKENS: ['dmc-tz3']] パナソニック(Panasonic)の送料無料★パナソニック純
+      [REJECT MODEL_TOKENS: ['dmc-tz3']] パナソニック(Panasonic)の送料無料★パナソニック純
+      [REJECT MAX_PRICE: 9480.0 > 7333.0] 【極美品 即発送】パナソニック Panasonic DMC-
+      [REJECT MAX_PRICE: 9480.0 > 7333.0] 【極美品 即発送】パナソニック Panasonic DMC-
+  [AFTER FILTER] Y!Flea: 4件, Rakuma: 22件
+
+========================================
+Target ID 2: Canon Power Shot S110 | KW: Canon Power Shot S110
+MaxPrice: 30462.0, MinProfit: 0.0, Exclude: ジャンク,故障,不動,部品取り,箱のみ,写真のみ,現状渡し,訳あり
+  [RAW RESULTS] Y!Flea: 0件, Rakuma: 52件, Y!Auc: 4件
+    Rakuma item: ¥5660.0 | 【動作保証】 キヤノン Canon PowerShot S10 同梱無料 #am
+    Rakuma item: ¥5660.0 | 【動作保証】 キヤノン Canon PowerShot S10 同梱無料 #am
+    Rakuma item: ¥34800.0 | キヤノン(Canon)のCanon PowerShot S120 キャノン パワ
+      [REJECT MODEL_TOKENS: ['s110']] 【動作保証】 キヤノン Canon PowerShot S1
+      [REJECT MODEL_TOKENS: ['s110']] 【動作保証】 キヤノン Canon PowerShot S1
+      [REJECT MODEL_TOKENS: ['s110']] キヤノン(Canon)のCanon PowerShot S1
+      [REJECT MODEL_TOKENS: ['s110']] キヤノン(Canon)のCanon PowerShot S1
+      [REJECT MODEL_TOKENS: ['s110']] キヤノン Canon PowerShot S1 IS 10x
+      [REJECT MODEL_TOKENS: ['s110']] キヤノン Canon PowerShot S1 IS 10x
+      [REJECT EXCLUDE] ★ジャンク特価★ キヤノン Canon PowerShot 
+      [REJECT EXCLUDE] ★ジャンク特価★ キヤノン Canon PowerShot 
+      [REJECT MODEL_TOKENS: ['s110']] キヤノン Canon PowerShot S1 IS 10x
+      [REJECT MODEL_TOKENS: ['s110']] キヤノン Canon PowerShot S1 IS 10x
+      [REJECT MODEL_TOKENS: ['s110']] 難あり キヤノン Canon PowerShot S1 IS
+      [REJECT MODEL_TOKENS: ['s110']] 難あり キヤノン Canon PowerShot S1 IS
+      [REJECT MODEL_TOKENS: ['s110']] キヤノン(Canon)のキヤノン デジカメ Power Sh
+      [REJECT MODEL_TOKENS: ['s110']] キヤノン(Canon)のキヤノン デジカメ Power Sh
+      [REJECT MODEL_TOKENS: ['s110']] キヤノン(Canon)の■良品■ CANON  デジタルカメ
+      [REJECT MODEL_TOKENS: ['s110']] キヤノン(Canon)の■良品■ CANON  デジタルカメ
+      [REJECT MAX_PRICE: 31000.0 > 30462.0] キヤノン(Canon)のPowerShot S110 ブラッ
+      [REJECT MAX_PRICE: 31000.0 > 30462.0] キヤノン(Canon)のPowerShot S110 ブラッ
+      [REJECT MAX_PRICE: 57400.0 > 30462.0] アンドバイピーアンドディー(&byP&D)の【中古】 Can
+      [REJECT MAX_PRICE: 57400.0 > 30462.0] アンドバイピーアンドディー(&byP&D)の【中古】 Can
+      [REJECT MAX_PRICE: 63600.0 > 30462.0] アンドバイピーアンドディー(&byP&D)の【中古】 Can
+      [REJECT MAX_PRICE: 63600.0 > 30462.0] アンドバイピーアンドディー(&byP&D)の【中古】 Can
+      [REJECT MODEL_TOKENS: ['s110']] キヤノン(Canon)のCanon PowerShot S1
+      [REJECT MODEL_TOKENS: ['s110']] キヤノン(Canon)のCanon PowerShot S1
+      [REJECT MAX_PRICE: 35780.0 > 30462.0] ＜良品＞ Canon PowerShot S110 シルバー
+      [REJECT MAX_PRICE: 35780.0 > 30462.0] ＜良品＞ Canon PowerShot S110 シルバー
+      [REJECT EXCLUDE] ＜難有品・ジャンク品＞Canon PowerShot S12
+      [REJECT EXCLUDE] ＜難有品・ジャンク品＞Canon PowerShot S12
+      [REJECT MAX_PRICE: 77324.0 > 30462.0] Canon デジタルカメラ PowerShot S110 約
+      [REJECT MAX_PRICE: 77324.0 > 30462.0] Canon デジタルカメラ PowerShot S110 約
+      [REJECT MAX_PRICE: 84036.0 > 30462.0] Canon デジタルカメラ PowerShot S110 約
+      [REJECT MAX_PRICE: 84036.0 > 30462.0] Canon デジタルカメラ PowerShot S110 約
+      [REJECT MAX_PRICE: 107160.0 > 30462.0] Canon デジタルカメラ PowerShot S110 約
+      [REJECT MAX_PRICE: 107160.0 > 30462.0] Canon デジタルカメラ PowerShot S110 約
+      [REJECT MODEL_TOKENS: ['s110']] Canon デジタルカメラ PowerShot S100 ブ
+      [REJECT MODEL_TOKENS: ['s110']] Canon デジタルカメラ PowerShot S100 ブ
+      [REJECT MAX_PRICE: 95304.0 > 30462.0] Canon デジタルカメラ PowerShot S110 約
+      [REJECT MAX_PRICE: 95304.0 > 30462.0] Canon デジタルカメラ PowerShot S110 約
+      [REJECT MAX_PRICE: 74738.0 > 30462.0] Canon デジタルカメラ PowerShot S110 約
+      [REJECT MAX_PRICE: 74738.0 > 30462.0] Canon デジタルカメラ PowerShot S110 約
+      [REJECT MAX_PRICE: 68769.0 > 30462.0] Canon デジタルカメラ PowerShot S110 約
+      [REJECT MAX_PRICE: 68769.0 > 30462.0] Canon デジタルカメラ PowerShot S110 約
+      [REJECT MODEL_TOKENS: ['s110']] Canon デジタルカメラ PowerShot S100 ブ
+      [REJECT MODEL_TOKENS: ['s110']] Canon デジタルカメラ PowerShot S100 ブ
+      [REJECT MAX_PRICE: 33400.0 > 30462.0] キヤノン(Canon)の■極上品■ CANON  Power
+      [REJECT MAX_PRICE: 33400.0 > 30462.0] キヤノン(Canon)の■極上品■ CANON  Power
+      [REJECT EXCLUDE] キヤノン(Canon)のキヤノン パワーショットS45 ジャ
+      [REJECT EXCLUDE] キヤノン(Canon)のキヤノン パワーショットS45 ジャ
+      [REJECT MODEL_TOKENS: ['s110']] キヤノン(Canon)の■並品■ CANON  PowerS
+      [REJECT MODEL_TOKENS: ['s110']] キヤノン(Canon)の■並品■ CANON  PowerS
+      [REJECT MODEL_TOKENS: ['s110']] キヤノン(Canon)のCanon PowerShot S 
+      [REJECT MODEL_TOKENS: ['s110']] キヤノン(Canon)のCanon PowerShot S 
+  [AFTER FILTER] Y!Flea: 0件, Rakuma: 0件
+
+========================================
+Target ID 1: New 3DS LL | KW: New 3DS LL
+MaxPrice: 21600.0, MinProfit: 0.0, Exclude: ジャンク,箱のみ
+  [RAW RESULTS] Y!Flea: 100件, Rakuma: 80件, Y!Auc: 50件
+    Y!Flea item: ¥20800 | 上画面IPS Newニンテンドー3DS LL メタリックレッド 本体 充電器 ソ
+    Y!Flea item: ¥24300 | Newニンテンドー3DS LL ピンク×ホワイト 本体 妖怪ウォッチ3 スシ ソ
+    Y!Flea item: ¥17000 | new 3ds ll ライムブラック ※ ジャンク
+    Rakuma item: ¥30000.0 | ニンテンドー3DS(ニンテンドー3DS)のNintendo 3DS NEW ニン
+    Rakuma item: ¥30000.0 | ニンテンドー3DS(ニンテンドー3DS)のNintendo 3DS NEW ニン
+    Rakuma item: ¥29000.0 | ニンテンドー3DS(ニンテンドー3DS)のNintendo 3DS NEW ニン
+      [REJECT MAX_PRICE: 24300.0 > 21600.0] Newニンテンドー3DS LL ピンク×ホワイト 本体 妖怪
+      [REJECT EXCLUDE] new 3ds ll ライムブラック ※ ジャンク
+      [REJECT MAX_PRICE: 28000.0 > 21600.0] Newニンテンドー3DS LL メタリックブルー 本体
+      [REJECT MAX_PRICE: 21800.0 > 21600.0] Newニンテンドー3DS LL ネイビー 本体のみ 動作確認
+      [REJECT MAX_PRICE: 27500.0 > 21600.0] Newニンテンドー3DS LL ライム×ブラック 本体 AC
+      [REJECT MAX_PRICE: 34000.0 > 21600.0] 希少 上下IPS液晶 Newニンテンドー3DS LL メタリ
+      [REJECT MAX_PRICE: 26600.0 > 21600.0] Newニンテンドー3DS LL メタリックブルー 本体のみ 
+      [REJECT EXCLUDE] 「ジャンク品」任天堂 Newニンテンドー3DS LL メタリ
+      [REJECT MAX_PRICE: 32000.0 > 21600.0] 美品 Newニンテンドー3DS LL ライム×ブラック 本体
+      [REJECT MODEL_TOKENS: ['3ds']] Newニンテンドー2DS LL ブラック×ライム 本体 ポケ
+      [REJECT MODEL_TOKENS: ['3ds']] Newニンテンドー2DS LL ドラゴンクエスト はぐれメタ
+      [REJECT MAX_PRICE: 24300.0 > 21600.0] 【動作良好／5点セット】Newニンテンドー3DS LL メタ
+      [REJECT EXCLUDE] Newニンテンドー3DS LL メタリックブラック 本体 箱
+      [REJECT MAX_PRICE: 23800.0 > 21600.0] newニンテンドー 3DS LL Newニンテンドー3DS 
+      [REJECT MODEL_TOKENS: ['3ds']] 【動作確認済】Newニンテンドー2DS LL モンスターボー
+      [REJECT MAX_PRICE: 26500.0 > 21600.0] Newニンテンドー3DS LLメタリックブラック 本体 タッ
+      [REJECT MAX_PRICE: 23600.0 > 21600.0] Newニンテンドー3DS LL モンスターハンター4G スペ
+      [REJECT MAX_PRICE: 46500.0 > 21600.0] Newニンテンドー3DS LL ピカチュウ イエロー 本体 
+      [REJECT MAX_PRICE: 24900.0 > 21600.0] Newニンテンドー3DS LL メタリックブルー 本体　上画
+      [REJECT EXCLUDE] ジャンク　Nintendo NEW 3DS LL メタリック
+      [REJECT EXCLUDE] NEW 3DS LL new3dsll 本体 メタリックブル
+      [REJECT MAX_PRICE: 28600.0 > 21600.0] Newニンテンドー3DS LL メタリックブルー
+      [REJECT MAX_PRICE: 27900.0 > 21600.0] Newニンテンドー3DSLL メタリックレッド
+      [REJECT MODEL_TOKENS: ['3ds']] Newニンテンドー2DS LL ドラゴンクエスト はぐれメタ
+      [REJECT MAX_PRICE: 26000.0 > 21600.0] Newニンテンドー3DS LL メタリックブルー 本体 ソフ
+      [REJECT MAX_PRICE: 26800.0 > 21600.0] Newニンテンドー3DS LL メタリックブルー 本体 箱付
+      [REJECT MAX_PRICE: 29000.0 > 21600.0] Newニンテンドー3DS LL メタリックブラック 本体 箱
+      [REJECT MODEL_TOKENS: ['3ds']] Newニンテンドー2DS LL モンスターボールエディション
+      [REJECT MAX_PRICE: 26000.0 > 21600.0] 任天堂 Newニンテンドー3DS LL ブラック 本体 タッ
+      [REJECT MAX_PRICE: 24999.0 > 21600.0] NEW 3DS LL new3dsll 本体 メタリックブル
+      [REJECT MAX_PRICE: 51700.0 > 21600.0] Newニンテンドー3DS LL 新品同等　キズ汚れまったく無
+      [REJECT MAX_PRICE: 79800.0 > 21600.0] Newニンテンドー3DS LL ピカチュウ イエロー 限定版
+      [REJECT MAX_PRICE: 37800.0 > 21600.0] Newニンテンドー3DS LL パールホワイト 本体 箱付き
+      [REJECT MAX_PRICE: 22000.0 > 21600.0] Newニンテンドー3DSLL メタリックブルー　うごメモ付き
+      [REJECT EXCLUDE] Newニンテンドー3DS LL メタリックブルー 本体ジャン
+      [REJECT MAX_PRICE: 42500.0 > 21600.0] 【DLソフト多数】Newニンテンドー3DS LL メタリック
+      [REJECT MAX_PRICE: 25000.0 > 21600.0] 上画面IPS Newニンテンドー3DS LL メタリックブル
+      [REJECT MAX_PRICE: 36555.0 > 21600.0] 3dsll 妖怪ウォッチ　未使用　新品
+      [REJECT MAX_PRICE: 22000.0 > 21600.0] Newニンテンドー3DS LL メタリックブラック 本体
+      [REJECT MAX_PRICE: 25300.0 > 21600.0] Newニンテンドー3DS LL メタリックブルー 本体 充電
+      [REJECT MODEL_TOKENS: ['3ds']] 【動作確認済】Newニンテンドー2DS LL ブラック×ター
+      [REJECT MAX_PRICE: 27500.0 > 21600.0] Newニンテンドー3DS LL メタリックブルー 本体 充電
+      [REJECT MAX_PRICE: 22600.0 > 21600.0] Newニンテンドー3DS LL メタリックブルー 本体 ソフ
+      [REJECT MAX_PRICE: 38800.0 > 21600.0] 【本体 極美品】 Newニンテンドー3DS LL メタリック
+      [REJECT MODEL_TOKENS: ['3ds']] Newニンテンドー2DS LL ホワイト×オレンジ 本体
+      [REJECT MAX_PRICE: 41000.0 > 21600.0] Newニンテンドー3DS LL メタリックレッド　美品
+      [REJECT MAX_PRICE: 26500.0 > 21600.0] Newニンテンドー3DS LL メタリックブラック 本体 ソ
+      [REJECT MAX_PRICE: 71000.0 > 21600.0] Newニンテンドー3DS LL スーパーファミコンエディショ
+      [REJECT MAX_PRICE: 27000.0 > 21600.0] Newニンテンドー3DS LL メタリックブルー本体 中古 
+      [REJECT EXCLUDE] New Nintendo 3DS LL パールホワイト ジャ
+      [REJECT MODEL_TOKENS: ['3ds']] 【極美品】Newニンテンドー2DS LL MINECRAFT
+      [REJECT MAX_PRICE: 24000.0 > 21600.0] Newニンテンドー3DS LL メタリックブルー 本体 ソフ
+      [REJECT MODEL_TOKENS: ['3ds']] Newニンテンドー2DS LL ホワイト×オレンジ
+      [REJECT MAX_PRICE: 24300.0 > 21600.0] Newニンテンドー3DS LL メタリックブルー 本体 ソフ
+      [REJECT MAX_PRICE: 24200.0 > 21600.0] 【良品】Newニンテンドー3DS LL 本体 RED-001
+      [REJECT MAX_PRICE: 39888.0 > 21600.0] new3dsll　 未使用　新品　展示品　ピンクホワイトNE
+      [REJECT MAX_PRICE: 31400.0 > 21600.0] 美品！外箱付き！Newニンテンドー3DS LL メタリックブ
+      [REJECT MAX_PRICE: 44000.0 > 21600.0] 【極美品・完品】New Nintendo 3DS LL メタ
+      [REJECT EXCLUDE] Newニンテンドー3DS LL パールホワイト ジャンク 上
+      [REJECT MAX_PRICE: 31500.0 > 21600.0] 【美品・動作確認済】Newニンテンドー3DS LL ライム×
+      [REJECT MIN_PRICE: 950.0 < 3240.0] Newニンテンドー3DS LL用 バッテリーパック SPR-
+      [REJECT MAX_PRICE: 32800.0 > 21600.0] New ニンテンドー3DS LL メタリックブルー RED-
+      [REJECT EXCLUDE] Nintendo New 2DS LL 本体 ジャンク品
+      [REJECT MIN_PRICE: 1899.0 < 3240.0] 妖怪ウォッチ ジバニャンポーチ　ニンテンドー3DS LL
+      [REJECT MAX_PRICE: 29400.0 > 21600.0] 極美品！Newニンテンドー3DS メタリックブルー　0061
+      [REJECT EXCLUDE] ジャンク 通電不可 New ニンテンドー3DS LL 本体 
+      [REJECT MODEL_TOKENS: ['3ds']] 極美品　Newニンテンドー2DS LL マインクラフト エデ
+      [REJECT EXCLUDE] NEW 2DS LL new2dsll 本体 ジャンク品 ラ
+      [REJECT MAX_PRICE: 29990.0 > 21600.0] Newニンテンドー3DS LL メタリックブルー 本体
+      [REJECT MAX_PRICE: 29500.0 > 21600.0] 任天堂 Newニンテンドー3DS LL メタリックブルー 3
+      [REJECT MAX_PRICE: 24980.0 > 21600.0] 【美品】Nintendo ニンテンドー new 3ds ブラ
+      [REJECT EXCLUDE] 【ジャンク品】Newニンテンドー2DS LL ブラック×ター
+      [REJECT MAX_PRICE: 29000.0 > 21600.0] 【美品】任天堂 Newニンテンドー3DS LL メタリックブ
+      [REJECT MAX_PRICE: 26400.0 > 21600.0] Newニンテンドー2DS LL ブラック×ライム 本体Min
+      [REJECT EXCLUDE] ジャンク Newニンテンドー3DS LL どうぶつの森 ハッ
+      [REJECT MAX_PRICE: 38000.0 > 21600.0] Newニンテンドー3DS LL メタリックレッド 本体 ゼル
+      [REJECT MAX_PRICE: 46000.0 > 21600.0] Newニンテンドー3DS LL モンスターハンター4G スペ
+      [REJECT MAX_PRICE: 22600.0 > 21600.0] Newニンテンドー3DS LL メタリックレッド 本体
+      [REJECT MAX_PRICE: 33800.0 > 21600.0] 【極上美品・液晶美麗】Newニンテンドー3DS LL 本体　
+      [REJECT MAX_PRICE: 23900.0 > 21600.0] Newニンテンドー3DS LL メタリックブルー 本体 充電
+      [REJECT MAX_PRICE: 23700.0 > 21600.0] 【上IPS】Newニンテンドー3DS LL メタリックブルー
+      [REJECT MAX_PRICE: 57500.0 > 21600.0] 【新品未使用】Newニンテンドー3DS LL メタリックブル
+      [REJECT MAX_PRICE: 33200.0 > 21600.0] Newニンテンドー3DS LL パールホワイト 本体 箱付き
+      [REJECT MAX_PRICE: 25557.0 > 21600.0] 3dsll 未使用　新品 　newスーパーマリオブラザーズ2
+      [REJECT MAX_PRICE: 26585.0 > 21600.0] 3dsll ポケモン　Yパック　ゼルネアス・イベルタルブルー
+      [REJECT MAX_PRICE: 31000.0 > 21600.0] 【使用少ない】ニンテンドー New3DS LL パールホワイ
+      [REJECT MAX_PRICE: 30000.0 > 21600.0] ニンテンドー3DS(ニンテンドー3DS)のNintendo 
+      [REJECT MAX_PRICE: 30000.0 > 21600.0] ニンテンドー3DS(ニンテンドー3DS)のNintendo 
+      [REJECT MAX_PRICE: 29000.0 > 21600.0] ニンテンドー3DS(ニンテンドー3DS)のNintendo 
+      [REJECT MAX_PRICE: 29000.0 > 21600.0] ニンテンドー3DS(ニンテンドー3DS)のNintendo 
+      [REJECT MIN_PRICE: 699.0 < 3240.0] Newニンテンドー3DS LL ハードケース クリア New
+      [REJECT MIN_PRICE: 699.0 < 3240.0] Newニンテンドー3DS LL ハードケース クリア New
+      [REJECT MIN_PRICE: 300.0 < 3240.0] 3DS 2DS DSi 充電ケーブル Nintendo US
+      [REJECT MIN_PRICE: 300.0 < 3240.0] 3DS 2DS DSi 充電ケーブル Nintendo US
+      [REJECT MIN_PRICE: 979.0 < 3240.0] ★三色【3DS LL/3DS/DSi LL/DSi 巻取り式
+      [REJECT MIN_PRICE: 979.0 < 3240.0] ★三色【3DS LL/3DS/DSi LL/DSi 巻取り式
+      [REJECT MIN_PRICE: 2200.0 < 3240.0] new3dsll  ポケモン　モンスターボール　新品　　未使
+      [REJECT MIN_PRICE: 2200.0 < 3240.0] new3dsll  ポケモン　モンスターボール　新品　　未使
+      [REJECT MAX_PRICE: 21800.0 > 21600.0] ニンテンドウ(任天堂)のNintendo New 3DS L
+      [REJECT MAX_PRICE: 21800.0 > 21600.0] ニンテンドウ(任天堂)のNintendo New 3DS L
+      [REJECT MIN_PRICE: 300.0 < 3240.0] 3DS 2DS DSi 充電ケーブル Nintendo US
+      [REJECT MIN_PRICE: 300.0 < 3240.0] 3DS 2DS DSi 充電ケーブル Nintendo US
+      [REJECT MIN_PRICE: 300.0 < 3240.0] 3DS 2DS DSi USB 充電器 充電コード ソフト 
+      [REJECT MIN_PRICE: 300.0 < 3240.0] 3DS 2DS DSi USB 充電器 充電コード ソフト 
+      [REJECT MIN_PRICE: 550.0 < 3240.0] 2本 3DS 2DS DSi USB 充電器 充電コード ソ
+      [REJECT MIN_PRICE: 550.0 < 3240.0] 2本 3DS 2DS DSi USB 充電器 充電コード ソ
+      [REJECT MIN_PRICE: 1000.0 < 3240.0] ニンテンドー3DS(ニンテンドー3DS)の良品 ／ CYBE
+      [REJECT MIN_PRICE: 1000.0 < 3240.0] ニンテンドー3DS(ニンテンドー3DS)の良品 ／ CYBE
+      [REJECT MIN_PRICE: 650.0 < 3240.0] ニンテンドー3DS(ニンテンドー3DS)の良品 ／ ニンテン
+      [REJECT MIN_PRICE: 650.0 < 3240.0] ニンテンドー3DS(ニンテンドー3DS)の良品 ／ ニンテン
+      [REJECT MIN_PRICE: 699.0 < 3240.0] USB充電ケーブル 3DS 2DS DSLite PSP W
+      [REJECT MIN_PRICE: 699.0 < 3240.0] USB充電ケーブル 3DS 2DS DSLite PSP W
+      [REJECT MIN_PRICE: 300.0 < 3240.0] NEW ニンテンドー3DS LL タッチペン 2本セット ホ
+      [REJECT MIN_PRICE: 300.0 < 3240.0] NEW ニンテンドー3DS LL タッチペン 2本セット ホ
+      [REJECT MIN_PRICE: 330.0 < 3240.0] ニンテンドー3DS(ニンテンドー3DS)の3DS 共通 スラ
+      [REJECT MIN_PRICE: 330.0 < 3240.0] ニンテンドー3DS(ニンテンドー3DS)の3DS 共通 スラ
+      [REJECT MIN_PRICE: 300.0 < 3240.0] 充電ケーブル 3DS 2DS DSi USB コード 充電コ
+      [REJECT MIN_PRICE: 300.0 < 3240.0] 充電ケーブル 3DS 2DS DSi USB コード 充電コ
+      [REJECT MIN_PRICE: 319.0 < 3240.0] 任天堂3DS充電ケーブルUSB急速DSiニンテンドーLL耐久
+      [REJECT MIN_PRICE: 319.0 < 3240.0] 任天堂3DS充電ケーブルUSB急速DSiニンテンドーLL耐久
+      [REJECT MAX_PRICE: 47480.0 > 21600.0] 【未使用級・上下IPS】Newニンテンドー3DS LL パー
+      [REJECT MAX_PRICE: 47480.0 > 21600.0] 【未使用級・上下IPS】Newニンテンドー3DS LL パー
+      [REJECT MAX_PRICE: 31480.0 > 21600.0] Newニンテンドー3DS LL メタリックブルー(携帯用ゲー
+      [REJECT MAX_PRICE: 31480.0 > 21600.0] Newニンテンドー3DS LL メタリックブルー(携帯用ゲー
+      [REJECT MODEL_TOKENS: ['3ds']] new2dsll　ターコイズ　 未使用　新品　展示品(携帯用
+      [REJECT MODEL_TOKENS: ['3ds']] new2dsll　ターコイズ　 未使用　新品　展示品(携帯用
+      [REJECT MIN_PRICE: 944.0 < 3240.0] 【人気商品】NEW 3DS用 タッチペン 2本セット 白 黒
+      [REJECT MIN_PRICE: 944.0 < 3240.0] 【人気商品】NEW 3DS用 タッチペン 2本セット 白 黒
+      [REJECT MIN_PRICE: 300.0 < 3240.0] 任天堂 3DS USB 充電ケーブル 1.2m(その他)
+      [REJECT MIN_PRICE: 300.0 < 3240.0] 任天堂 3DS USB 充電ケーブル 1.2m(その他)
+      [REJECT MIN_PRICE: 300.0 < 3240.0] 3DS 2DS DSi USB コード 充電コード ゲーム充
+      [REJECT MIN_PRICE: 300.0 < 3240.0] 3DS 2DS DSi USB コード 充電コード ゲーム充
+      [REJECT MIN_PRICE: 550.0 < 3240.0] 2本セット 充電器 3DS 2DS DSi USB コード 
+      [REJECT MIN_PRICE: 550.0 < 3240.0] 2本セット 充電器 3DS 2DS DSi USB コード 
+      [REJECT MIN_PRICE: 300.0 < 3240.0] 3DS 2DS DSi USB コード 充電コード Nint
+      [REJECT MIN_PRICE: 300.0 < 3240.0] 3DS 2DS DSi USB コード 充電コード Nint
+      [REJECT MAX_PRICE: 35000.0 > 21600.0] ニンテンドー3DS(ニンテンドー3DS)のNew Ninte
+      [REJECT MAX_PRICE: 35000.0 > 21600.0] ニンテンドー3DS(ニンテンドー3DS)のNew Ninte
+      [REJECT MIN_PRICE: 300.0 < 3240.0] 充電器 3DS 2DS DSi USB コード 充電コード 
+      [REJECT MIN_PRICE: 300.0 < 3240.0] 充電器 3DS 2DS DSi USB コード 充電コード 
+      [REJECT MAX_PRICE: 58000.0 > 21600.0] ニンテンドー3DS(ニンテンドー3DS)の【希少】上下ips
+      [REJECT MAX_PRICE: 58000.0 > 21600.0] ニンテンドー3DS(ニンテンドー3DS)の【希少】上下ips
+      [REJECT MIN_PRICE: 984.0 < 3240.0] 【人気商品】5 in 1 USB 充電ケーブル ニンテンドー
+      [REJECT MIN_PRICE: 984.0 < 3240.0] 【人気商品】5 in 1 USB 充電ケーブル ニンテンドー
+      [REJECT MIN_PRICE: 550.0 < 3240.0] 2本入 充電器 3DS 2DS DSi USB コード 充電
+      [REJECT MIN_PRICE: 550.0 < 3240.0] 2本入 充電器 3DS 2DS DSi USB コード 充電
+      [REJECT MIN_PRICE: 300.0 < 3240.0] 3DS 2DS DSi USB コード 充電コード Nint
+      [REJECT MIN_PRICE: 300.0 < 3240.0] 3DS 2DS DSi USB コード 充電コード Nint
+      [REJECT MIN_PRICE: 300.0 < 3240.0] 3DS 2DS DSi USB コード 充電器 充電コード 
+      [REJECT MIN_PRICE: 300.0 < 3240.0] 3DS 2DS DSi USB コード 充電器 充電コード 
+      [REJECT MODEL_TOKENS: ['3ds']] ニンテンドー2DS(ニンテンドー2DS)の希少 new ニン
+      [REJECT MODEL_TOKENS: ['3ds']] ニンテンドー2DS(ニンテンドー2DS)の希少 new ニン
+      [REJECT MIN_PRICE: 300.0 < 3240.0] NEW ニンテンドー3DS LL タッチペン 2本セット ブ
+      [REJECT MIN_PRICE: 300.0 < 3240.0] NEW ニンテンドー3DS LL タッチペン 2本セット ブ
+      [REJECT MIN_PRICE: 398.0 < 3240.0] 2in1 3DSもLiteも充電 3DS 2DS DSLit
+      [REJECT MIN_PRICE: 398.0 < 3240.0] 2in1 3DSもLiteも充電 3DS 2DS DSLit
+      [REJECT MIN_PRICE: 699.0 < 3240.0] USB 充電ケーブル 3DS 2DS DSLite PSP 
+      [REJECT MIN_PRICE: 699.0 < 3240.0] USB 充電ケーブル 3DS 2DS DSLite PSP 
+      [REJECT MIN_PRICE: 399.0 < 3240.0] ニンテンドー3DS(ニンテンドー3DS)の3DS DSi対応
+      [REJECT MIN_PRICE: 399.0 < 3240.0] ニンテンドー3DS(ニンテンドー3DS)の3DS DSi対応
+      [REJECT MIN_PRICE: 550.0 < 3240.0] 2本セット 充電器 3DS 2DS DSi USB コード 
+      [REJECT MIN_PRICE: 550.0 < 3240.0] 2本セット 充電器 3DS 2DS DSi USB コード 
+      [REJECT MIN_PRICE: 300.0 < 3240.0] ニンテンドー new 3DS LL タッチペン 白 二本セッ
+      [REJECT MIN_PRICE: 300.0 < 3240.0] ニンテンドー new 3DS LL タッチペン 白 二本セッ
+      [REJECT MIN_PRICE: 398.0 < 3240.0] 3DSもLiteも充電対応 3DS 2DS DSLite D
+      [REJECT MIN_PRICE: 398.0 < 3240.0] 3DSもLiteも充電対応 3DS 2DS DSLite D
+  [AFTER FILTER] Y!Flea: 14件, Rakuma: 0件

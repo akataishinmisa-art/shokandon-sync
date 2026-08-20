@@ -1,0 +1,25 @@
+=== Total targets: 11 ===
+
+--- Testing Target ID 11: OLYMPUS CAMEDIA FE-150 (KW: 'OLYMPUS  FE-150', MaxPrice: 4776.0) ---
+  [Mercari] raw count: 40
+    sample: 【ジャンク品】OLYMPUS FE-150 デジタルカメラ  | ¥1600.0
+  [Rakuma] raw count: 0
+  [Yahoo Auc] raw count: 49
+    sample: OLYMPUS　FE-150　USBケーブル | ¥400
+  [Yahoo Flea] raw count: 0
+
+--- Testing Target ID 10: CASIO EXILIM EX-ZR1800 (KW: 'EX-ZR1800', MaxPrice: 25836.0) ---
+  [Mercari] raw count: 40
+    sample: CASIO EXILIM EX-ZR1800 デジタルカメラ | ¥26999.0
+  [Rakuma] raw count: 0
+  [Yahoo Auc] raw count: 18
+    sample: ADS9025★ 現状品 ★ 富士フイルム FUJIFILM | ¥9380
+  [Yahoo Flea] raw count: 0
+
+--- Testing Target ID 9: EX-ZR1800 (KW: 'EX-ZR1800', MaxPrice: 25836.0) ---
+  [Mercari] raw count: 40
+    sample: CASIO EXILIM EX-ZR1800 デジタルカメラ | ¥26999.0
+  [Rakuma] raw count: 0
+  [Yahoo Auc] raw count: 18
+    sample: ADS9025★ 現状品 ★ 富士フイルム FUJIFILM | ¥9380
+  [Yahoo Flea] raw count: 0

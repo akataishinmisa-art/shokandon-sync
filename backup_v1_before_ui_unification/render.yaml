@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: shokandon-sync
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: PORT
+        value: "10000"
+      - key: RENDER
+        value: "true"
+      - key: CHROMIUM_PATH
+        value: "/usr/bin/chromium"

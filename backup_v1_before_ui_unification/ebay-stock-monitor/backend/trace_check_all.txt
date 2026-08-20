@@ -1,0 +1,38 @@
+
+========================================
+Target ID 12: COACH ストロー素材 マルチカラー ボーダー トートバッグ
+Keyword: 'COACH ストロー素材 マルチカラー ボーダー トートバッグ', Excludes: 'ジャンク,故障,不動,部品取り,箱のみ,写真のみ,現状渡し,訳あり', MaxPrice: 19100.0
+========================================
+Total Confirmed: 2
+Platform Breakdown: {'メルカリ': 2}
+  [メルカリ Sample] ¥12980.0 | COACH コーチ かごバッグ ストロー トートバッグ ターンロック ストライプ
+
+========================================
+Target ID 11: OLYMPUS CAMEDIA FE-150
+Keyword: 'OLYMPUS  FE-150', Excludes: 'ジャンク,故障,不動,部品取り,箱のみ,写真のみ,現状渡し,訳あり', MaxPrice: 4776.0
+========================================
+Total Confirmed: 74
+Platform Breakdown: {'メルカリ': 30, 'Yahoo!フリマ': 7, 'ヤフオク': 37}
+  [メルカリ Sample] ¥4300.0 | ❗️動作良好❗️デジカメ　本体　OLYMPUS FE-150
+  [Yahoo!フリマ Sample] ¥4900 | 【動作確認済】OLYMPUS CAMEDIA FE-150 デジタルカメラ 充電
+  [ヤフオク Sample] ¥1310 | オリンパス OLYMPUS FE-150 同梱無料 #am7581
+
+========================================
+Target ID 10: CASIO EXILIM EX-ZR1800
+Keyword: 'EX-ZR1800', Excludes: 'ジャンク,故障,不動,部品取り,箱のみ,写真のみ,現状渡し,訳あり', MaxPrice: 25836.0
+========================================
+Total Confirmed: 43
+Platform Breakdown: {'メルカリ': 28, 'Yahoo!フリマ': 4, 'ヤフオク': 11}
+  [メルカリ Sample] ¥35990.0 | ✅動作確認済 美品 CASIO EXILIM EX-ZR1800 ゴールド#44
+  [Yahoo!フリマ Sample] ¥35800 | 【美品】 CASIO カシオ EXILIM EX-ZR1800GD ボディ コン
+  [ヤフオク Sample] ¥9380 | ADS9025★ 現状品 ★ 富士フイルム FUJIFILM FinePix A
+
+========================================
+Target ID 9: EX-ZR1800
+Keyword: 'EX-ZR1800', Excludes: 'ジャンク,故障,不動,部品取り,箱のみ,写真のみ,現状渡し,訳あり', MaxPrice: 25836.0
+========================================
+Total Confirmed: 43
+Platform Breakdown: {'メルカリ': 28, 'Yahoo!フリマ': 4, 'ヤフオク': 11}
+  [メルカリ Sample] ¥35990.0 | ✅動作確認済 美品 CASIO EXILIM EX-ZR1800 ゴールド#44
+  [Yahoo!フリマ Sample] ¥35800 | 【美品】 CASIO カシオ EXILIM EX-ZR1800GD ボディ コン
+  [ヤフオク Sample] ¥9380 | ADS9025★ 現状品 ★ 富士フイルム FUJIFILM FinePix A
