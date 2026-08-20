@@ -52,6 +52,15 @@ html, body {
   overflow: hidden;
 }
 
+/* 🌸 SAKURA Sync 埋め込みモード: 重複サイドバーを非表示にして全画面を広々と使う */
+body.embed-mode .sidebar {
+  display: none !important;
+}
+body.embed-mode .main-content {
+  width: 100vw !important;
+  max-width: 100vw !important;
+}
+
 /* サイドバー */
 .sidebar {
   width: 260px;

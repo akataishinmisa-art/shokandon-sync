@@ -5,6 +5,22 @@ let soundAlertEnabled = true;
 let targetItems = [];
 let detections = [];
 
+if (new URLSearchParams(window.location.search).get('embed') === '1') {
+  document.body.classList.add('embed-mode');
+}
+
+// 🌸 SAKURA Sync 親ダッシュボードからのカテゴリフィルタ連動
+window.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'FILTER_CATEGORY') {
+    const cat = event.data.category;
+    const selectEl = document.getElementById('filter-target-category');
+    if (selectEl) {
+      selectEl.value = (cat === 'all') ? 'all' : cat;
+      selectEl.dispatchEvent(new Event('change'));
+    }
+  }
+});
+
 // Web Audio API によるアラート音生成 (外部ファイル不要)
 function playAlertSound() {
   if (!soundAlertEnabled) return;

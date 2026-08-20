@@ -144,10 +144,36 @@
             </div>
 
             <nav class="nav-menu">
-                <button class="nav-item active" data-tab="tab-monitor">
-                    <span class="nav-icon">🎯</span>
-                    <span>仕入れ監視・リサーチ</span>
-                </button>
+                <!-- 🎯 仕入れ監視・リサーチ (アコーディオン開閉メニュー) -->
+                <div class="nav-accordion-group">
+                    <button class="nav-item active" data-tab="tab-monitor" id="nav-btn-monitor" style="justify-content: space-between;">
+                        <div style="display:flex; align-items:center; gap:0.75rem;">
+                            <span class="nav-icon">🎯</span>
+                            <span>仕入れ監視・リサーチ</span>
+                        </div>
+                        <span id="accordionArrow" style="font-size:0.75rem; transition:transform 0.2s ease;">▼</span>
+                    </button>
+
+                    <!-- 🌸 アコーディオン展開サブメニュー (添付画像2の統合) -->
+                    <div id="monitorSubmenu" style="display:flex; flex-direction:column; gap:4px; padding-left:1.5rem; margin-top:4px; margin-bottom:8px;">
+                        <button class="sub-nav-item active" data-cat="all" style="display:flex; justify-content:space-between; align-items:center; background:rgba(56,189,248,0.15); border:1px solid rgba(56,189,248,0.3); color:#f8fafc; padding:6px 12px; border-radius:6px; font-size:0.82rem; cursor:pointer; text-align:left;">
+                            <span>🎯 登録商品リスト</span>
+                            <span class="badge" style="background:#1e293b; color:#38bdf8; padding:2px 6px; border-radius:10px; font-size:0.7rem;">ALL</span>
+                        </button>
+                        <button class="sub-nav-item" data-cat="デジタルカメラ" style="display:flex; justify-content:space-between; align-items:center; background:transparent; border:1px solid transparent; color:#94a3b8; padding:6px 12px; border-radius:6px; font-size:0.82rem; cursor:pointer; text-align:left;">
+                            <span>📷 デジタルカメラ</span>
+                        </button>
+                        <button class="sub-nav-item" data-cat="ゲーム機本体" style="display:flex; justify-content:space-between; align-items:center; background:transparent; border:1px solid transparent; color:#94a3b8; padding:6px 12px; border-radius:6px; font-size:0.82rem; cursor:pointer; text-align:left;">
+                            <span>🎮 ゲーム機本体</span>
+                        </button>
+                        <button class="sub-nav-item" data-cat="時計・ブランド" style="display:flex; justify-content:space-between; align-items:center; background:transparent; border:1px solid transparent; color:#94a3b8; padding:6px 12px; border-radius:6px; font-size:0.82rem; cursor:pointer; text-align:left;">
+                            <span>⌚ 時計・ブランド</span>
+                        </button>
+                        <button class="sub-nav-item" data-cat="その他・未分類" style="display:flex; justify-content:space-between; align-items:center; background:transparent; border:1px solid transparent; color:#94a3b8; padding:6px 12px; border-radius:6px; font-size:0.82rem; cursor:pointer; text-align:left;">
+                            <span>📁 その他・未分類</span>
+                        </button>
+                    </div>
+                </div>
 
                 <button class="nav-item" data-tab="tab-listing">
                     <span class="nav-icon">⚡</span>
@@ -176,7 +202,7 @@
 
             <!-- 🎯 Tab 1: 仕入れ監視・リサーチ (Image 3 View) -->
             <section id="tab-monitor" class="tab-pane active">
-                <iframe src="http://localhost:8000/" class="tool-frame" title="仕入れ監視システム"></iframe>
+                <iframe id="monitorIframe" src="http://localhost:8000/?embed=1" class="tool-frame" title="仕入れ監視システム"></iframe>
             </section>
 
             <!-- ⚡ Tab 2: 出品＆タイトル作成 (Image 2 View) -->
@@ -307,15 +333,56 @@
 
     <!-- App Unified Navigation JS -->
     <script>
+        // タブ切り替え
         document.querySelectorAll('.nav-item').forEach(btn => {
-            btn.addEventListener('click', () => {
+            btn.addEventListener('click', (e) => {
+                const targetTab = btn.getAttribute('data-tab');
+                if (!targetTab) return;
+
                 document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
                 document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
 
                 btn.classList.add('active');
-                const targetTab = btn.getAttribute('data-tab');
                 const pane = document.getElementById(targetTab);
                 if (pane) pane.classList.add('active');
+
+                // アコーディオン開閉連動
+                const monitorSubmenu = document.getElementById('monitorSubmenu');
+                const arrow = document.getElementById('accordionArrow');
+                if (targetTab === 'tab-monitor') {
+                    if (monitorSubmenu.style.display === 'none') {
+                        monitorSubmenu.style.display = 'flex';
+                        if (arrow) arrow.style.transform = 'rotate(0deg)';
+                    } else if (e.target.closest('#nav-btn-monitor')) {
+                        // トグル
+                        const isHidden = monitorSubmenu.style.display === 'none';
+                        monitorSubmenu.style.display = isHidden ? 'flex' : 'none';
+                        if (arrow) arrow.style.transform = isHidden ? 'rotate(0deg)' : 'rotate(-90deg)';
+                    }
+                }
+            });
+        });
+
+        // サブカテゴリ選択連動
+        document.querySelectorAll('.sub-nav-item').forEach(subBtn => {
+            subBtn.addEventListener('click', () => {
+                document.querySelectorAll('.sub-nav-item').forEach(s => {
+                    s.classList.remove('active');
+                    s.style.background = 'transparent';
+                    s.style.borderColor = 'transparent';
+                    s.style.color = '#94a3b8';
+                });
+
+                subBtn.classList.add('active');
+                subBtn.style.background = 'rgba(56,189,248,0.15)';
+                subBtn.style.borderColor = 'rgba(56,189,248,0.3)';
+                subBtn.style.color = '#f8fafc';
+
+                const cat = subBtn.getAttribute('data-cat');
+                const iframe = document.getElementById('monitorIframe');
+                if (iframe && iframe.contentWindow) {
+                    iframe.contentWindow.postMessage({ type: 'FILTER_CATEGORY', category: cat }, '*');
+                }
             });
         });
     </script>
