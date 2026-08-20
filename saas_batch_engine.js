@@ -772,7 +772,7 @@ function sendLineNotificationForUser(user, message) {
             const shouldSendLine = isLineModeActive && (missingItemsList.length > 0 || priceUpItems.length > 0);
 
             if (shouldSendLine) {
-                let lineBatchMsg = `【商管どん 自動同期アラート (${user.name})】\n`;
+                let lineBatchMsg = `【🌸 SAKURA Sync 自動同期アラート (${user.name})】\n`;
                 if (missingItemsList.length > 0) {
                     lineBatchMsg += `\n🚨 欠品検知 (${missingItemsList.length}件):\n`;
                     for (const item of missingItemsList) {

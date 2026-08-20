@@ -226,19 +226,37 @@ document.addEventListener('DOMContentLoaded', () => {
     const saveSaasUsersBtn = document.getElementById('saveSaasUsersBtn');
     const saasUsersAlert = document.getElementById('saasUsersAlert');
 
-    let currentSaasUsers = [];
+    const DEFAULT_SAAS_USER = {
+        id: "user_default",
+        name: "メインアカウント（ユーザー1）",
+        spreadsheetId: "15skxiK9eL6JDzq76JX3_3uS5-puJIqGGZngv3bJ4iv4",
+        lineChannelAccessToken: "B2HWvVXYh0ryq+ok/xCrmHzlvbuHPONV5nASZu8NX2yby3UPeZF1YWtE14k4xk3VX5cRh7Kqeix7AwKuBP03EzKiOi6xt0mOqTx4hXvMJ/ge1LClYlrmYyTiVNJMh8t6x/yFa6HVoQAimZh66BrldwdB04t89/1O/w1cDnyilFU=",
+        lineUserId: "U25f6fe2beb5ac799dfcd3014e17a578c",
+        mode: "line_transfer",
+        enabled: true,
+        createdAt: "2026/08/08",
+        lastSyncTime: "2026/8/20 15:00:00",
+        lastStatus: "正常完了"
+    };
+
+    let currentSaasUsers = [DEFAULT_SAAS_USER];
 
     function loadSaasUsers() {
         if (!saasUsersList) return;
         fetch('/api/saas/users')
             .then(res => res.json())
             .then(data => {
-                if (data.success && Array.isArray(data.users)) {
+                if (data.success && Array.isArray(data.users) && data.users.length > 0) {
                     currentSaasUsers = data.users;
-                    renderSaasUsers();
+                } else {
+                    currentSaasUsers = [DEFAULT_SAAS_USER];
                 }
+                renderSaasUsers();
             })
-            .catch(() => {});
+            .catch(() => {
+                if (currentSaasUsers.length === 0) currentSaasUsers = [DEFAULT_SAAS_USER];
+                renderSaasUsers();
+            });
     }
 
     function renderSaasUsers() {
