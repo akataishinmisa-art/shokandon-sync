@@ -113,7 +113,12 @@ async def run_auto_delist_check_now() -> Dict[str, Any]:
         title = item.get("title", "")
 
         checked_count += 1
-        is_sold, reason = check_source_url_stock(source_url)
+        item_status = item.get("status", "")
+        if item_status == "sold_out_flag":
+            is_sold = True
+            reason = "スプレッドシートF列で『欠品/売り切れ』を検知"
+        else:
+            is_sold, reason = check_source_url_stock(source_url)
 
         if is_sold:
             logger.info(f"[Auto Delist Trigger] ItemID={ebay_item_id}, Reason={reason}")

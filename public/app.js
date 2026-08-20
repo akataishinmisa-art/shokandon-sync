@@ -92,82 +92,90 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Save LINE Config
-    saveConfigBtn.addEventListener('click', () => {
-        const token = tokenInput.value.trim();
-        const userId = userIdInput.value.trim();
+    if (saveConfigBtn) {
+        saveConfigBtn.addEventListener('click', () => {
+            const token = tokenInput ? tokenInput.value.trim() : '';
+            const userId = userIdInput ? userIdInput.value.trim() : '';
 
-        fetch('/api/config', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ lineChannelAccessToken: token, lineUserId: userId })
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                showAlert('✅ LINE設定を正常に保存しました！', 'success');
-            } else {
-                showAlert('❌ 設定の保存に失敗しました。', 'error');
-            }
-        })
-        .catch(() => showAlert('❌ サーバー通信エラーが発生しました。', 'error'));
-    });
+            fetch('/api/config', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ lineChannelAccessToken: token, lineUserId: userId })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    showAlert('✅ LINE設定を正常に保存しました！', 'success');
+                } else {
+                    showAlert('❌ 設定の保存に失敗しました。', 'error');
+                }
+            })
+            .catch(() => showAlert('❌ サーバー通信エラーが発生しました。', 'error'));
+        });
+    }
 
     // Test LINE Notification
-    testLineBtn.addEventListener('click', () => {
-        const token = tokenInput.value.trim();
-        const userId = userIdInput.value.trim();
+    if (testLineBtn) {
+        testLineBtn.addEventListener('click', () => {
+            const token = tokenInput ? tokenInput.value.trim() : '';
+            const userId = userIdInput ? userIdInput.value.trim() : '';
 
-        showAlert('⏳ LINE送信テスト中...', 'success');
+            showAlert('⏳ LINE送信テスト中...', 'success');
 
-        fetch('/api/test-line', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ token, userId })
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                showAlert('🎉 テストメッセージをLINEへ正常送信しました！スマホをご確認ください。', 'success');
-            } else {
-                showAlert(`❌ 送信失敗: ${data.error || 'レスポンスコード ' + data.statusCode + ' ' + (data.body || '')}`, 'error');
-            }
-        })
-        .catch(() => showAlert('❌ サーバー通信エラーが発生しました。', 'error'));
-    });
+            fetch('/api/test-line', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token, userId })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    showAlert('🎉 テストメッセージをLINEへ正常送信しました！スマホをご確認ください。', 'success');
+                } else {
+                    showAlert(`❌ 送信失敗: ${data.error || 'レスポンスコード ' + data.statusCode + ' ' + (data.body || '')}`, 'error');
+                }
+            })
+            .catch(() => showAlert('❌ サーバー通信エラーが発生しました。', 'error'));
+        });
+    }
 
     function showAlert(msg, type) {
-        settingsAlert.textContent = msg;
-        settingsAlert.className = `alert-msg ${type}`;
+        if (settingsAlert) {
+            settingsAlert.textContent = msg;
+            settingsAlert.className = `alert-msg ${type}`;
+        }
     }
 
     // Run Sync Action
-    runSyncBtn.addEventListener('click', () => {
-        const selectedMode = document.querySelector('input[name="syncMode"]:checked').value;
+    if (runSyncBtn) {
+        runSyncBtn.addEventListener('click', () => {
+            const selectedMode = document.querySelector('input[name="syncMode"]:checked').value;
 
-        runSyncBtn.disabled = true;
-        btnLabelText.textContent = '同期処理＆画像保存を実行中...';
-        serverStatusPill.classList.add('running');
-        statusText.textContent = '同期処理＆全画像ダウンロード中...';
+            runSyncBtn.disabled = true;
+            btnLabelText.textContent = '同期処理＆画像保存を実行中...';
+            serverStatusPill.classList.add('running');
+            statusText.textContent = '同期処理＆全画像ダウンロード中...';
 
-        fetch('/api/run-sync', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ mode: selectedMode })
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                startPollingStatus();
-            } else {
-                alert(data.message);
+            fetch('/api/run-sync', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ mode: selectedMode })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    startPollingStatus();
+                } else {
+                    alert(data.message || '同期の起動に失敗しました');
+                    resetButtonState();
+                }
+            })
+            .catch(() => {
+                alert('サーバーとの通信エラーが発生しました');
                 resetButtonState();
-            }
-        })
-        .catch(err => {
-            alert('通信エラーが発生しました。');
-            resetButtonState();
+            });
         });
-    });
+    }
 
     function startPollingStatus() {
         if (pollInterval) clearInterval(pollInterval);
@@ -534,4 +542,255 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+
+    const btnSyncFromSheetTab = document.getElementById('btnSyncFromSheetTab');
+    if (btnSyncFromSheetTab) {
+        btnSyncFromSheetTab.addEventListener('click', () => {
+            if (runSyncBtn) runSyncBtn.click();
+        });
+    }
+
+    // --- 🌸 SAKURA Sync 親サイドバーのナビゲーション ＆ アコーディオン完全連動ハンドラー ---
+    const navBtnMonitor = document.getElementById('nav-btn-monitor');
+    const monitorSubmenu = document.getElementById('monitorSubmenu');
+    const accordionArrow = document.getElementById('accordionArrow');
+    const monitorIframe = document.getElementById('monitorIframe');
+    const navItems = document.querySelectorAll('.nav-item[data-tab]');
+    const subNavItems = document.querySelectorAll('.sub-nav-item');
+
+    let isAccordionOpen = true;
+
+    function switchTab(targetTabId) {
+        navItems.forEach(b => {
+            const t = b.getAttribute('data-tab');
+            if (t === targetTabId) {
+                b.classList.add('active');
+            } else {
+                b.classList.remove('active');
+            }
+        });
+
+        const tabPanes = document.querySelectorAll('.tab-pane');
+        tabPanes.forEach(pane => {
+            if (pane.id === targetTabId) {
+                pane.classList.add('active');
+                pane.style.display = 'block';
+            } else {
+                pane.classList.remove('active');
+                pane.style.display = 'none';
+            }
+        });
+    }
+
+    // 1. 「仕入れ監視・リサーチ」アコーディオン展開・折りたたみボタン
+    if (navBtnMonitor && monitorSubmenu) {
+        navBtnMonitor.addEventListener('click', (e) => {
+            monitorSubmenu.style.display = 'flex';
+            if (accordionArrow) accordionArrow.style.transform = 'rotate(0deg)';
+            switchTab('tab-monitor');
+        });
+    }
+
+    // --- 🌸 SAKURA Sync 親サイドバーの動的カテゴリ＆商品アコーディオンツリー連動 ---
+    function sendIframeCategoryMessage(category) {
+        if (monitorIframe && monitorIframe.contentWindow) {
+            monitorIframe.contentWindow.postMessage({
+                type: 'FILTER_CATEGORY',
+                category: category
+            }, '*');
+        }
+    }
+
+    // 🌸 子iframeからの商品選択（ドロップダウン等）連動 ➔ 左サイドバーアイテムのアクティブハイライト
+    window.addEventListener('message', (event) => {
+        if (event.data && event.data.type === 'TARGET_ITEM_SELECTED') {
+            const targetId = String(event.data.targetId);
+            const itemBtn = document.querySelector(`.parent-item-btn[data-target-id="${targetId}"]`);
+            if (itemBtn) {
+                highlightSubNavItem(itemBtn);
+                const catGroup = itemBtn.closest('.parent-cat-group');
+                if (catGroup) {
+                    catGroup.classList.add('open');
+                    const container = catGroup.querySelector('.parent-cat-subitems');
+                    if (container) container.style.display = 'flex';
+                    const arrow = catGroup.querySelector('.cat-arrow');
+                    if (arrow) arrow.style.transform = 'rotate(90deg)';
+                }
+            } else if (targetId === 'all') {
+                const allBtn = document.querySelector('.sub-nav-item[data-cat="all"]');
+                if (allBtn) highlightSubNavItem(allBtn);
+            }
+        }
+    });
+
+    function highlightSubNavItem(activeEl) {
+        document.querySelectorAll('.sub-nav-item, .parent-cat-header').forEach(i => {
+            i.classList.remove('active');
+            i.style.background = 'transparent';
+            i.style.borderColor = 'transparent';
+            i.style.color = '#94a3b8';
+        });
+        if (activeEl) {
+            activeEl.classList.add('active');
+            activeEl.style.background = 'rgba(56, 189, 248, 0.15)';
+            activeEl.style.borderColor = 'rgba(56, 189, 248, 0.3)';
+            activeEl.style.color = '#f8fafc';
+        }
+    }
+
+    async function loadParentSidebarTargets() {
+        const monitorSubmenu = document.getElementById('monitorSubmenu');
+        if (!monitorSubmenu) return;
+
+        try {
+            const res = await fetch('/api/targets');
+            if (!res.ok) return;
+            const targetItems = await res.json();
+
+            // カテゴリ別グループ化
+            const catMap = {
+                '📷 デジタルカメラ': [],
+                '🎮 ゲーム機本体': [],
+                '⌚ 時計・ブランド': [],
+                '📁 その他・未分類': []
+            };
+
+            targetItems.forEach(item => {
+                let cat = item.category || '';
+                if (!cat || !catMap[cat]) {
+                    const n = (item.name || '').toLowerCase();
+                    if (n.includes('dmc') || n.includes('s110') || n.includes('ixy') || n.includes('exilim') || n.includes('camera') || n.includes('powershot') || n.includes('lumix') || n.includes('olympus') || n.includes('canon') || n.includes('nikon') || n.includes('casio')) {
+                        cat = '📷 デジタルカメラ';
+                    } else if (n.includes('3ds') || n.includes('vita') || n.includes('pch') || n.includes('ps') || n.includes('switch') || n.includes('nintendo') || n.includes('sony playstation')) {
+                        cat = '🎮 ゲーム機本体';
+                    } else {
+                        cat = '📁 その他・未分類';
+                    }
+                }
+                if (!catMap[cat]) catMap[cat] = [];
+                catMap[cat].push(item);
+            });
+
+            monitorSubmenu.innerHTML = '';
+
+            // 1. ALL （全商品リスト）ボタン
+            const allBtn = document.createElement('button');
+            allBtn.className = 'sub-nav-item active';
+            allBtn.setAttribute('data-cat', 'all');
+            allBtn.style.cssText = 'display:flex; justify-content:space-between; align-items:center; background:rgba(56,189,248,0.15); border:1px solid rgba(56,189,248,0.3); color:#f8fafc; padding:6px 12px; border-radius:6px; font-size:0.82rem; cursor:pointer; text-align:left; width:100%; margin-bottom:6px;';
+            allBtn.innerHTML = `<span>🎯 登録商品リスト (全件一覧)</span><span class="badge" style="background:#1e293b; color:#38bdf8; padding:2px 6px; border-radius:10px; font-size:0.7rem;">${targetItems.length}</span>`;
+            
+            allBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                highlightSubNavItem(allBtn);
+                switchTab('tab-monitor');
+                sendIframeCategoryMessage('all');
+            });
+            monitorSubmenu.appendChild(allBtn);
+
+            // 2. 各カテゴリー ＆ 配下商品ツリーのレンダリング
+            Object.entries(catMap).forEach(([catName, items]) => {
+                if (items.length === 0) return;
+
+                const catGroup = document.createElement('div');
+                catGroup.className = 'parent-cat-group open';
+                catGroup.style.cssText = 'display:flex; flex-direction:column; gap:2px; margin-bottom:6px;';
+
+                // カテゴリーヘッダー（クリックで展開・折りたたみ）
+                const catHeader = document.createElement('button');
+                catHeader.className = 'parent-cat-header';
+                catHeader.style.cssText = 'display:flex; justify-content:space-between; align-items:center; background:rgba(30, 41, 59, 0.6); border:1px solid rgba(255,255,255,0.08); color:#cbd5e1; padding:6px 10px; border-radius:6px; font-size:0.8rem; font-weight:700; cursor:pointer; text-align:left; width:100%; transition:all 0.15s ease;';
+                catHeader.innerHTML = `
+                    <div style="display:flex; align-items:center; gap:6px;">
+                        <span class="cat-arrow" style="font-size:0.65rem; transition:transform 0.2s ease; display:inline-block; transform:rotate(90deg);">▶</span>
+                        <span>${catName}</span>
+                    </div>
+                    <span style="background:rgba(255,255,255,0.1); color:#94a3b8; padding:1px 6px; border-radius:8px; font-size:0.7rem;">${items.length}</span>
+                `;
+
+                // 個別商品リンクの格納コンテナ
+                const itemContainer = document.createElement('div');
+                itemContainer.className = 'parent-cat-subitems';
+                itemContainer.style.cssText = 'display:flex; flex-direction:column; gap:2px; padding-left:12px; margin-top:2px;';
+
+                items.forEach(item => {
+                    const itemBtn = document.createElement('button');
+                    itemBtn.className = 'sub-nav-item parent-item-btn';
+                    itemBtn.setAttribute('data-target-id', item.id);
+                    itemBtn.style.cssText = 'display:flex; justify-content:space-between; align-items:center; background:rgba(15, 23, 42, 0.4); border:1px solid rgba(255,255,255,0.05); color:#94a3b8; padding:5px 8px; border-radius:4px; font-size:0.76rem; cursor:pointer; text-align:left; width:100%; transition:all 0.15s ease;';
+                    
+                    const priceText = item.max_buy_price_jpy > 0 ? `¥${Math.round(item.max_buy_price_jpy).toLocaleString()}` : '';
+                    itemBtn.innerHTML = `
+                        <span style="max-width:130px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${item.name}">• ${item.name}</span>
+                        <span style="font-size:0.7rem; color:#38bdf8; font-family:monospace;">${priceText}</span>
+                    `;
+
+                    // 個別商品クリック処理
+                    itemBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        highlightSubNavItem(itemBtn);
+                        switchTab('tab-monitor');
+                        
+                        if (monitorIframe && monitorIframe.contentWindow) {
+                            monitorIframe.contentWindow.postMessage({
+                                type: 'SELECT_TARGET_ITEM',
+                                targetId: String(item.id)
+                            }, '*');
+                        }
+                    });
+
+                    itemContainer.appendChild(itemBtn);
+                });
+
+                // ★初期状態：アコーディオンを全開（OPEN）にして商品をズラリ表示！
+                catGroup.classList.add('open');
+                itemContainer.style.display = 'flex';
+                const arrow = catHeader.querySelector('.cat-arrow');
+                if (arrow) arrow.style.transform = 'rotate(90deg)';
+
+                // カテゴリーヘッダークリック処理（開閉トグル ＆ カテゴリ全件表示）
+                catHeader.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const isOpen = catGroup.classList.contains('open');
+                    const currentArrow = catHeader.querySelector('.cat-arrow');
+                    
+                    if (isOpen) {
+                        catGroup.classList.remove('open');
+                        itemContainer.style.display = 'none';
+                        if (currentArrow) currentArrow.style.transform = 'rotate(0deg)';
+                    } else {
+                        catGroup.classList.add('open');
+                        itemContainer.style.display = 'flex';
+                        if (currentArrow) currentArrow.style.transform = 'rotate(90deg)';
+                    }
+
+                    highlightSubNavItem(catHeader);
+                    switchTab('tab-monitor');
+                    sendIframeCategoryMessage(catName);
+                });
+
+                catGroup.appendChild(catHeader);
+                catGroup.appendChild(itemContainer);
+                monitorSubmenu.appendChild(catGroup);
+            });
+
+        } catch (err) {
+            console.error('Failed to load parent sidebar targets:', err);
+        }
+    }
+
+    loadParentSidebarTargets();
+
+    // 3. 他のメインメニュー（⚡ 出品＆タイトル作成, 🔄 自動同期＆実行ログ, ⚙️ 設定＆連携アカウント）クリック
+    navItems.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const tabId = btn.getAttribute('data-tab');
+            if (tabId) {
+                switchTab(tabId);
+            }
+        });
+    });
+
+    // 初期起動時: 「自動同期＆実行ログ」を一番上のアクティブタブとしてセット
+    switchTab('tab-sync');
 });

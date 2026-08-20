@@ -1,4 +1,5 @@
 // State
+window.openCategories = window.openCategories || new Set(["📷 デジタルカメラ", "🎮 ゲーム機本体", "⌚ 時計・ブランド", "📁 その他・未分類"]);
 let currentUsdJpyRate = 155.0;
 let currentRate = 155.0; // 互換エイリアス
 let soundAlertEnabled = true;
@@ -9,7 +10,7 @@ if (new URLSearchParams(window.location.search).get('embed') === '1') {
   document.body.classList.add('embed-mode');
 }
 
-// 🌸 SAKURA Sync 親ダッシュボードからのカテゴリフィルタ連動
+// 🌸 SAKURA Sync 親ダッシュボードからのカテゴリフィルタ ＆ 特定商品詳細画面の起動連動
 window.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'FILTER_CATEGORY') {
     const cat = event.data.category;
@@ -17,6 +18,19 @@ window.addEventListener('message', (event) => {
     if (selectEl) {
       selectEl.value = (cat === 'all') ? 'all' : cat;
       selectEl.dispatchEvent(new Event('change'));
+    }
+  } else if (event.data && event.data.type === 'SELECT_TARGET_ITEM') {
+    const targetId = event.data.targetId;
+    const item = targetItems.find(t => String(t.id) === String(targetId));
+    if (item) {
+      openTargetDetail(item);
+    } else {
+      fetch(`/api/targets/${targetId}`)
+        .then(res => res.json())
+        .then(fetchedItem => {
+          if (fetchedItem) openTargetDetail(fetchedItem);
+        })
+        .catch(() => {});
     }
   }
 });
@@ -767,16 +781,17 @@ function renderTargetsTable() {
       const itemContainer = document.createElement("div");
       itemContainer.className = "sidebar-subitem-container";
 
-      // ヘッダークリックで他のカテゴリーを自動折りたたみ＆対象カテゴリーを開閉トグル
-      headerEl.addEventListener("click", () => {
+      // ヘッダークリックで対象カテゴリーをスムーズに開閉トグル
+      headerEl.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
         const willOpen = !groupEl.classList.contains("open");
-        // 他のすべてのカテゴリーを閉じる
-        document.querySelectorAll(".sidebar-cat-group").forEach(g => g.classList.remove("open"));
-        if (window.openCategories) window.openCategories.clear();
-
         if (willOpen) {
           groupEl.classList.add("open");
           if (window.openCategories) window.openCategories.add(catName);
+        } else {
+          groupEl.classList.remove("open");
+          if (window.openCategories) window.openCategories.delete(catName);
         }
       });
 
@@ -989,6 +1004,10 @@ function renderTargetsTable() {
 
 // 🎯 商品詳細・スペック管理画面を開く関数
 function openTargetDetail(item) {
+  if (window.parent && window.parent !== window) {
+    window.parent.postMessage({ type: 'TARGET_ITEM_SELECTED', targetId: String(item.id) }, '*');
+  }
+
   // サイドバーのアクティブ状態を更新
   document.querySelectorAll(".sidebar-subitem").forEach(el => {
     el.classList.toggle("active", el.getAttribute("data-id") == item.id);
@@ -1743,7 +1762,12 @@ function initEvents() {
 
   // 並び替え & 絞り込み & リフレッシュ (フィード)
   document.getElementById("sort-detections").addEventListener("change", () => renderDetections());
-  document.getElementById("filter-target").addEventListener("change", () => renderDetections());
+  document.getElementById("filter-target").addEventListener("change", (e) => {
+    renderDetections();
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage({ type: 'TARGET_ITEM_SELECTED', targetId: e.target.value }, '*');
+    }
+  });
   document.getElementById("btn-refresh-detections").addEventListener("click", () => loadDetections());
 
 

@@ -76,6 +76,19 @@ app.get('/api/version', (req, res) => {
     });
 });
 
+app.get('/api/targets', (req, res) => {
+    http.get('http://127.0.0.1:8000/api/targets', (r) => {
+        let body = '';
+        r.on('data', chunk => body += chunk);
+        r.on('end', () => {
+            res.setHeader('Content-Type', 'application/json');
+            res.status(r.statusCode).send(body);
+        });
+    }).on('error', (err) => {
+        res.status(500).json({ error: err.message });
+    });
+});
+
 app.get('/ebay', (req, res) => {
     res.sendFile(path.join(__dirname, 'ebay-title-generator', 'index.html'));
 });

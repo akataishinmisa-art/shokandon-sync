@@ -89,19 +89,29 @@ def sync_google_sheet(sheet_url: str) -> Dict[str, Any]:
                     source_url = cell_str
                     break
 
-            # 2. 行の中から 12桁のeBay Item ID (または ebay.com/itm/168599743807 形式のURL) を自動抽出
-            for cell in row:
-                cell_str = cell.strip()
-                # URLパターンの場合
-                url_match = re.search(r'itm/(?:[a-zA-Z0-9-]+/)?(\d{12})', cell_str, re.IGNORECASE)
+            # 2. J列（10列目 / index 9）から 12桁のeBay Item ID を最優先抽出！
+            if len(row) > 9 and row[9].strip():
+                j_cell = row[9].strip()
+                url_match = re.search(r'itm/(?:[a-zA-Z0-9-]+/)?(\d{12})', j_cell, re.IGNORECASE)
                 if url_match:
                     ebay_id = url_match.group(1)
-                    break
-                # 単体12桁の数字の場合
-                num_match = re.search(r'\b(\d{12})\b', cell_str)
-                if num_match:
-                    ebay_id = num_match.group(1)
-                    break
+                else:
+                    num_match = re.search(r'\b(\d{12})\b', j_cell)
+                    if num_match:
+                        ebay_id = num_match.group(1)
+
+            # もしJ列になかった場合、他列（G列など）の全セルからフォールバック抽出
+            if not ebay_id:
+                for cell in row:
+                    cell_str = cell.strip()
+                    url_match = re.search(r'itm/(?:[a-zA-Z0-9-]+/)?(\d{12})', cell_str, re.IGNORECASE)
+                    if url_match:
+                        ebay_id = url_match.group(1)
+                        break
+                    num_match = re.search(r'\b(\d{12})\b', cell_str)
+                    if num_match:
+                        ebay_id = num_match.group(1)
+                        break
 
             # 3. 商品名の取得（B列またはC列）
             if len(row) > 2 and row[2].strip():
@@ -109,16 +119,29 @@ def sync_google_sheet(sheet_url: str) -> Dict[str, Any]:
             elif len(row) > 1 and row[1].strip():
                 title = row[1].strip()
 
+            # 4. F列（ステータス列: index 5）の「欠品」「売り切れ」判定
+            is_sheet_sold_out = False
+            if len(row) > 5 and row[5].strip():
+                status_text = row[5].strip()
+                if any(kw in status_text for kw in ["欠品", "売り切れ", "売切れ", "出品取り消し", "削除"]):
+                    is_sheet_sold_out = True
+
             # 正常に仕入れ元URLとeBay IDの両方が検出された場合
             if ebay_id and source_url:
                 key = f"{ebay_id}_{source_url}"
+                item_status = 'sold_out_flag' if is_sheet_sold_out else 'active'
                 if key not in existing_map:
                     cursor.execute("""
                     INSERT INTO ebay_delist_items (ebay_item_id, source_url, title, status, delist_mode)
-                    VALUES (?, ?, ?, 'active', 'end_item')
-                    """, (ebay_id, source_url, title))
+                    VALUES (?, ?, ?, ?, 'end_item')
+                    """, (ebay_id, source_url, title, item_status))
                     added_count += 1
                 else:
+                    # 既に登録済みの場合はF列の欠品フラグを更新
+                    if is_sheet_sold_out:
+                        cursor.execute("""
+                        UPDATE ebay_delist_items SET status = 'sold_out_flag' WHERE ebay_item_id = ? AND source_url = ?
+                        """, (ebay_id, source_url))
                     updated_count += 1
 
         conn.commit()

@@ -696,6 +696,72 @@ function sendLineNotificationForUser(user, message) {
                     const gCell = (rowObj.values.length > 6 ? rowObj.values[6] : {}) || {};
                     let gValue = gCell.hyperlink || (gCell.userEnteredValue && gCell.userEnteredValue.formulaValue) || gCell.formattedValue || '';
                     missingItemsList.push({ row: r, bUrl: targetUrl, gUrl: gValue, title: newTitle });
+
+                    // 🌸 J列 (Index 9) から eBay Item ID を自動抽出して手動登録不要で即座にeBay自動取り下げ実行！
+                    const jCell = (rowObj.values.length > 9 ? rowObj.values[9] : {}) || {};
+                    const jValue = (jCell.formattedValue || jCell.hyperlink || '').trim();
+                    const ebayItemIdMatch = jValue.match(/\d{10,14}/);
+
+                    if (ebayItemIdMatch) {
+                        const ebayItemId = ebayItemIdMatch[0];
+                        console.log(`\n📦 [J列自動連動] Row ${r}: 欠品商品を検知！ J列から eBay ItemID (${ebayItemId}) を読み出しました。自動取り下げを直接実行します...`);
+
+                        // eBay API 設定の読み込みと自動実行
+                        try {
+                            const userSettingsPath = path.join(__dirname, 'user_settings.json');
+                            if (fs.existsSync(userSettingsPath)) {
+                                const cfg = JSON.parse(fs.readFileSync(userSettingsPath, 'utf8'));
+                                if (cfg.ebayAppId && cfg.ebayCertId && cfg.ebayUserToken) {
+                                    // Trading API EndItem Direct Call
+                                    const delistBody = `<?xml version="1.0" encoding="utf-8"?>
+<EndItemRequest xmlns="urn:ebay:apis:eBLBaseComponents">
+  <RequesterCredentials>
+    <eBayAuthToken>${cfg.ebayUserToken}</eBayAuthToken>
+  </RequesterCredentials>
+  <ItemID>${ebayItemId}</ItemID>
+  <EndingReason>NotAvailable</EndingReason>
+</EndItemRequest>`;
+
+                                    const https = require('https');
+                                    const reqOpts = {
+                                        hostname: 'api.ebay.com',
+                                        path: '/ws/api.dll',
+                                        method: 'POST',
+                                        headers: {
+                                            'X-EBAY-API-COMPATIBILITY-LEVEL': '967',
+                                            'X-EBAY-API-DEV-NAME': cfg.ebayDevId || '',
+                                            'X-EBAY-API-APP-NAME': cfg.ebayAppId || '',
+                                            'X-EBAY-API-CERT-NAME': cfg.ebayCertId || '',
+                                            'X-EBAY-API-CALL-NAME': 'EndItem',
+                                            'X-EBAY-API-SITEID': '0',
+                                            'Content-Type': 'text/xml'
+                                        }
+                                    };
+
+                                    const apiReq = https.request(reqOpts, (apiRes) => {
+                                        let resData = '';
+                                        apiRes.on('data', chunk => resData += chunk);
+                                        apiRes.on('end', () => {
+                                            if (resData.includes('<Ack>Success</Ack>') || resData.includes('<Ack>Warning</Ack>')) {
+                                                console.log(`✅ [J列自動取り下げ成功] Row ${r}: eBay ItemID ${ebayItemId} の出品取り下げ（EndItem）が完了しました！`);
+                                            } else {
+                                                console.log(`⚠️ [J列自動取り下げ結果] Row ${r}: ${resData.substring(0, 200)}...`);
+                                            }
+                                        });
+                                    });
+                                    apiReq.on('error', (e) => console.error(`❌ [J列自動取り下げエラー] Row ${r}:`, e.message));
+                                    apiReq.write(delistBody);
+                                    apiReq.end();
+                                } else {
+                                    console.log(`⚠️ [J列自動取り下げ告知] Row ${r}: eBay APIキー設定が見つかりません。画面の設定タブでAPIキーを保持してください。`);
+                                }
+                            }
+                        } catch (ebayErr) {
+                            console.error(`Row ${r} Direct eBay Delist Exception:`, ebayErr.message);
+                        }
+                    } else {
+                        console.log(`ℹ️ Row ${r}: 欠品ですがJ列に10〜14桁のeBay Item IDが記載されていないため、取り下げ呼び出しをスキップしました。`);
+                    }
                 } else if (!itemData.title || itemData.title === '取得エラー' || (itemData.title === 'Amazon.co.jp' && !itemData.price)) {
                     newTitle = currentCValue;
                     newD = currentDValue;
