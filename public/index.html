@@ -237,14 +237,99 @@
                             <p style="font-size: 0.82rem; color: #94a3b8; margin-bottom: 0.8rem;">登録された顧客のスプレッドシート・LINE設定を24時間自動監視・同期します。</p>
                             
                             <div id="saasUsersList" style="display: flex; flex-direction: column; gap: 0.8rem;">
-                                <!-- User Items rendered dynamically -->
+                                <div style="background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(148, 163, 184, 0.2); border-radius: 8px; padding: 0.8rem; display: flex; flex-direction: column; gap: 0.5rem;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.4rem;">
+                                        <span style="font-weight: 700; color: #38bdf8; font-size: 0.9rem;">👤 顧客アカウント #1 （メインアカウント）</span>
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <span style="font-size: 0.72rem; color: #a7f3d0; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); padding: 0.1rem 0.4rem; border-radius: 4px;">📅 登録日: 2026/08/08</span>
+                                        </div>
+                                    </div>
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                                        <div>
+                                            <label style="font-size: 0.75rem; color: #94a3b8;">顧客名 / アカウント名</label>
+                                            <input type="text" class="user-name-input" data-index="0" value="メインアカウント（ユーザー1）" placeholder="例: A社 様 / ユーザー1" style="width: 100%; background: #0f172a; border: 1px solid #334155; color: #fff; border-radius: 4px; padding: 0.3rem 0.5rem; font-size: 0.8rem;">
+                                        </div>
+                                        <div>
+                                            <label style="font-size: 0.75rem; color: #94a3b8;">スプレッドシートID</label>
+                                            <input type="text" class="user-sheet-input" data-index="0" value="15skxiK9eL6JDzq76JX3_3uS5-puJIqGGZngv3bJ4iv4" placeholder="15skxiK9eL6JDzq..." style="width: 100%; background: #0f172a; border: 1px solid #334155; color: #fff; border-radius: 4px; padding: 0.3rem 0.5rem; font-size: 0.8rem;">
+                                        </div>
+                                    </div>
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                                        <div>
+                                            <label style="font-size: 0.75rem; color: #94a3b8;">LINE Access Token</label>
+                                            <input type="password" class="user-token-input" data-index="0" value="B2HWvVXYh0ryq+ok/xCrmHzlvbuHPONV5nASZu8NX2yby3UPeZF1YWtE14k4xk3VX5cRh7Kqeix7AwKuBP03EzKiOi6xt0mOqTx4hXvMJ/ge1LClYlrmYyTiVNJMh8t6x/yFa6HVoQAimZh66BrldwdB04t89/1O/w1cDnyilFU=" placeholder="B2HWvVXYh0ry..." style="width: 100%; background: #0f172a; border: 1px solid #334155; color: #fff; border-radius: 4px; padding: 0.3rem 0.5rem; font-size: 0.8rem;">
+                                        </div>
+                                        <div>
+                                            <label style="font-size: 0.75rem; color: #94a3b8;">LINE User ID</label>
+                                            <input type="text" class="user-userid-input" data-index="0" value="U25f6fe2beb5ac799dfcd3014e17a578c" placeholder="U25f6fe2beb5..." style="width: 100%; background: #0f172a; border: 1px solid #334155; color: #fff; border-radius: 4px; padding: 0.3rem 0.5rem; font-size: 0.8rem;">
+                                        </div>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: #64748b; margin-top: 0.2rem;">
+                                        <span>最終同期: 2026/8/16 9:04:58</span>
+                                        <span style="color: #34d399; font-weight: 700;">状態: 正常完了 (欠品: 1件, 価格変更: 0件)</span>
+                                    </div>
+                                </div>
                             </div>
 
                             <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
-                                <button type="button" class="btn-secondary" id="addSaasUserBtn" style="font-size: 0.82rem; padding: 0.4rem 0.8rem;">➕ 顧客アカウントを追加</button>
+                                <button type="button" class="btn-secondary" id="addSaasUserBtn" style="font-size: 0.82rem; padding: 0.4rem 0.8rem; background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; color: #34d399;">➕ 顧客アカウントを追加</button>
                                 <button type="button" class="btn-primary" id="saveSaasUsersBtn" style="font-size: 0.82rem; padding: 0.4rem 0.8rem; background: #3b82f6;">💾 顧客設定を保存</button>
                             </div>
                             <div class="alert-msg" id="saasUsersAlert" style="margin-top: 0.5rem;"></div>
+                        </div>
+                    </details>
+                </section>
+
+                <!-- eBay Developer API & Auto-Delist Settings Panel -->
+                <section class="card compact-settings-card" style="margin-top: 0.75rem; border: 1px solid rgba(168, 85, 247, 0.4); background: rgba(15, 23, 42, 0.75);">
+                    <details class="settings-details">
+                        <summary class="settings-summary" style="color: #c084fc; font-weight: 700;">
+                            <span>🔑 📦 eBay Developer API 設定 ＆ 自動取り下げ (クリックで展開)</span>
+                            <span class="summary-arrow">▼</span>
+                        </summary>
+                        <div class="settings-content" style="padding-top: 0.8rem;">
+                            <p style="font-size: 0.82rem; color: #94a3b8; margin-bottom: 0.8rem;">
+                                仕入れ元（メルカリ/ヤフオク/ラクマ/Amazon等）の欠品検出時に、eBayから自動的に出品を取り下げ（End Item）または在庫数0化します。
+                            </p>
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 0.5rem;">
+                                <div>
+                                    <label style="font-size: 0.75rem; color: #94a3b8;">App ID (Client ID)</label>
+                                    <input type="text" id="ebayAppIdInput" placeholder="Shintaro-MyAutoDe-PRD..." value="Shintaro-MyAutoDe-PRD-c0149ee33-efb815fc" style="width: 100%; background: #0f172a; border: 1px solid #334155; color: #fff; border-radius: 4px; padding: 0.3rem 0.5rem; font-size: 0.8rem;">
+                                </div>
+                                <div>
+                                    <label style="font-size: 0.75rem; color: #94a3b8;">Dev ID</label>
+                                    <input type="text" id="ebayDevIdInput" placeholder="ceb4b028-c7f6..." value="ceb4b028-c7f6-4b98-b1ab-e2294388b0c4" style="width: 100%; background: #0f172a; border: 1px solid #334155; color: #fff; border-radius: 4px; padding: 0.3rem 0.5rem; font-size: 0.8rem;">
+                                </div>
+                            </div>
+
+                            <div style="margin-bottom: 0.5rem;">
+                                <label style="font-size: 0.75rem; color: #94a3b8;">Cert ID (Client Secret)</label>
+                                <div style="position: relative; display: flex; align-items: center;">
+                                    <input type="password" id="ebayCertIdInput" placeholder="CertID..." style="width: 100%; background: #0f172a; border: 1px solid #334155; color: #fff; border-radius: 4px; padding: 0.3rem 0.5rem; font-size: 0.8rem; padding-right: 35px;">
+                                    <button type="button" id="btnToggleCertIdMain" style="position: absolute; right: 8px; background: transparent; border: none; cursor: pointer; font-size: 14px; color: #94a3b8;" title="表示/非表示を切り替え">👁️</button>
+                                </div>
+                            </div>
+
+                            <div style="margin-bottom: 0.5rem;">
+                                <label style="font-size: 0.75rem; color: #94a3b8;">User Token (OAuth Refresh Token / User Token)</label>
+                                <textarea id="ebayUserTokenInput" rows="2" placeholder="v^1.1#i^1#..." style="width: 100%; background: #0f172a; border: 1px solid #334155; color: #fff; border-radius: 4px; padding: 0.3rem 0.5rem; font-size: 0.75rem; font-family: monospace;"></textarea>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; align-items: center; margin-bottom: 0.8rem;">
+                                <div>
+                                    <label style="font-size: 0.75rem; color: #94a3b8;">取り下げ方式</label>
+                                    <select id="ebayDelistModeSelect" style="width: 100%; background: #0f172a; border: 1px solid #334155; color: #38bdf8; font-weight: 700; border-radius: 4px; padding: 0.3rem 0.5rem; font-size: 0.8rem;">
+                                        <option value="end_item">完全出品終了 (EndItem) 【推奨】</option>
+                                        <option value="quantity_zero">在庫数0化 (ReviseQuantity 0)</option>
+                                    </select>
+                                </div>
+                                <div style="display: flex; gap: 0.5rem; align-self: end;">
+                                    <button type="button" class="btn-primary" id="saveEbayMainKeysBtn" style="font-size: 0.82rem; padding: 0.4rem 0.8rem; background: #a855f7; flex: 1;">💾 eBay設定を保存</button>
+                                    <button type="button" class="btn-secondary" id="runEbayDelistCheckMainBtn" style="font-size: 0.82rem; padding: 0.4rem 0.8rem; flex: 1;">⚡ 即時取り下げ実行</button>
+                                </div>
+                            </div>
+                            <div class="alert-msg" id="ebayMainAlert" style="margin-top: 0.5rem;"></div>
                         </div>
                     </details>
                 </section>

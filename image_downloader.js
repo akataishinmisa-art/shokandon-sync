@@ -132,8 +132,8 @@ function fetchUrlHtml(targetUrl) {
 async function extractAllImageUrls(targetUrl, externalPage = null) {
     const images = [];
 
-    // --- Special Fast & Isolated Handler for Yahoo Fleamarket / PayPay Fleamarket ---
-    if (targetUrl.includes('paypayfleamarket.yahoo.co.jp') || targetUrl.includes('frima.yahoo.co.jp') || targetUrl.includes('paypay')) {
+    // --- Special Fast & Isolated Handler for Yahoo Fleamarket / Yahoo Auctions (auctions.yahoo.co.jp / paypayfleamarket) ---
+    if (targetUrl.includes('yahoo.co.jp') || targetUrl.includes('paypay') || targetUrl.includes('frima')) {
         try {
             let html = '';
             if (externalPage) {
@@ -142,6 +142,7 @@ async function extractAllImageUrls(targetUrl, externalPage = null) {
                 html = await fetchUrlHtml(targetUrl);
             }
 
+            // 1. Next.js __NEXT_DATA__ JSON Parser
             const nextDataMatch = html.match(/<script id="__NEXT_DATA__" type="application\/json">([\s\S]*?)<\/script>/i);
             if (nextDataMatch) {
                 try {
@@ -158,28 +159,31 @@ async function extractAllImageUrls(targetUrl, externalPage = null) {
                             }
                         }
                         if (itemOnlyUrls.length > 0) {
-                            console.log(`[Yahoo Fleamarket Image Extractor]: __NEXT_DATA__ から出品商品の全画像 ${itemOnlyUrls.length}枚 のみを限定抽出（関連商品を除外）`);
+                            console.log(`[Yahoo Extractor]: __NEXT_DATA__ から出品商品の全画像 ${itemOnlyUrls.length}枚 のみを限定抽出`);
                             return Array.from(new Set(itemOnlyUrls));
                         }
                     }
                 } catch (e) {
-                    console.warn('[Yahoo Fleamarket __NEXT_DATA__ Parse Exception]:', e.message);
+                    console.warn('[Yahoo __NEXT_DATA__ Parse Exception]:', e.message);
                 }
             }
 
-            // Regex extraction for all Yahoo item images (auctions.c.yimg.jp or item-shopping) from static HTML
-            const yimgRegexMatches = html.match(/https:\/\/(?:auctions\.c\.yimg\.jp|item-shopping\.c\.yimg\.jp)\/images\.auctions\.yahoo\.co\.jp\/image\/[^\s"'<>]+/gi) ||
-                                     html.match(/https:\/\/auc-pctr\.c\.yimg\.jp\/i\/auctions\.c\.yimg\.jp\/images\.auctions\.yahoo\.co\.jp\/image\/[^\s"'<>]+/gi);
+            // 2. High-precision Regex extraction for Yahoo Auction / Flea Item Images
+            const yimgRegexMatches = html.match(/https:\/\/(?:auctions\.c\.yimg\.jp|item-shopping\.c\.yimg\.jp|auc-pctr\.c\.yimg\.jp)\/[^\s"'<>]*image\/[^\s"'<>]+/gi) ||
+                                     html.match(/https:\/\/images\.auctions\.yahoo\.co\.jp\/image\/[^\s"'<>]+/gi) ||
+                                     html.match(/https:\/\/[^\s"'<>]*yimg\.jp\/[^\s"'<>]*auc[0-9]*[^\s"'<>]+\.(?:jpg|jpeg|png|webp)/gi);
+
             if (yimgRegexMatches && yimgRegexMatches.length > 0) {
                 const itemImgSet = new Set();
                 for (let matchUrl of yimgRegexMatches) {
-                    // Extract high-resolution original image URL from yimg CDN url
-                    let cleanUrl = matchUrl.split('?')[0];
+                    let cleanUrl = matchUrl.split('?')[0].replace(/\\/g, '');
                     if (cleanUrl.includes('auc-pctr.c.yimg.jp/i/')) {
                         const subMatch = cleanUrl.match(/https:\/\/(?:images|auctions)[^\s"'<>]+/);
                         if (subMatch) cleanUrl = subMatch[0];
                     }
-                    if (cleanUrl && !cleanUrl.includes('na_170x170') && !cleanUrl.includes('ogp_1200_630')) {
+                    if (cleanUrl && !cleanUrl.includes('na_170x170') && !cleanUrl.includes('ogp_1200_630') && !cleanUrl.includes('common') && !cleanUrl.includes('banner') && !cleanUrl.includes('logo') && !cleanUrl.includes('salespromotion')) {
+                        // Upscale thumbnail _s.jpg / _t.jpg to high resolution original .jpg
+                        cleanUrl = cleanUrl.replace(/_[t|s|thumb]\.jpg$/i, '.jpg').replace(/_[t|s|thumb]\.jpeg$/i, '.jpeg');
                         itemImgSet.add(cleanUrl);
                     }
                 }
@@ -190,18 +194,18 @@ async function extractAllImageUrls(targetUrl, externalPage = null) {
                     const ownerPath = ownerMatch[0];
                     const ownerImgs = Array.from(itemImgSet).filter(url => url.includes(ownerPath));
                     if (ownerImgs.length > 0) {
-                        console.log(`[Yahoo Fleamarket Image Extractor]: 出品者ID (${ownerPath}) の全画像 ${ownerImgs.length}枚 を完全限定抽出！`);
+                        console.log(`[Yahoo Extractor]: 出品者ID (${ownerPath}) の全画像 ${ownerImgs.length}枚 を完全限定抽出！`);
                         return ownerImgs;
                     }
                 }
 
                 if (itemImgSet.size > 0) {
-                    console.log(`[Yahoo Fleamarket Image Extractor]: HTML正規表現から出品商品の全画像 ${itemImgSet.size}枚 を限定抽出`);
+                    console.log(`[Yahoo Extractor]: HTML正規表現から出品商品の全画像 ${itemImgSet.size}枚 を限定抽出`);
                     return Array.from(itemImgSet);
                 }
             }
         } catch (e) {
-            console.warn('[Yahoo Fleamarket Fast Extraction Warning]:', e.message);
+            console.warn('[Yahoo Fast Extraction Warning]:', e.message);
         }
     }
 
@@ -291,13 +295,23 @@ async function extractAllImageUrls(targetUrl, externalPage = null) {
                     return imgs.map(img => img.src).filter(Boolean);
                 });
                 images.push(...domImages);
-            } else if (targetUrl.includes('auctions.yahoo.co.jp')) {
+            } else if (targetUrl.includes('auctions.yahoo.co.jp') || targetUrl.includes('yahoo.co.jp')) {
                 const domImages = await page.evaluate(() => {
-                    const imgs = Array.from(document.querySelectorAll('.ProductImage__slider img, ul.ProductImage__images img, .ProductImage__footerThumbnail img'));
-                    return imgs.map(img => img.getAttribute('data-src') || img.src || '').filter(Boolean);
+                    const imgs = Array.from(document.querySelectorAll('.ProductImage__slider img, ul.ProductImage__images img, .ProductImage__footerThumbnail img, [class*="ProductImage"] img, [class*="Slider"] img, [class*="Thumbnail"] img, [class*="gallery"] img, main img'));
+                    return imgs.filter(img => {
+                        const parent = img.closest('section, div, article');
+                        if (parent) {
+                            const className = parent.className || '';
+                            const text = parent.innerText || '';
+                            if (className.toLowerCase().includes('recommend') || text.includes('オススメ') || text.includes('おすすめ')) {
+                                return false;
+                            }
+                        }
+                        return true;
+                    }).map(img => img.getAttribute('data-src') || img.src || '').filter(src => src && src.startsWith('http') && !src.includes('logo') && !src.includes('banner') && !src.includes('na_170x170') && !src.includes('salespromotion'));
                 });
                 for (const imgUrl of domImages) {
-                    const highRes = imgUrl.replace(/_[t|s|thumb]\.jpg$/, '.jpg').replace(/_[t|s|thumb]\.jpeg$/, '.jpeg');
+                    const highRes = imgUrl.replace(/_[t|s|thumb]\.jpg$/, '.jpg').replace(/_[t|s|thumb]\.jpeg$/, '.jpeg').split('?')[0];
                     images.push(highRes);
                 }
             } else {

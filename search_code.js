@@ -1,15 +1,28 @@
 const fs = require('fs');
 const path = require('path');
 
-const dir = __dirname;
-const files = fs.readdirSync(dir).filter(f => f.endsWith('.js'));
-
-files.forEach(file => {
-    const content = fs.readFileSync(path.join(dir, file), 'utf8');
-    const lines = content.split('\n');
-    lines.forEach((line, idx) => {
-        if (line.includes('values[4]') || line.includes('newE') || line.includes('oldPrice') || line.includes('E列')) {
-            console.log(`${file}:${idx + 1}: ${line.trim()}`);
+function searchInDir(dir, query) {
+    const files = fs.readdirSync(dir);
+    for (const f of files) {
+        const full = path.join(dir, f);
+        const stat = fs.statSync(full);
+        if (stat.isDirectory()) {
+            if (f !== 'node_modules' && f !== '.git') searchInDir(full, query);
+        } else if (f.endsWith('.html') || f.endsWith('.js') || f.endsWith('.css')) {
+            const content = fs.readFileSync(full, 'utf8');
+            if (content.toLowerCase().includes(query.toLowerCase())) {
+                console.log(`Found "${query}" in ${full}`);
+            }
         }
-    });
-});
+    }
+}
+
+const targetDir = 'C:\\Users\\akata\\.gemini\\antigravity\\scratch';
+console.log('Searching for button icons or actions...');
+searchInDir(targetDir, '★');
+searchInDir(targetDir, '📦');
+searchInDir(targetDir, '🚫');
+searchInDir(targetDir, 'star');
+searchInDir(targetDir, 'box');
+searchInDir(targetDir, 'ban');
+searchInDir(targetDir, 'ng');

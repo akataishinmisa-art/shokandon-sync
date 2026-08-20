@@ -371,6 +371,115 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // --- eBay Developer API & Auto-Delist Handlers ---
+    const ebayAppIdInput = document.getElementById('ebayAppIdInput');
+    const ebayDevIdInput = document.getElementById('ebayDevIdInput');
+    const ebayCertIdInput = document.getElementById('ebayCertIdInput');
+    const ebayUserTokenInput = document.getElementById('ebayUserTokenInput');
+    const ebayDelistModeSelect = document.getElementById('ebayDelistModeSelect');
+    const saveEbayMainKeysBtn = document.getElementById('saveEbayMainKeysBtn');
+    const runEbayDelistCheckMainBtn = document.getElementById('runEbayDelistCheckMainBtn');
+    const ebayMainAlert = document.getElementById('ebayMainAlert');
+    const btnToggleCertIdMain = document.getElementById('btnToggleCertIdMain');
+
+    if (btnToggleCertIdMain && ebayCertIdInput) {
+        btnToggleCertIdMain.addEventListener('click', () => {
+            if (ebayCertIdInput.type === 'password') {
+                ebayCertIdInput.type = 'text';
+                btnToggleCertIdMain.textContent = '🔒';
+            } else {
+                ebayCertIdInput.type = 'password';
+                btnToggleCertIdMain.textContent = '👁️';
+            }
+        });
+    }
+
+    function loadEbayMainSettings() {
+        fetch('/api/user-settings')
+            .then(res => res.json())
+            .then(cfg => {
+                if (ebayAppIdInput && cfg.ebayAppId) ebayAppIdInput.value = cfg.ebayAppId;
+                if (ebayDevIdInput && cfg.ebayDevId) ebayDevIdInput.value = cfg.ebayDevId;
+                if (ebayCertIdInput && cfg.ebayCertId) ebayCertIdInput.value = cfg.ebayCertId;
+                if (ebayUserTokenInput && cfg.ebayUserToken) ebayUserTokenInput.value = cfg.ebayUserToken;
+                if (ebayDelistModeSelect && cfg.ebayDelistMode) ebayDelistModeSelect.value = cfg.ebayDelistMode;
+            })
+            .catch(() => {});
+    }
+
+    if (saveEbayMainKeysBtn) {
+        saveEbayMainKeysBtn.addEventListener('click', () => {
+            const payload = {
+                ebayAppId: ebayAppIdInput ? ebayAppIdInput.value.trim() : '',
+                ebayDevId: ebayDevIdInput ? ebayDevIdInput.value.trim() : '',
+                ebayCertId: ebayCertIdInput ? ebayCertIdInput.value.trim() : '',
+                ebayUserToken: ebayUserTokenInput ? ebayUserTokenInput.value.trim() : '',
+                ebayDelistMode: ebayDelistModeSelect ? ebayDelistModeSelect.value : 'end_item'
+            };
+
+            if (ebayMainAlert) {
+                ebayMainAlert.style.color = '#38bdf8';
+                ebayMainAlert.textContent = '保存中...';
+            }
+
+            fetch('/api/user-settings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    if (ebayMainAlert) {
+                        ebayMainAlert.style.color = '#34d399';
+                        ebayMainAlert.textContent = '✅ eBay Developer API設定を正常に保存しました！';
+                    }
+                } else {
+                    if (ebayMainAlert) {
+                        ebayMainAlert.style.color = '#f87171';
+                        ebayMainAlert.textContent = '保存に失敗しました。';
+                    }
+                }
+            })
+            .catch(() => {
+                if (ebayMainAlert) {
+                    ebayMainAlert.style.color = '#f87171';
+                    ebayMainAlert.textContent = '通信エラーが発生しました。';
+                }
+            });
+        });
+    }
+
+    if (runEbayDelistCheckMainBtn) {
+        runEbayDelistCheckMainBtn.addEventListener('click', async () => {
+            runEbayDelistCheckMainBtn.disabled = true;
+            const origTxt = runEbayDelistCheckMainBtn.textContent;
+            runEbayDelistCheckMainBtn.textContent = '⌛ チェック中...';
+            if (ebayMainAlert) {
+                ebayMainAlert.style.color = '#38bdf8';
+                ebayMainAlert.textContent = '全仕入れ元チェック ＆ eBay自動取り下げ処理を実行中...';
+            }
+
+            try {
+                const res = await fetch('http://127.0.0.1:8000/api/ebay/delist-check-now', { method: 'POST' });
+                const data = await res.json();
+                if (ebayMainAlert) {
+                    ebayMainAlert.style.color = '#34d399';
+                    ebayMainAlert.textContent = data.message || '✅ 在庫チェック ＆ 自動取り下げを実行しました！';
+                }
+            } catch (e) {
+                if (ebayMainAlert) {
+                    ebayMainAlert.style.color = '#f87171';
+                    ebayMainAlert.textContent = '取り下げ実行通信エラー (ポート8000の起動を確認してください)';
+                }
+            } finally {
+                runEbayDelistCheckMainBtn.disabled = false;
+                runEbayDelistCheckMainBtn.textContent = origTxt;
+            }
+        });
+    }
+
+    loadEbayMainSettings();
     loadSaasUsers();
 
     // 🎯 仕入れ監視システム: ボタンを押すだけで自動起動＆安全オープン（多重起動なし）

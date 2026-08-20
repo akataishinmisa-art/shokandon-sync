@@ -106,17 +106,23 @@ app.get('/api/stock-monitor/launch', async (req, res) => {
     const monitorDir = path.join(__dirname, 'ebay-stock-monitor', 'backend');
     
     try {
-        const proc = spawn('python', ['-m', 'uvicorn', 'app:app', '--host', '127.0.0.1', '--port', '8000'], {
-            cwd: monitorDir,
-            detached: true,
-            stdio: 'ignore',
-            shell: true
-        });
-        proc.unref();
-        stockMonitorProcess = proc;
+        if (process.platform === 'win32') {
+            const cmdStr = `cd /d "${monitorDir}" && start /min "" python -m uvicorn app:app --host 127.0.0.1 --port 8000`;
+            exec(cmdStr, (err) => {
+                if (err) console.error('[StockMonitor] exec launch error:', err);
+            });
+        } else {
+            const proc = spawn('python3', ['-m', 'uvicorn', 'app:app', '--host', '127.0.0.1', '--port', '8000'], {
+                cwd: monitorDir,
+                detached: true,
+                stdio: 'ignore',
+                shell: true
+            });
+            proc.unref();
+        }
 
-        // 起動待機（最大5秒）
-        for (let i = 0; i < 10; i++) {
+        // 起動待機（最大6秒）
+        for (let i = 0; i < 12; i++) {
             await new Promise(r => setTimeout(r, 500));
             if (await checkAlive()) {
                 console.log('[StockMonitor] 自動起動が完了しました！');
@@ -168,6 +174,28 @@ function saveUserSettings(newSettings) {
         const current = loadUserSettings();
         const updated = { ...current, ...newSettings };
         fs.writeFileSync(USER_SETTINGS_PATH, JSON.stringify(updated, null, 2), 'utf8');
+
+        // 同時にポート8000（仕入れ監視バックエンド）にも設定を自動同期
+        if (updated.ebayAppId || updated.ebayUserToken || updated.ebayCertId) {
+            const payload = JSON.stringify({
+                ebay_app_id: updated.ebayAppId || '',
+                ebay_dev_id: updated.ebayDevId || '',
+                ebay_cert_id: updated.ebayCertId || '',
+                ebay_user_token: updated.ebayUserToken || '',
+                ebay_delist_mode: updated.ebayDelistMode || 'end_item'
+            });
+            const req = http.request({
+                hostname: '127.0.0.1',
+                port: 8000,
+                path: '/api/settings',
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(payload) }
+            }, () => {});
+            req.on('error', () => {});
+            req.write(payload);
+            req.end();
+        }
+
         return true;
     } catch (e) {
         return false;
@@ -1015,11 +1043,28 @@ app.get('/api/saas/users', (req, res) => {
 
 app.post('/api/saas/users', (req, res) => {
     const usersPath = path.join(__dirname, 'users_config.json');
+    const backupPath = path.join(__dirname, 'users_config.json.bak');
     const { users } = req.body;
+
     if (!Array.isArray(users)) {
         return res.status(400).json({ success: false, message: 'Invalid users array' });
     }
+
+    // 🛡️ 防御ガード: 万が一空配列[]が送信されても、既存の有効な設定ファイルを破壊上書きすることを禁止する
+    if (users.length === 0 && fs.existsSync(usersPath)) {
+        try {
+            const currentData = JSON.parse(fs.readFileSync(usersPath, 'utf8'));
+            if (currentData.length > 0) {
+                console.warn('⚠️ [Safety Guard Blocked]: 空のユーザー一覧で既存設定を上書きしようとしたためブロックしました。');
+                return res.json({ success: true, message: '既存の設定が保護されました（空データでの上書きを防止）' });
+            }
+        } catch (e) {}
+    }
+
     try {
+        if (fs.existsSync(usersPath)) {
+            fs.copyFileSync(usersPath, backupPath); // 自動バックアップ保存
+        }
         fs.writeFileSync(usersPath, JSON.stringify(users, null, 2), 'utf8');
         res.json({ success: true, message: 'ユーザー設定を更新しました。' });
     } catch (e) {

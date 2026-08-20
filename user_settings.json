@@ -1,5 +1,10 @@
 {
   "exchange": "157",
-  "margin": "30",
-  "exportShipping": "2200"
+  "margin": "25",
+  "exportShipping": "",
+  "ebayAppId": "",
+  "ebayDevId": "",
+  "ebayCertId": "",
+  "ebayUserToken": "",
+  "ebayDelistMode": "end_item"
 }

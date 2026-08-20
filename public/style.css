@@ -449,7 +449,7 @@ body {
 .right-terminal-group {
     display: flex;
     flex-direction: column;
-    gap: 1.15rem;
+    gap: 0.75rem;
 }
 
 .log-card {
@@ -490,12 +490,15 @@ body {
     background: #090d16;
     color: #38bdf8;
     font-family: 'Consolas', 'Courier New', monospace;
-    font-size: 0.8rem;
-    padding: 0.9rem;
-    height: 200px;
+    font-size: 0.78rem;
+    padding: 0.8rem 0.9rem;
+    max-height: 150px;
+    min-height: 120px;
     overflow-y: auto;
+    overflow-x: hidden;
     white-space: pre-wrap;
-    line-height: 1.45;
+    word-break: break-all;
+    line-height: 1.4;
 }
 
 /* Compact Collapsible LINE API Settings Card */
