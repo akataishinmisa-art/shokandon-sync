@@ -333,7 +333,7 @@
 
     <!-- App Unified Navigation JS -->
     <script>
-        // タブ切り替え
+        // メインタブ切り替え
         document.querySelectorAll('.nav-item').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const targetTab = btn.getAttribute('data-tab');
@@ -346,26 +346,50 @@
                 const pane = document.getElementById(targetTab);
                 if (pane) pane.classList.add('active');
 
-                // アコーディオン開閉連動
                 const monitorSubmenu = document.getElementById('monitorSubmenu');
                 const arrow = document.getElementById('accordionArrow');
+
                 if (targetTab === 'tab-monitor') {
-                    if (monitorSubmenu.style.display === 'none') {
-                        monitorSubmenu.style.display = 'flex';
-                        if (arrow) arrow.style.transform = 'rotate(0deg)';
-                    } else if (e.target.closest('#nav-btn-monitor')) {
-                        // トグル
-                        const isHidden = monitorSubmenu.style.display === 'none';
-                        monitorSubmenu.style.display = isHidden ? 'flex' : 'none';
-                        if (arrow) arrow.style.transform = isHidden ? 'rotate(0deg)' : 'rotate(-90deg)';
-                    }
+                    // 仕入れ監視タブ選択時はアコーディオンを常に展開表示
+                    if (monitorSubmenu) monitorSubmenu.style.display = 'flex';
+                    if (arrow) arrow.style.transform = 'rotate(0deg)';
+                } else {
+                    // 他のタブ選択時はアコーディオンをたたむ
+                    if (monitorSubmenu) monitorSubmenu.style.display = 'none';
+                    if (arrow) arrow.style.transform = 'rotate(-90deg)';
                 }
             });
         });
 
-        // サブカテゴリ選択連動
+        // 矢印アイコン専用トグルクリック
+        const accordionArrow = document.getElementById('accordionArrow');
+        if (accordionArrow) {
+            accordionArrow.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const monitorSubmenu = document.getElementById('monitorSubmenu');
+                if (monitorSubmenu) {
+                    const isHidden = monitorSubmenu.style.display === 'none';
+                    monitorSubmenu.style.display = isHidden ? 'flex' : 'none';
+                    accordionArrow.style.transform = isHidden ? 'rotate(0deg)' : 'rotate(-90deg)';
+                }
+            });
+        }
+
+        // サブカテゴリ選択連動 (デジタルカメラ, ゲーム機本体, 時計・ブランド, その他)
         document.querySelectorAll('.sub-nav-item').forEach(subBtn => {
-            subBtn.addEventListener('click', () => {
+            subBtn.addEventListener('click', (e) => {
+                e.stopPropagation(); // イベントのバブリング（親への影響）を遮断
+
+                // 1. 仕入れ監視タブを確実にアクティブにする
+                const monitorPane = document.getElementById('tab-monitor');
+                if (monitorPane && !monitorPane.classList.contains('active')) {
+                    document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+                    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+                    document.getElementById('nav-btn-monitor').classList.add('active');
+                    monitorPane.classList.add('active');
+                }
+
+                // 2. ボタンハイライト切替
                 document.querySelectorAll('.sub-nav-item').forEach(s => {
                     s.classList.remove('active');
                     s.style.background = 'transparent';
@@ -378,6 +402,11 @@
                 subBtn.style.borderColor = 'rgba(56,189,248,0.3)';
                 subBtn.style.color = '#f8fafc';
 
+                // 3. アコーディオンを開いた状態に維持
+                const monitorSubmenu = document.getElementById('monitorSubmenu');
+                if (monitorSubmenu) monitorSubmenu.style.display = 'flex';
+
+                // 4. iframeへのカテゴリフィルタ送信
                 const cat = subBtn.getAttribute('data-cat');
                 const iframe = document.getElementById('monitorIframe');
                 if (iframe && iframe.contentWindow) {
