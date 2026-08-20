@@ -801,6 +801,33 @@ function sendLineNotificationForUser(user, message) {
         }
     }
 
+    // 8. eBay API Auto-Delist Integration Hook (全仕入れ元チェック完了後に欠品商品をeBayから自動取り下げ)
+    try {
+        const userSettingsPath = path.join(__dirname, 'user_settings.json');
+        if (fs.existsSync(userSettingsPath)) {
+            const cfg = JSON.parse(fs.readFileSync(userSettingsPath, 'utf8'));
+            if (cfg.ebayAppId && cfg.ebayUserToken) {
+                console.log('\n📦 [eBay Auto-Delist Hook]: eBay Developer APIの設定を検出しました。自動取り下げ処理を開始します...');
+                const delistRes = await new Promise((resolve) => {
+                    const req = http.request('http://127.0.0.1:8000/api/ebay/delist-check-now', { method: 'POST', timeout: 30000 }, (res) => {
+                        let body = '';
+                        res.on('data', chunk => body += chunk);
+                        res.on('end', () => resolve(body));
+                    });
+                    req.on('error', (e) => resolve(null));
+                    req.end();
+                });
+                if (delistRes) {
+                    console.log(`✅ [eBay Auto-Delist Result]: ${delistRes}`);
+                } else {
+                    console.log('⚠️ [eBay Auto-Delist Notice]: ポート8000からの応答がありませんでした（eBay監視エンジンの起動を確認してください）。');
+                }
+            }
+        }
+    } catch (ebayErr) {
+        console.error('eBay Auto-Delist Hook Error:', ebayErr.message);
+    }
+
     if (globalBrowser) {
         await globalBrowser.close().catch(() => {});
     }

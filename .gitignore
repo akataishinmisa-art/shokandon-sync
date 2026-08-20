@@ -4,3 +4,5 @@ chrome_temp_profile/
 *.log
 scratch/
 google_service_account.json
+user_settings.json
+users_config.json
