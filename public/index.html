@@ -188,13 +188,13 @@
             <section id="tab-sync" class="tab-pane">
                 <div class="container" style="max-width: 100%; padding: 0;">
                     <!-- FULL WIDTH HERO: Sync Control Panel -->
-                    <section class="card hero-control-card">
+                    <section class="card hero-control-card" style="background:#111827; border:1px solid #1e293b; padding:1.5rem; border-radius:12px;">
                         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.5rem;">
                             <div style="display:flex; align-items:center; gap:0.6rem;">
                                 <span style="font-size:1.4rem;">⚡</span>
-                                <h2 style="margin:0; font-size:1.25rem;">実行コントロールパネル</h2>
+                                <h2 style="margin:0; font-size:1.25rem; color:#f8fafc;">実行コントロールパネル</h2>
                             </div>
-                            <div style="font-size:0.8rem; background:rgba(56,189,248,0.1); border:1px solid rgba(56,189,248,0.25); color:#38bdf8; padding:4px 10px; border-radius:20px; display:flex; align-items:center; gap:6px;">
+                            <div style="font-size:0.8rem; background:rgba(56,189,248,0.1); border:1px solid rgba(56,189,248,0.25); color:#38bdf8; padding:6px 12px; border-radius:20px; display:flex; align-items:center; gap:6px;">
                                 ⏰ 自動スケジュール: 朝 6:00 〜 夜 24:00 (毎時 00 分) 📱 LINE通知モード (稼働中)
                             </div>
                         </div>
@@ -202,27 +202,27 @@
                             モードを選択して「実行ボタン」を押すと手動同期が即座に実行されます。また、**朝6:00〜夜24:00は毎時00分にLINE通知モードで自動同期**が稼働します。
                         </p>
 
-                        <div class="mode-selector">
-                            <label class="mode-card">
-                                <input type="radio" name="syncMode" value="standard">
-                                <div class="mode-title">標準モード</div>
-                                <div class="mode-desc">価格更新・旧価格退避・欠品判定・赤色ハイライト</div>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; margin: 1.25rem 0;">
+                            <label style="background:#0f172a; border:1px solid #334155; border-radius:10px; padding:1rem 1.25rem; cursor:pointer; display:block;">
+                                <input type="radio" name="syncMode" value="standard" style="accent-color:#a855f7; margin-right:8px;">
+                                <span style="font-size:1rem; font-weight:700; color:#f8fafc;">標準モード</span>
+                                <div style="font-size:0.78rem; color:#94a3b8; margin-top:4px;">価格更新・旧価格退避・欠品判定・赤色ハイライト</div>
                             </label>
 
-                            <label class="mode-card">
-                                <input type="radio" name="syncMode" value="soldout_g">
-                                <div class="mode-title">G列出品取り消しモード</div>
-                                <div class="mode-desc">欠品時にG列へ「出品取り消し」を記載</div>
+                            <label style="background:#0f172a; border:1px solid #334155; border-radius:10px; padding:1rem 1.25rem; cursor:pointer; display:block;">
+                                <input type="radio" name="syncMode" value="soldout_g" style="accent-color:#a855f7; margin-right:8px;">
+                                <span style="font-size:1rem; font-weight:700; color:#f8fafc;">G列出品取り消しモード</span>
+                                <div style="font-size:0.78rem; color:#94a3b8; margin-top:4px;">欠品時にG列へ「出品取り消し」を記載</div>
                             </label>
 
-                            <label class="mode-card active">
-                                <input type="radio" name="syncMode" value="line_transfer" checked>
-                                <div class="mode-title">📱 LINE通知モード</div>
-                                <div class="mode-desc">欠品/値上げ時にLINEへ自動で一括通知メッセージを送信</div>
+                            <label style="background:rgba(168,85,247,0.12); border:1px solid #a855f7; border-radius:10px; padding:1rem 1.25rem; cursor:pointer; display:block;">
+                                <input type="radio" name="syncMode" value="line_transfer" checked style="accent-color:#a855f7; margin-right:8px;">
+                                <span style="font-size:1rem; font-weight:700; color:#f8fafc;">📱 LINE通知モード</span>
+                                <div style="font-size:0.78rem; color:#94a3b8; margin-top:4px;">欠品/値上げ時にLINEへ自動で一括通知メッセージを送信</div>
                             </label>
                         </div>
 
-                        <button id="runSyncBtn" class="btn-primary-glow">
+                        <button id="runSyncBtn" style="width:100%; padding:1.1rem 1.5rem; font-size:1.2rem; font-weight:700; color:#ffffff; background:linear-gradient(135deg, #7c3aed, #db2777); border:none; border-radius:10px; cursor:pointer; box-shadow:0 4px 20px rgba(124,58,237,0.4); margin-top:0.75rem; transition:all 0.2s ease;">
                             🚀 スプレッドシート自動同期を実行する
                         </button>
                     </section>
