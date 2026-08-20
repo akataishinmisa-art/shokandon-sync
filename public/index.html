@@ -3,427 +3,322 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🌸 SAKURA Sync | 自動在庫・価格同期ダッシュボード</title>
+    <title>🌸 SAKURA Sync | オールインワン統合ダッシュボード</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Noto+Sans+JP:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        /* 🌸 SAKURA Sync Unified App Layout */
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #0b0f19;
+            color: #f1f5f9;
+            font-family: 'Noto Sans JP', 'Outfit', sans-serif;
+            overflow-x: hidden;
+        }
+        .app-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+        /* Sidebar Design (Image 3 Style) */
+        .sidebar {
+            width: 260px;
+            background: #111827;
+            border-right: 1px border #1e293b;
+            display: flex;
+            flex-direction: column;
+            padding: 1.25rem 1rem;
+            box-sizing: border-box;
+            flex-shrink: 0;
+            z-index: 100;
+        }
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding-bottom: 1.25rem;
+            border-bottom: 1px solid #1e293b;
+            margin-bottom: 1.5rem;
+        }
+        .brand-icon {
+            font-size: 1.75rem;
+        }
+        .brand-text h2 {
+            margin: 0;
+            font-size: 1.2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #f472b6, #fb7185, #38bdf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .brand-text .badge-sub {
+            font-size: 0.7rem;
+            background: #1e293b;
+            color: #94a3b8;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+        .nav-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            flex-grow: 1;
+        }
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.85rem 1rem;
+            background: transparent;
+            border: 1px solid transparent;
+            border-radius: 8px;
+            color: #94a3b8;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: left;
+            width: 100%;
+        }
+        .nav-item:hover {
+            background: #1e293b;
+            color: #f8fafc;
+        }
+        .nav-item.active {
+            background: linear-gradient(135deg, rgba(236,72,153,0.15), rgba(56,189,248,0.15));
+            border-color: rgba(236,72,153,0.4);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(236,72,153,0.1);
+        }
+        .nav-icon {
+            font-size: 1.2rem;
+        }
+        .sidebar-footer {
+            border-top: 1px solid #1e293b;
+            padding-top: 1rem;
+            font-size: 0.75rem;
+            color: #64748b;
+            text-align: center;
+        }
+
+        /* Main Content View Container */
+        .main-content {
+            flex-grow: 1;
+            padding: 1.5rem 2rem;
+            box-sizing: border-box;
+            overflow-y: auto;
+            max-height: 100vh;
+        }
+        .tab-pane {
+            display: none;
+        }
+        .tab-pane.active {
+            display: block;
+            animation: fadeIn 0.25s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        iframe.tool-frame {
+            width: 100%;
+            height: calc(100vh - 4rem);
+            border: none;
+            border-radius: 12px;
+            background: #0f172a;
+        }
+    </style>
 </head>
 <body>
-    <div class="background-glob"></div>
-    <div class="background-glob glob-2"></div>
 
-    <div class="container">
-        <!-- Header -->
-        <header class="header">
-            <div class="logo-area">
-                <span class="badge" style="background: linear-gradient(135deg, #ec4899, #f43f5e);">🌸 PRO</span>
-                <h1>SAKURA Sync <span class="subtitle">自動在庫・価格マルチ同期ダッシュボード</span></h1>
-            </div>
-            <div class="header-right-actions">
-                <a href="javascript:void(0)" id="btnOpenStockMonitor" class="btn-monitor-header" title="仕入れ監視システム（監視商品リスト・新着ピックアップ）を自動起動して開く">
-                    🎯 仕入れ監視システム (監視リスト) ↗
-                </a>
-                <a href="/ebay/" target="_blank" class="btn-title-helper-header">
-                    ⚡ eBayタイトル＆商品説明作成 ↗
-                </a>
-                <a href="https://docs.google.com/spreadsheets/d/15skxiK9eL6JDzq76JX3_3uS5-puJIqGGZngv3bJ4iv4/edit#gid=0" target="_blank" class="btn-sheet-header">
-                    📊 スプレッドシートを開く (商管どん) ↗
-                </a>
-                <div class="status-pill" id="serverStatusPill">
-                    <span class="status-dot"></span>
-                    <span id="statusText">システム正常待機中</span>
+    <div class="app-layout">
+        <!-- 🌸 Left Sidebar (Image 3 Style Navigation) -->
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="brand-icon">🌸</div>
+                <div class="brand-text">
+                    <h2>SAKURA Sync</h2>
+                    <span class="badge-sub">Suite v2.5 PRO</span>
                 </div>
             </div>
-        </header>
 
-        <!-- FULL WIDTH SUPER WIDE HERO: Sync Control Panel -->
-        <section class="card hero-control-card">
-            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.5rem;">
-                <h2>⚡ 実行コントロールパネル</h2>
-                <div id="scheduleBadge" class="schedule-pill" style="background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; color: #34d399; font-weight: 700; font-size: 0.85rem; padding: 0.35rem 0.85rem; border-radius: 20px; display: flex; align-items: center; gap: 0.4rem; cursor: pointer;" title="クリックでON/OFF切り替え">
-                    <span class="status-dot" style="background: #10b981; display: inline-block; width: 8px; height: 8px; border-radius: 50%;"></span>
-                    <span id="scheduleText">⏰ 自動スケジュール: 朝6時〜夜12時 毎時LINE通知モード (稼働中)</span>
-                </div>
+            <nav class="nav-menu">
+                <button class="nav-item active" data-tab="tab-monitor">
+                    <span class="nav-icon">🎯</span>
+                    <span>仕入れ監視・リサーチ</span>
+                </button>
+
+                <button class="nav-item" data-tab="tab-listing">
+                    <span class="nav-icon">⚡</span>
+                    <span>出品＆タイトル作成</span>
+                </button>
+
+                <button class="nav-item" data-tab="tab-sync">
+                    <span class="nav-icon">🔄</span>
+                    <span>自動同期＆実行ログ</span>
+                </button>
+
+                <button class="nav-item" data-tab="tab-settings">
+                    <span class="nav-icon">⚙️</span>
+                    <span>設定＆連携アカウント</span>
+                </button>
+            </nav>
+
+            <div class="sidebar-footer">
+                🌸 SAKURA Sync All-in-One Engine<br>
+                Status: <span style="color:#34d399;">● 正常稼働中</span>
             </div>
-            <p class="desc">モードを選択して「実行ボタン」を押すと手動同期が即座に実行されます。また、**朝6:00〜夜24:00は毎時00分にLINE通知モードで自動同期**が稼働します。</p>
+        </aside>
 
-            <div class="horizontal-mode-selector">
-                <label class="radio-card active" id="modeStandardLabel">
-                    <input type="radio" name="syncMode" value="standard" checked>
-                    <div class="radio-content">
-                        <span class="mode-title">標準モード</span>
-                        <span class="mode-desc">価格更新・旧価格退避・欠品判定・赤色ハイライト</span>
-                    </div>
-                </label>
+        <!-- 🚀 Main Content View Area -->
+        <main class="main-content">
 
-                <label class="radio-card" id="modeSoldoutGLabel">
-                    <input type="radio" name="syncMode" value="soldout_g">
-                    <div class="radio-content">
-                        <span class="mode-title">G列出品取り消しモード</span>
-                        <span class="mode-desc">欠品時にG列へ「出品取り消し」を記載</span>
-                    </div>
-                </label>
+            <!-- 🎯 Tab 1: 仕入れ監視・リサーチ (Image 3 View) -->
+            <section id="tab-monitor" class="tab-pane active">
+                <iframe src="http://localhost:8000/" class="tool-frame" title="仕入れ監視システム"></iframe>
+            </section>
 
-                <label class="radio-card" id="modeLineLabel">
-                    <input type="radio" name="syncMode" value="line_transfer">
-                    <div class="radio-content">
-                        <span class="mode-title">📱 LINE通知モード</span>
-                        <span class="mode-desc">欠品時にLINEへ自動で一括通知メッセージを送信</span>
-                    </div>
-                </label>
-            </div>
+            <!-- ⚡ Tab 2: 出品＆タイトル作成 (Image 2 View) -->
+            <section id="tab-listing" class="tab-pane">
+                <iframe src="/ebay/" class="tool-frame" title="無在庫出品作成支援"></iframe>
+            </section>
 
-            <button type="button" class="btn-primary-mega" id="runSyncBtn">
-                <span class="btn-icon">🚀</span>
-                <span id="btnLabelText">スプレッドシート自動同期を実行する</span>
-            </button>
-        </section>
-
-        <!-- Bottom Grid: Markets & Terminal Output -->
-        <div class="bottom-grid">
-            <!-- Left: Major Markets & EC Quick Links (8 Markets) -->
-            <section class="card market-links-card">
-                <h2>🌐 主要モール＆ECサイト</h2>
-                <p class="desc">ワンクリックで対象サイトへジャンプ</p>
-
-                <div class="market-row-grid">
-                    <a href="http://127.0.0.1:8000" target="_blank" class="market-btn" style="background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981;">
-                        <span class="market-icon">🎯</span>
-                        <div class="market-info">
-                            <span class="market-name" style="color: #34d399;">仕入れ監視システム</span>
-                            <span class="market-url">監視商品リスト / 2割安検知</span>
+            <!-- 🔄 Tab 3: 自動同期＆実行ログ (Image 1 Top View) -->
+            <section id="tab-sync" class="tab-pane">
+                <div class="container" style="max-width: 100%; padding: 0;">
+                    <!-- FULL WIDTH HERO: Sync Control Panel -->
+                    <section class="card hero-control-card">
+                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.5rem;">
+                            <div style="display:flex; align-items:center; gap:0.6rem;">
+                                <span style="font-size:1.4rem;">⚡</span>
+                                <h2 style="margin:0; font-size:1.25rem;">実行コントロールパネル</h2>
+                            </div>
+                            <div style="font-size:0.8rem; background:rgba(56,189,248,0.1); border:1px solid rgba(56,189,248,0.25); color:#38bdf8; padding:4px 10px; border-radius:20px; display:flex; align-items:center; gap:6px;">
+                                ⏰ 自動スケジュール: 朝 6:00 〜 夜 24:00 (毎時 00 分) 📱 LINE通知モード (稼働中)
+                            </div>
                         </div>
-                        <span class="external-icon">↗</span>
-                    </a>
+                        <p style="color:#94a3b8; font-size:0.85rem; margin-bottom:1.2rem;">
+                            モードを選択して「実行ボタン」を押すと手動同期が即座に実行されます。また、**朝6:00〜夜24:00は毎時00分にLINE通知モードで自動同期**が稼働します。
+                        </p>
 
-                    <a href="https://www.ebay.com/" target="_blank" class="market-btn ebay-btn">
-                        <span class="market-icon">🌐</span>
-                        <div class="market-info">
-                            <span class="market-name">eBay</span>
-                            <span class="market-url">ebay.com</span>
-                        </div>
-                        <span class="external-icon">↗</span>
-                    </a>
+                        <div class="mode-selector">
+                            <label class="mode-card">
+                                <input type="radio" name="syncMode" value="standard">
+                                <div class="mode-title">標準モード</div>
+                                <div class="mode-desc">価格更新・旧価格退避・欠品判定・赤色ハイライト</div>
+                            </label>
 
-                    <a href="https://www.amazon.co.jp/" target="_blank" class="market-btn amazon-btn">
-                        <span class="market-icon">📦</span>
-                        <div class="market-info">
-                            <span class="market-name">Amazon</span>
-                            <span class="market-url">amazon.co.jp</span>
-                        </div>
-                        <span class="external-icon">↗</span>
-                    </a>
+                            <label class="mode-card">
+                                <input type="radio" name="syncMode" value="soldout_g">
+                                <div class="mode-title">G列出品取り消しモード</div>
+                                <div class="mode-desc">欠品時にG列へ「出品取り消し」を記載</div>
+                            </label>
 
-                    <a href="https://shopping.yahoo.co.jp/" target="_blank" class="market-btn yahooshop-btn">
-                        <span class="market-icon">🛒</span>
-                        <div class="market-info">
-                            <span class="market-name">ヤフーショッピング</span>
-                            <span class="market-url">shopping.yahoo.co.jp</span>
+                            <label class="mode-card active">
+                                <input type="radio" name="syncMode" value="line_transfer" checked>
+                                <div class="mode-title">📱 LINE通知モード</div>
+                                <div class="mode-desc">欠品/値上げ時にLINEへ自動で一括通知メッセージを送信</div>
+                            </label>
                         </div>
-                        <span class="external-icon">↗</span>
-                    </a>
 
-                    <a href="https://auctions.yahoo.co.jp/" target="_blank" class="market-btn yahooauc-btn">
-                        <span class="market-icon">🔨</span>
-                        <div class="market-info">
-                            <span class="market-name">ヤフオク!</span>
-                            <span class="market-url">auctions.yahoo.co.jp</span>
-                        </div>
-                        <span class="external-icon">↗</span>
-                    </a>
+                        <button id="runSyncBtn" class="btn-primary-glow">
+                            🚀 スプレッドシート自動同期を実行する
+                        </button>
+                    </section>
 
-                    <a href="https://paypayfleamarket.yahoo.co.jp/" target="_blank" class="market-btn yahooflea-btn">
-                        <span class="market-icon">🟡</span>
-                        <div class="market-info">
-                            <span class="market-name">ヤフーフリマ</span>
-                            <span class="market-url">paypayfleamarket.yahoo.co.jp</span>
-                        </div>
-                        <span class="external-icon">↗</span>
-                    </a>
-
-                    <a href="https://jp.mercari.com/" target="_blank" class="market-btn mercari-btn">
-                        <span class="market-icon">🔴</span>
-                        <div class="market-info">
-                            <span class="market-name">メルカリ</span>
-                            <span class="market-url">jp.mercari.com</span>
-                        </div>
-                        <span class="external-icon">↗</span>
-                    </a>
-
-                    <a href="https://fril.jp/" target="_blank" class="market-btn rakuma-btn">
-                        <span class="market-icon">🔴</span>
-                        <div class="market-info">
-                            <span class="market-name">ラクマ</span>
-                            <span class="market-url">fril.jp</span>
-                        </div>
-                        <span class="external-icon">↗</span>
-                    </a>
-
-                    <a href="https://www.rakuten.co.jp/" target="_blank" class="market-btn rakuten-btn">
-                        <span class="market-icon">🛍️</span>
-                        <div class="market-info">
-                            <span class="market-name">楽天市場</span>
-                            <span class="market-url">rakuten.co.jp</span>
-                        </div>
-                        <span class="external-icon">↗</span>
-                    </a>
-                </div>
-
-                <!-- AI & Translation Tools Section -->
-                <h3 style="margin-top: 1.5rem; margin-bottom: 0.5rem; font-size: 1rem; color: #a7f3d0; display: flex; align-items: center; gap: 0.4rem;">
-                    🤖 AI ＆ 翻訳クイックツール
-                </h3>
-                <div class="market-row-grid ai-tools-grid">
-                    <a href="https://gemini.google.com/" target="_blank" class="market-btn ai-btn gemini-btn">
-                        <span class="market-icon">✨</span>
-                        <div class="market-info">
-                            <span class="market-name">Gemini (ジェミニ)</span>
-                            <span class="market-url">gemini.google.com</span>
-                        </div>
-                        <span class="external-icon">↗</span>
-                    </a>
-
-                    <a href="https://chatgpt.com/" target="_blank" class="market-btn ai-btn chatgpt-btn">
-                        <span class="market-icon">💬</span>
-                        <div class="market-info">
-                            <span class="market-name">ChatGPT</span>
-                            <span class="market-url">chatgpt.com</span>
-                        </div>
-                        <span class="external-icon">↗</span>
-                    </a>
-
-                    <a href="https://events.yahoo.co.jp/agent-i/" target="_blank" class="market-btn ai-btn agenti-btn">
-                        <span class="market-icon">🤖</span>
-                        <div class="market-info">
-                            <span class="market-name">Agent i (アイ)</span>
-                            <span class="market-url">events.yahoo.co.jp</span>
-                        </div>
-                        <span class="external-icon">↗</span>
-                    </a>
-
-                    <a href="https://translate.google.co.jp/" target="_blank" class="market-btn ai-btn translate-btn">
-                        <span class="market-icon">🌐</span>
-                        <div class="market-info">
-                            <span class="market-name">Google 翻訳</span>
-                            <span class="market-url">translate.google.co.jp</span>
-                        </div>
-                        <span class="external-icon">↗</span>
-                    </a>
+                    <!-- Realtime Execution Terminal -->
+                    <section class="card" style="margin-top: 1.5rem;">
+                        <h2 style="font-size: 1.1rem; margin-bottom: 0.75rem; color: #38bdf8;">リアルタイム実行ログ (Terminal Output)</h2>
+                        <pre id="terminalLog" style="background:#0f172a; border:1px solid #1e293b; color:#34d399; padding:1rem; border-radius:8px; height:360px; overflow-y:auto; font-family:'JetBrains Mono', monospace; font-size:0.85rem; line-height:1.5;">システム正常待機中...</pre>
+                    </section>
                 </div>
             </section>
 
-            <!-- Right: Terminal Output & Compact LINE API Settings -->
-            <div class="right-terminal-group">
-                <!-- Terminal Output Card -->
-                <section class="card log-card">
-                    <div class="terminal-header">
-                        <div class="terminal-dots">
-                            <span class="dot red"></span>
-                            <span class="dot yellow"></span>
-                            <span class="dot green"></span>
+            <!-- ⚙️ Tab 4: 設定＆連携アカウント (Image 1 Bottom View) -->
+            <section id="tab-settings" class="tab-pane">
+                <div class="container" style="max-width: 100%; padding: 0;">
+                    
+                    <!-- 👑 SaaS顧客管理・スプレッドシートアカウント設定 -->
+                    <section class="card" style="margin-bottom:1.5rem;">
+                        <h2 style="font-size:1.1rem; color:#f472b6; margin-bottom:0.5rem;">👑 SaaS顧客管理・スプレッドシートアカウント設定</h2>
+                        <p style="color:#94a3b8; font-size:0.85rem; margin-bottom:1rem;">登録された顧客のスプレッドシート・LINE設定を24時間自動監視・同期します。</p>
+                        
+                        <div id="saasUsersList"></div>
+                        <div id="saasUsersAlert" style="margin-top:0.5rem; font-size:0.85rem; font-weight:600;"></div>
+
+                        <div style="display:flex; gap:0.75rem; margin-top:1rem;">
+                            <button id="addSaasUserBtn" class="btn-secondary" style="flex:1;">➕ 顧客アカウントを追加</button>
+                            <button id="saveSaasUsersBtn" class="btn-primary" style="flex:1;">💾 顧客設定を保存</button>
                         </div>
-                        <span class="terminal-title">リアルタイム実行ログ (Terminal Output)</span>
-                    </div>
-                    <pre class="terminal-body" id="terminalLog">実行ログがここに表示されます...</pre>
-                </section>
+                    </section>
 
-                <!-- SaaS Customer Multi-Tenant Management Panel -->
-                <section class="card compact-settings-card" style="margin-top: 1rem; border: 1px solid rgba(59, 130, 246, 0.4); background: rgba(15, 23, 42, 0.75);">
-                    <details class="settings-details" open>
-                        <summary class="settings-summary" style="color: #60a5fa; font-weight: 700;">
-                            <span>👑 SaaS顧客管理・スプレッドシートアカウント設定</span>
-                            <span class="summary-arrow">▼</span>
-                        </summary>
-                        <div class="settings-content" style="padding-top: 0.8rem;">
-                            <p style="font-size: 0.82rem; color: #94a3b8; margin-bottom: 0.8rem;">登録された顧客のスプレッドシート・LINE設定を24時間自動監視・同期します。</p>
-                            
-                            <div id="saasUsersList" style="display: flex; flex-direction: column; gap: 0.8rem;">
-                                <div style="background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(148, 163, 184, 0.2); border-radius: 8px; padding: 0.8rem; display: flex; flex-direction: column; gap: 0.5rem;">
-                                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.4rem;">
-                                        <span style="font-weight: 700; color: #38bdf8; font-size: 0.9rem;">👤 顧客アカウント #1 （メインアカウント）</span>
-                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                            <span style="font-size: 0.72rem; color: #a7f3d0; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); padding: 0.1rem 0.4rem; border-radius: 4px;">📅 登録日: 2026/08/08</span>
-                                        </div>
-                                    </div>
-                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
-                                        <div>
-                                            <label style="font-size: 0.75rem; color: #94a3b8;">顧客名 / アカウント名</label>
-                                            <input type="text" class="user-name-input" data-index="0" value="メインアカウント（ユーザー1）" placeholder="例: A社 様 / ユーザー1" style="width: 100%; background: #0f172a; border: 1px solid #334155; color: #fff; border-radius: 4px; padding: 0.3rem 0.5rem; font-size: 0.8rem;">
-                                        </div>
-                                        <div>
-                                            <label style="font-size: 0.75rem; color: #94a3b8;">スプレッドシートID</label>
-                                            <input type="text" class="user-sheet-input" data-index="0" value="15skxiK9eL6JDzq76JX3_3uS5-puJIqGGZngv3bJ4iv4" placeholder="15skxiK9eL6JDzq..." style="width: 100%; background: #0f172a; border: 1px solid #334155; color: #fff; border-radius: 4px; padding: 0.3rem 0.5rem; font-size: 0.8rem;">
-                                        </div>
-                                    </div>
-                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
-                                        <div>
-                                            <label style="font-size: 0.75rem; color: #94a3b8;">LINE Access Token</label>
-                                            <input type="password" class="user-token-input" data-index="0" value="B2HWvVXYh0ryq+ok/xCrmHzlvbuHPONV5nASZu8NX2yby3UPeZF1YWtE14k4xk3VX5cRh7Kqeix7AwKuBP03EzKiOi6xt0mOqTx4hXvMJ/ge1LClYlrmYyTiVNJMh8t6x/yFa6HVoQAimZh66BrldwdB04t89/1O/w1cDnyilFU=" placeholder="B2HWvVXYh0ry..." style="width: 100%; background: #0f172a; border: 1px solid #334155; color: #fff; border-radius: 4px; padding: 0.3rem 0.5rem; font-size: 0.8rem;">
-                                        </div>
-                                        <div>
-                                            <label style="font-size: 0.75rem; color: #94a3b8;">LINE User ID</label>
-                                            <input type="text" class="user-userid-input" data-index="0" value="U25f6fe2beb5ac799dfcd3014e17a578c" placeholder="U25f6fe2beb5..." style="width: 100%; background: #0f172a; border: 1px solid #334155; color: #fff; border-radius: 4px; padding: 0.3rem 0.5rem; font-size: 0.8rem;">
-                                        </div>
-                                    </div>
-                                    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: #64748b; margin-top: 0.2rem;">
-                                        <span>最終同期: 2026/8/16 9:04:58</span>
-                                        <span style="color: #34d399; font-weight: 700;">状態: 正常完了 (欠品: 1件, 価格変更: 0件)</span>
-                                    </div>
-                                </div>
+                    <!-- 🔑 📦 eBay Developer API 設定 & 自動取り下げ -->
+                    <section class="card" style="margin-bottom:1.5rem;">
+                        <h2 style="font-size:1.1rem; color:#a855f7; margin-bottom:0.5rem;">🔑 📦 eBay Developer API 設定 & 自動取り下げ</h2>
+                        <p style="color:#94a3b8; font-size:0.85rem; margin-bottom:1rem;">仕入れ元（メルカリ/ヤフオク/ラクマ/Amazon等）の欠品検出時に、eBayから自動的に出品を取り下げ（End Item）または在庫数0化します。</p>
+                        
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem; margin-bottom:1rem;">
+                            <div>
+                                <label style="font-size:0.8rem; color:#cbd5e1;">App ID (Client ID)</label>
+                                <input type="text" id="ebayAppIdInput" style="width:100%; padding:8px; background:#0f172a; border:1px solid #334155; color:#fff; border-radius:6px; box-sizing:border-box;">
                             </div>
-
-                            <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
-                                <button type="button" class="btn-secondary" id="addSaasUserBtn" style="font-size: 0.82rem; padding: 0.4rem 0.8rem; background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; color: #34d399;">➕ 顧客アカウントを追加</button>
-                                <button type="button" class="btn-primary" id="saveSaasUsersBtn" style="font-size: 0.82rem; padding: 0.4rem 0.8rem; background: #3b82f6;">💾 顧客設定を保存</button>
+                            <div>
+                                <label style="font-size:0.8rem; color:#cbd5e1;">Dev ID</label>
+                                <input type="text" id="ebayDevIdInput" style="width:100%; padding:8px; background:#0f172a; border:1px solid #334155; color:#fff; border-radius:6px; box-sizing:border-box;">
                             </div>
-                            <div class="alert-msg" id="saasUsersAlert" style="margin-top: 0.5rem;"></div>
                         </div>
-                    </details>
-                </section>
 
-                <!-- eBay Developer API & Auto-Delist Settings Panel -->
-                <section class="card compact-settings-card" style="margin-top: 0.75rem; border: 1px solid rgba(168, 85, 247, 0.4); background: rgba(15, 23, 42, 0.75);">
-                    <details class="settings-details">
-                        <summary class="settings-summary" style="color: #c084fc; font-weight: 700;">
-                            <span>🔑 📦 eBay Developer API 設定 ＆ 自動取り下げ (クリックで展開)</span>
-                            <span class="summary-arrow">▼</span>
-                        </summary>
-                        <div class="settings-content" style="padding-top: 0.8rem;">
-                            <p style="font-size: 0.82rem; color: #94a3b8; margin-bottom: 0.8rem;">
-                                仕入れ元（メルカリ/ヤフオク/ラクマ/Amazon等）の欠品検出時に、eBayから自動的に出品を取り下げ（End Item）または在庫数0化します。
-                            </p>
-
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 0.5rem;">
-                                <div>
-                                    <label style="font-size: 0.75rem; color: #94a3b8;">App ID (Client ID)</label>
-                                    <input type="text" id="ebayAppIdInput" placeholder="Shintaro-MyAutoDe-PRD..." value="Shintaro-MyAutoDe-PRD-c0149ee33-efb815fc" style="width: 100%; background: #0f172a; border: 1px solid #334155; color: #fff; border-radius: 4px; padding: 0.3rem 0.5rem; font-size: 0.8rem;">
-                                </div>
-                                <div>
-                                    <label style="font-size: 0.75rem; color: #94a3b8;">Dev ID</label>
-                                    <input type="text" id="ebayDevIdInput" placeholder="ceb4b028-c7f6..." value="ceb4b028-c7f6-4b98-b1ab-e2294388b0c4" style="width: 100%; background: #0f172a; border: 1px solid #334155; color: #fff; border-radius: 4px; padding: 0.3rem 0.5rem; font-size: 0.8rem;">
-                                </div>
+                        <div style="margin-bottom:1rem;">
+                            <label style="font-size:0.8rem; color:#cbd5e1;">Cert ID (Client Secret)</label>
+                            <div style="display:flex; gap:6px;">
+                                <input type="password" id="ebayCertIdInput" style="flex:1; padding:8px; background:#0f172a; border:1px solid #334155; color:#fff; border-radius:6px; box-sizing:border-box;">
+                                <button type="button" id="btnToggleCertIdMain" style="background:#334155; color:#fff; border:none; padding:0 12px; border-radius:6px; cursor:pointer;">👁️</button>
                             </div>
-
-                            <div style="margin-bottom: 0.5rem;">
-                                <label style="font-size: 0.75rem; color: #94a3b8;">Cert ID (Client Secret)</label>
-                                <div style="position: relative; display: flex; align-items: center;">
-                                    <input type="password" id="ebayCertIdInput" placeholder="CertID..." style="width: 100%; background: #0f172a; border: 1px solid #334155; color: #fff; border-radius: 4px; padding: 0.3rem 0.5rem; font-size: 0.8rem; padding-right: 35px;">
-                                    <button type="button" id="btnToggleCertIdMain" style="position: absolute; right: 8px; background: transparent; border: none; cursor: pointer; font-size: 14px; color: #94a3b8;" title="表示/非表示を切り替え">👁️</button>
-                                </div>
-                            </div>
-
-                            <div style="margin-bottom: 0.5rem;">
-                                <label style="font-size: 0.75rem; color: #94a3b8;">User Token (OAuth Refresh Token / User Token)</label>
-                                <textarea id="ebayUserTokenInput" rows="2" placeholder="v^1.1#i^1#..." style="width: 100%; background: #0f172a; border: 1px solid #334155; color: #fff; border-radius: 4px; padding: 0.3rem 0.5rem; font-size: 0.75rem; font-family: monospace;"></textarea>
-                            </div>
-
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; align-items: center; margin-bottom: 0.8rem;">
-                                <div>
-                                    <label style="font-size: 0.75rem; color: #94a3b8;">取り下げ方式</label>
-                                    <select id="ebayDelistModeSelect" style="width: 100%; background: #0f172a; border: 1px solid #334155; color: #38bdf8; font-weight: 700; border-radius: 4px; padding: 0.3rem 0.5rem; font-size: 0.8rem;">
-                                        <option value="end_item">完全出品終了 (EndItem) 【推奨】</option>
-                                        <option value="quantity_zero">在庫数0化 (ReviseQuantity 0)</option>
-                                    </select>
-                                </div>
-                                <div style="display: flex; gap: 0.5rem; align-self: end;">
-                                    <button type="button" class="btn-primary" id="saveEbayMainKeysBtn" style="font-size: 0.82rem; padding: 0.4rem 0.8rem; background: #a855f7; flex: 1;">💾 eBay設定を保存</button>
-                                    <button type="button" class="btn-secondary" id="runEbayDelistCheckMainBtn" style="font-size: 0.82rem; padding: 0.4rem 0.8rem; flex: 1;">⚡ 即時取り下げ実行</button>
-                                </div>
-                            </div>
-                            <div class="alert-msg" id="ebayMainAlert" style="margin-top: 0.5rem;"></div>
                         </div>
-                    </details>
-                </section>
 
-                <!-- Compact LINE API Settings Card -->
-                <section class="card compact-settings-card">
-                    <details class="settings-details">
-                        <summary class="settings-summary">
-                            <span>⚙️ 📱 LINE Messaging API 設定 (キー変更時のみ展開)</span>
-                            <span class="summary-arrow">▼</span>
-                        </summary>
-                        <div class="settings-content">
-                            <div class="form-group">
-                                <label for="tokenInput">チャネルアクセストークン (Channel Access Token)</label>
-                                <input type="password" id="tokenInput" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6..." autocomplete="off">
-                            </div>
-
-                            <div class="form-group">
-                                <label for="userIdInput">ユーザーID (LINE User ID)</label>
-                                <input type="text" id="userIdInput" placeholder="U1234567890abcdef1234567890abcdef" autocomplete="off">
-                            </div>
-
-                            <div class="settings-btn-group">
-                                <button type="button" class="btn-secondary" id="saveConfigBtn">💾 設定を保存</button>
-                                <button type="button" class="btn-outline" id="testLineBtn">📲 LINE送信テスト</button>
-                            </div>
-                            <div class="alert-msg" id="settingsAlert"></div>
+                        <div style="margin-bottom:1rem;">
+                            <label style="font-size:0.8rem; color:#cbd5e1;">User Token (OAuth Refresh Token / User Token)</label>
+                            <textarea id="ebayUserTokenInput" rows="3" style="width:100%; padding:8px; background:#0f172a; border:1px solid #334155; color:#fff; border-radius:6px; box-sizing:border-box; font-family:monospace; font-size:0.8rem;"></textarea>
                         </div>
-                    </details>
-                </section>
-            </div>
-        </div>
+
+                        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+                            <div>
+                                <label style="font-size:0.8rem; color:#cbd5e1;">取り下げ方式</label>
+                                <select id="ebayDelistModeSelect" style="padding:8px; background:#0f172a; border:1px solid #334155; color:#fff; border-radius:6px;">
+                                    <option value="end_item">完全出品終了 (EndItem) 【推奨】</option>
+                                    <option value="zero_qty">在庫数0化 (ReviseInventoryStatus)</option>
+                                </select>
+                            </div>
+
+                            <div style="display:flex; gap:0.75rem;">
+                                <button id="saveEbayMainKeysBtn" class="btn-primary" style="background:#a855f7;">💾 eBay設定を保存</button>
+                                <button id="runEbayDelistCheckMainBtn" class="btn-primary" style="background:#10b981;">⚡ 即時取り下げ実行</button>
+                            </div>
+                        </div>
+                        <div id="ebayMainAlert" style="margin-top:0.5rem; font-size:0.85rem; font-weight:600;"></div>
+                    </section>
+
+                </div>
+            </section>
+
+        </main>
     </div>
 
-    <!-- Token Usage Modal -->
-    <div class="modal-overlay" id="tokenUsageModal">
-        <div class="modal-card">
-            <div class="modal-header">
-                <h2>⚡ トークン・モデル利用状況 (Models & Usage)</h2>
-                <button type="button" class="modal-close-btn" id="closeTokenModalBtn">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="quota-plan-badge">
-                    <span class="plan-title">💳 現在のプラン: <strong>Google AI Pro</strong></span>
-                    <span class="plan-status">有効</span>
-                </div>
+    <!-- App Unified Navigation JS -->
+    <script>
+        document.querySelectorAll('.nav-item').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
 
-                <div class="quota-group">
-                    <h3>🟢 Gemini Models (メインAI)</h3>
-                    <div class="quota-item">
-                        <div class="quota-info">
-                            <span class="quota-label">Weekly Limit (週間使用枠)</span>
-                            <span class="quota-desc">6日 10時間後に全リセット</span>
-                        </div>
-                        <div class="quota-badge green">残り 100%</div>
-                    </div>
-                    <div class="quota-item">
-                        <div class="quota-info">
-                            <span class="quota-label">Five Hour Limit (5時間使用枠)</span>
-                            <span class="quota-desc">3時間 22分後に全リセット</span>
-                        </div>
-                        <div class="quota-badge green">残り 97%</div>
-                    </div>
-                </div>
-
-                <div class="quota-group">
-                    <h3>🟣 Claude & GPT Models (サブAI)</h3>
-                    <div class="quota-item">
-                        <div class="quota-info">
-                            <span class="quota-label">Weekly Limit (週間使用枠)</span>
-                            <span class="quota-desc">全枠利用可能</span>
-                        </div>
-                        <div class="quota-badge green">残り 100%</div>
-                    </div>
-                    <div class="quota-item">
-                        <div class="quota-info">
-                            <span class="quota-label">Five Hour Limit (5時間使用枠)</span>
-                            <span class="quota-desc">全枠利用可能</span>
-                        </div>
-                        <div class="quota-badge green">残り 100%</div>
-                    </div>
-                </div>
-
-                <div class="shortcut-tip-box">
-                    💡 <strong>Antigravityアプリで最新リアルタイム画面を開く方法:</strong><br>
-                    キーボードで <kbd>Ctrl</kbd> + <kbd>/</kbd> を押し、メニューから <code>Models & Usage</code> を開くか、左下 ⚙️ アイコン ➔ <strong>Models</strong> を参照してください。
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn-primary-sm" id="closeTokenModalFooterBtn">閉じる</button>
-            </div>
-        </div>
-    </div>
-
+                btn.classList.add('active');
+                const targetTab = btn.getAttribute('data-tab');
+                const pane = document.getElementById(targetTab);
+                if (pane) pane.classList.add('active');
+            });
+        });
+    </script>
     <script src="app.js"></script>
 </body>
 </html>
